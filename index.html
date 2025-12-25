@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Experiencing Yah - Landing page for apps, books, and support"
+    />
+    <title>Experiencing Yah</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+      <div class="nav-container">
+        <div class="nav-logo">
+          <img src="Logo.png" alt="Experiencing Yah" />
+        </div>
+        <ul class="nav-menu" id="nav-menu">
+          <li><a href="#hero" class="nav-link">Home</a></li>
+          <li><a href="#about" class="nav-link">About</a></li>
+          <li><a href="#apps" class="nav-link">Apps</a></li>
+          <li><a href="#books" class="nav-link">Books</a></li>
+          <li><a href="#contact" class="nav-link">Contact</a></li>
+        </ul>
+        <button
+          class="nav-toggle"
+          id="nav-toggle"
+          aria-label="Toggle navigation"
+        >
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="hero" class="hero">
+      <div class="hero-flame">
+        <img src="FlameMaterial.svg" alt="" class="flame-bg" />
+      </div>
+      <div class="hero-content">
+        <h1 class="hero-title">Experiencing Yah</h1>
+        <p class="hero-subtitle">
+          Helping you experience a deeper relationship with the one true God
+        </p>
+      </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="section about">
+      <div class="container">
+        <h2 class="section-title">About</h2>
+        <div class="content-card">
+          <p class="section-text">
+            Experiencing Yah is dedicated to helping you experience a deeper
+            relationship with the one true God. Through our apps, books, and
+            resources, we provide tools and content designed to support your
+            spiritual journey and understanding of God's word.
+          </p>
+          <p class="section-text">
+            Our mission is to create resources that help people connect with God
+            authentically, study Scripture with clarity, and grow in their faith
+            without the influence of man-made traditions.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Apps Section -->
+    <section id="apps" class="section apps">
+      <div class="container">
+        <h2 class="section-title">Apps</h2>
+        <div class="content-card">
+          <p class="section-text">
+            We utilize technology to give access to the Word of God and
+            strengthen daily living for God. Our apps and partnerships provide
+            tools that help you engage with Scripture and grow in your faith.
+          </p>
+          <div class="apps-grid">
+            <div class="app-item">
+              <img src="BibliCal.png" alt="BibliCal" class="app-logo" />
+              <h3 class="app-name">BibliCal</h3>
+              <p class="app-description">
+                An app that lets you see the biblical calendar on your phone.
+              </p>
+            </div>
+            <div class="app-item">
+              <a
+                href="https://ihbmr.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="app-link"
+              >
+                <img src="IHBMR.png" alt="IHBMR" class="app-logo ihbmr-logo" />
+                <h3 class="app-name">IHBMR</h3>
+                <p class="app-partnership">In Partnership</p>
+                <p class="app-description">
+                  A non-profit that gives the world access to Hebrew
+                  manuscripts.
+                </p>
+              </a>
+            </div>
+            <div class="app-item">
+              <h3 class="app-name">More Coming Soon...</h3>
+              <p class="app-description">
+                We're continuously developing new tools and resources to support
+                your spiritual journey.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Books Section -->
+    <section id="books" class="section books">
+      <div class="container">
+        <h2 class="section-title">Books</h2>
+        <div class="content-card">
+          <p class="section-text">
+            We provide resources to help people study the Bible for themselves
+            and get a grasp of what God's word is saying without the influence
+            of man-made traditions. Our books are designed to guide you through
+            Scripture with clarity and authenticity.
+          </p>
+          <p class="coming-soon-text">Coming soon...</p>
+          <div class="books-placeholder">
+            <div class="book-silhouette"></div>
+            <div class="book-silhouette"></div>
+            <div class="book-silhouette"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="section contact">
+      <div class="container">
+        <h2 class="section-title">Contact</h2>
+        <div class="content-card">
+          <p class="section-text">
+            Have a question or need support? Send us a message using the form
+            below. We'll get back to you as soon as possible.
+          </p>
+          <form
+            class="contact-form"
+            id="contact-form"
+            action="https://formspree.io/f/mregzzvk"
+            method="POST"
+          >
+            <!-- Honeypot field - hidden from users but visible to bots -->
+            <div
+              class="form-group honeypot"
+              style="position: absolute; left: -9999px; opacity: 0"
+            >
+              <label for="website">Website</label>
+              <input
+                type="text"
+                id="website"
+                name="website"
+                tabindex="-1"
+                autocomplete="off"
+              />
+            </div>
+            <div class="form-group">
+              <label for="name">Name</label>
+              <input type="text" id="name" name="name" required />
+            </div>
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input type="email" id="email" name="email" required />
+            </div>
+            <div class="form-group">
+              <label for="message">Message</label>
+              <textarea
+                id="message"
+                name="message"
+                rows="5"
+                required
+              ></textarea>
+            </div>
+            <button type="submit" class="submit-btn">Send Message</button>
+            <div class="form-message" id="form-message"></div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="container">
+        <p>&copy; 2025 Experiencing Yah. All rights reserved.</p>
+      </div>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>
