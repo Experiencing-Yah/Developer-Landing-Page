@@ -116,6 +116,7 @@ This is a temporary landing page. Future plans include:
 
 ## License
 
-© 2024 Experiencing Yah. All rights reserved.
+© 2026 Experiencing Yah. All rights reserved.
+
 
 
