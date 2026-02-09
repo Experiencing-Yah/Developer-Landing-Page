@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "translations": [
+    {
+      "id": "web",
+      "name": "World English Bible (WEB)",
+      "format": "book-json-v1",
+      "version": "1",
+      "sizeBytes": 1377523,
+      "sha256": "002e5b62f0286b8c82d3fc19d933b2a163785ed676c9268437408a1344d28844",
+      "url": "https://experiencingyah.com/passages/translations/web.zip"
+    },
+    {
+      "id": "web_hebrewname",
+      "name": "WEB (Hebrew Name)",
+      "format": "book-json-v1",
+      "version": "1",
+      "sizeBytes": 1377614,
+      "sha256": "59075ca3b4065bb5fa180fdda5e56eff9b46e98d6173bc15d9467cf4a35112f6",
+      "url": "https://experiencingyah.com/passages/translations/web_hebrewname.zip"
+    },
+    {
+      "id": "kjv",
+      "name": "King James Version (KJV)",
+      "format": "book-json-v1",
+      "version": "1",
+      "sizeBytes": 1091156,
+      "sha256": "ebee8f98bf399402cbd5ead0a370499a921bcc2d7a538bf42de6386cda6f9cef",
+      "url": "https://experiencingyah.com/passages/translations/kjv.zip"
+    },
+    {
+      "id": "kjv_hebrewname",
+      "name": "KJV (Hebrew Name)",
+      "format": "book-json-v1",
+      "version": "1",
+      "sizeBytes": 1085669,
+      "sha256": "13096609cef4b21a8cb70241e25fb806ef071bbbee58f6d8338275b472a09a0e",
+      "url": "https://experiencingyah.com/passages/translations/kjv_hebrewname.zip"
+    }
+  ]
+}

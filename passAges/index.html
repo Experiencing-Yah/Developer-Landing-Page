@@ -1,18 +1,17 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="BibliCal - Moon-sighting-based Biblical calendar app for Android"
+      content="PassAges - Yearly Bible reading plan aligned with weekly Torah readings, prophets, and Gospel events"
     />
-    <title>BibliCal - Experiencing Yah</title>
+    <title>PassAges - Experiencing Yah</title>
     <link rel="icon" type="image/svg+xml" href="../FlameMaterial.svg" />
     <link rel="alternate icon" href="../FlameMaterial.svg" />
     <link rel="stylesheet" href="../styles.css" />
     <style>
-      /* Ensure navbar logo matches homepage */
       .nav-logo {
         height: 80px;
         display: flex;
@@ -86,6 +85,39 @@
         font-size: 1.1rem;
         margin: 0;
       }
+      .store-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-top: 1rem;
+      }
+      .store-btn {
+        display: inline-block;
+        padding: 0.6rem 1.25rem;
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 0.95rem;
+        text-decoration: none;
+        transition:
+          transform 0.2s ease,
+          box-shadow 0.2s ease;
+      }
+      .store-btn.android {
+        background: linear-gradient(135deg, #2c3e50, #1a1a2e);
+        color: white;
+        box-shadow: var(--shadow-2);
+      }
+      .store-btn.android:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-3);
+      }
+      .store-btn.ios {
+        background: #e9ecef;
+        color: #6c757d;
+        border: 2px solid #dee2e6;
+        cursor: not-allowed;
+        pointer-events: none;
+      }
       .features-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -126,7 +158,9 @@
         text-decoration: none;
         border-radius: 8px;
         font-weight: 500;
-        transition: transform 0.2s ease, box-shadow 0.3s ease;
+        transition:
+          transform 0.2s ease,
+          box-shadow 0.3s ease;
         box-shadow: var(--shadow-2);
       }
       .link-button:hover {
@@ -162,13 +196,12 @@
     </style>
   </head>
   <body>
-    <!-- Navigation -->
     <nav class="navbar" id="navbar">
       <div class="nav-container">
         <div class="nav-logo">
-          <a href="../index.html">
-            <img src="../Logo.png" alt="Experiencing Yah" />
-          </a>
+          <a href="../index.html"
+            ><img src="../Logo.png" alt="Experiencing Yah"
+          /></a>
         </div>
         <ul class="nav-menu" id="nav-menu">
           <li><a href="../index.html#hero" class="nav-link">Home</a></li>
@@ -182,41 +215,46 @@
           id="nav-toggle"
           aria-label="Toggle navigation"
         >
-          <span></span>
-          <span></span>
-          <span></span>
+          <span></span><span></span><span></span>
         </button>
       </div>
     </nav>
 
-    <!-- About Section -->
-    <section class="section" style="padding-top: 8rem;">
+    <section class="section" style="padding-top: 8rem">
       <div class="container">
         <div class="content-card">
           <div class="about-content">
             <div class="app-header">
-              <img src="../BibliCal.png" alt="BibliCal" />
+              <img src="../PassAges.png" alt="PassAges" />
               <div class="app-header-text">
-                <h1>BibliCal</h1>
-                <div class="version">Version 0.1.4</div>
+                <h1>PassAges</h1>
+                <div class="version">Bible Reading Plan App</div>
                 <p>
-                  A moon-sighting-based Biblical calendar application for Android devices
+                  Yearly Bible plans aligned with the weekly Torah readings
+                  traditionally read throughout the year, plus related prophet
+                  passages and matching Gospel events.
                 </p>
+                <div class="store-buttons">
+                  <span class="store-btn ios">Android Coming Soon</span>
+                  <span class="store-btn ios">iOS Coming Soon</span>
+                </div>
               </div>
             </div>
 
             <div class="about-section">
-              <h3>About BibliCal</h3>
+              <h3>About PassAges</h3>
               <p>
-                BibliCal is an Android app designed to help you track and manage a moon-sighting-based 
-                Biblical calendar system. The app provides tools to observe the Biblical calendar 
-                according to the traditional method of moon sighting, helping you stay connected to 
-                the Biblical timing system.
+                PassAges organizes yearly Bible reading around the weekly Torah
+                passages used in traditional congregations. Each week you read
+                from the Torah, the related prophet passage for that week, and
+                Gospel passages that match the events that occurred in the week
+                of the year.
               </p>
               <p>
-                Biblical days begin at sunset, and months are determined by the sighting of the new moon. 
-                BibliCal assists you in tracking these important dates and making informed decisions about 
-                when months and years begin.
+                You can stick to only the Torah, or you can add in the prophets,
+                the full Tanakh, Gospels only, or include the rest of the
+                Messianic Scriptures in the weekly plan so the whole Bible is
+                read in a year alongside the traditional cycle.
               </p>
             </div>
 
@@ -224,36 +262,43 @@
               <h3>Features</h3>
               <div class="features-grid">
                 <div class="feature-item">
-                  <h4>Today Screen</h4>
-                  <p>View the current Biblical date (Month, Day, Year) at a glance</p>
+                  <h4>Weekly Torah Readings</h4>
+                  <p>Follow the traditional yearly cycle of Torah readings.</p>
                 </div>
                 <div class="feature-item">
-                  <h4>Calendar View</h4>
-                  <p>Browse projected months and see the full calendar layout</p>
+                  <h4>Prophet Readings</h4>
+                  <p>
+                    Read the related prophet passages that go with each week’s
+                    Torah reading.
+                  </p>
                 </div>
                 <div class="feature-item">
-                  <h4>New Moon Sighting</h4>
-                  <p>Receive prompts on days 29/30 to confirm new moon sightings</p>
+                  <h4>Gospel Alignment</h4>
+                  <p>
+                    See Gospel events and readings that occured in the same week
+                    of the biblica year.
+                  </p>
                 </div>
                 <div class="feature-item">
-                  <h4>Aviv Barley Prompt</h4>
-                  <p>Determine whether to add a 13th month or start a new year</p>
+                  <h4>Full Bible Option</h4>
+                  <p>
+                    Optionally include the rest of the Bible for a complete
+                    yearly reading.
+                  </p>
                 </div>
                 <div class="feature-item">
-                  <h4>Persistent Notification</h4>
-                  <p>Optional notification showing the current Biblical date</p>
+                  <h4>Optional Translations</h4>
+                  <p>
+                    Download additional Bible translations (e.g. KJV, WEB) for
+                    offline reading.
+                  </p>
                 </div>
                 <div class="feature-item">
-                  <h4>Home Screen Widgets</h4>
-                  <p>Add widgets to your home screen for quick access to the Biblical date</p>
-                </div>
-                <div class="feature-item">
-                  <h4>Calendar Export</h4>
-                  <p>Export Biblical month starts and feast days to your device calendar</p>
-                </div>
-                <div class="feature-item">
-                  <h4>Offline Functionality</h4>
-                  <p>Works completely offline - no internet connection required</p>
+                  <h4>Restored Name Option</h4>
+                  <p>
+                    Additional translations are available with the correct
+                    Hebrew names used instead of The LORD or Jesus.
+                  </p>
                 </div>
               </div>
             </div>
@@ -261,52 +306,43 @@
             <div class="about-section">
               <h3>Developer</h3>
               <p>
-                BibliCal is developed by <strong>ExperiencingYah.com</strong>, dedicated to creating 
-                tools and resources that help people connect with God's word and follow Biblical 
-                principles in their daily lives.
+                PassAges is developed by <strong>ExperiencingYah.com</strong>,
+                dedicated to creating tools and resources that help people
+                connect with God's word and follow Biblical principles in their
+                daily lives.
               </p>
-            </div>
-
-            <div class="about-section">
-              <h3>Technology</h3>
-              <p>
-                BibliCal is built with modern Android development tools:
-              </p>
-              <ul>
-                <li><strong>Kotlin</strong> - Modern programming language for Android</li>
-                <li><strong>Jetpack Compose</strong> - Modern UI toolkit for building native Android apps</li>
-                <li><strong>Room Database</strong> - For local data storage</li>
-                <li><strong>DataStore</strong> - For preferences and settings</li>
-              </ul>
             </div>
 
             <div class="about-section">
               <h3>Privacy & Support</h3>
               <p>
-                Your privacy is important to us. BibliCal stores all data locally on your device 
-                and does not transmit any information to external servers. For more details, 
-                please review our privacy policy.
+                Your privacy is important. PassAges stores data locally on your
+                device and does not transmit any information to external
+                servers. For details, see our privacy policy.
               </p>
             </div>
 
             <div class="links-section">
-              <a href="privacy.html" class="link-button secondary">Privacy Policy</a>
-              <a href="support.html" class="link-button secondary">Support & FAQ</a>
-              <a href="../index.html" class="link-button secondary">Experiencing Yah Home</a>
+              <a href="privacy.html" class="link-button secondary"
+                >Privacy Policy</a
+              >
+              <a href="support.html" class="link-button secondary"
+                >Support & FAQ</a
+              >
+              <a href="../index.html" class="link-button secondary"
+                >Experiencing Yah Home</a
+              >
             </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Footer -->
     <footer class="footer">
       <div class="container">
         <p>&copy; 2025 Experiencing Yah. All rights reserved.</p>
       </div>
     </footer>
-
     <script src="../script.js"></script>
   </body>
 </html>
-

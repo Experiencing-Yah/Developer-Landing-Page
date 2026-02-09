@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -81,6 +81,39 @@
         font-size: 1rem;
         margin-bottom: 1rem;
       }
+      .store-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-top: 1rem;
+      }
+      .store-btn {
+        display: inline-block;
+        padding: 0.6rem 1.25rem;
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 0.95rem;
+        text-decoration: none;
+        transition:
+          transform 0.2s ease,
+          box-shadow 0.2s ease;
+      }
+      .store-btn.android {
+        background: linear-gradient(135deg, #2c3e50, #1a1a2e);
+        color: white;
+        box-shadow: var(--shadow-2);
+      }
+      .store-btn.android:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-3);
+      }
+      .store-btn.ios {
+        background: #e9ecef;
+        color: #6c757d;
+        border: 2px solid #dee2e6;
+        cursor: not-allowed;
+        pointer-events: none;
+      }
       .app-header-text p {
         color: #555;
         font-size: 1.1rem;
@@ -126,7 +159,9 @@
         text-decoration: none;
         border-radius: 8px;
         font-weight: 500;
-        transition: transform 0.2s ease, box-shadow 0.3s ease;
+        transition:
+          transform 0.2s ease,
+          box-shadow 0.3s ease;
         box-shadow: var(--shadow-2);
       }
       .link-button:hover {
@@ -198,11 +233,21 @@
               <img src="../BibliCal.png" alt="BibliCal" />
               <div class="app-header-text">
                 <h1>BibliCal</h1>
-                <div class="version">Version 0.2.0</div>
+                <div class="version">Biblical Calendar App</div>
                 <p>
                   A moon-sighting-based Biblical calendar application for
-                  Android devices
+                  Android and iOS.
                 </p>
+                <div class="store-buttons">
+                  <a
+                    href="https://play.google.com/store/apps/details?id=com.experiencingyah.bibliCal"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="store-btn android"
+                    >Android</a
+                  >
+                  <span class="store-btn ios">iOS Coming Soon</span>
+                </div>
               </div>
             </div>
 
@@ -286,25 +331,6 @@
                 connect with God's word and follow Biblical principles in their
                 daily lives.
               </p>
-            </div>
-
-            <div class="about-section">
-              <h3>Technology</h3>
-              <p>BibliCal is built with modern Android development tools:</p>
-              <ul>
-                <li>
-                  <strong>Kotlin</strong> - Modern programming language for
-                  Android
-                </li>
-                <li>
-                  <strong>Jetpack Compose</strong> - Modern UI toolkit for
-                  building native Android apps
-                </li>
-                <li><strong>Room Database</strong> - For local data storage</li>
-                <li>
-                  <strong>DataStore</strong> - For preferences and settings
-                </li>
-              </ul>
             </div>
 
             <div class="about-section">
