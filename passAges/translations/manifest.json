@@ -8,7 +8,7 @@
       "version": "1",
       "sizeBytes": 1377523,
       "sha256": "002e5b62f0286b8c82d3fc19d933b2a163785ed676c9268437408a1344d28844",
-      "url": "https://experiencingyah.com/passages/translations/web.zip"
+      "url": "https://experiencingyah.com/passAges/translations/web.zip"
     },
     {
       "id": "web_hebrewname",
@@ -17,7 +17,7 @@
       "version": "1",
       "sizeBytes": 1378080,
       "sha256": "f8a5b272b076c5eac8546eb993d228ffbf7286601c7d50eea91fcc9db030647d",
-      "url": "https://experiencingyah.com/passages/translations/web_hebrewname.zip"
+      "url": "https://experiencingyah.com/passAges/translations/web_hebrewname.zip"
     },
     {
       "id": "kjv",
@@ -26,7 +26,7 @@
       "version": "1",
       "sizeBytes": 1091156,
       "sha256": "ebee8f98bf399402cbd5ead0a370499a921bcc2d7a538bf42de6386cda6f9cef",
-      "url": "https://experiencingyah.com/passages/translations/kjv.zip"
+      "url": "https://experiencingyah.com/passAges/translations/kjv.zip"
     },
     {
       "id": "kjv_hebrewname",
@@ -35,7 +35,7 @@
       "version": "1",
       "sizeBytes": 1084529,
       "sha256": "c714e182e128f19ba5ca0e57fb3e8363e79d5c9c51546c413676c80a2fc560cd",
-      "url": "https://experiencingyah.com/passages/translations/kjv_hebrewname.zip"
+      "url": "https://experiencingyah.com/passAges/translations/kjv_hebrewname.zip"
     }
   ]
 }
