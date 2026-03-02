@@ -14,27 +14,27 @@
       "id": "web_hebrewname",
       "name": "WEB (Hebrew Name)",
       "format": "book-json-v1",
-      "version": "1",
-      "sizeBytes": 1378080,
-      "sha256": "f8a5b272b076c5eac8546eb993d228ffbf7286601c7d50eea91fcc9db030647d",
+      "version": "2",
+      "sizeBytes": 1378185,
+      "sha256": "906c6a7efb93385c5a73930c9258bcfecf995fcf23772f76ef8b4338f81f3e65",
       "url": "https://experiencingyah.com/passAges/translations/web_hebrewname.zip"
     },
     {
       "id": "kjv",
       "name": "King James Version (KJV)",
       "format": "book-json-v1",
-      "version": "1",
-      "sizeBytes": 1091156,
-      "sha256": "ebee8f98bf399402cbd5ead0a370499a921bcc2d7a538bf42de6386cda6f9cef",
+      "version": "2",
+      "sizeBytes": 1398416,
+      "sha256": "2e421f0cff0e73a4e0c042d720c3f089f2f8598aa82472c867661523ad446740",
       "url": "https://experiencingyah.com/passAges/translations/kjv.zip"
     },
     {
       "id": "kjv_hebrewname",
       "name": "KJV (Hebrew Name)",
       "format": "book-json-v1",
-      "version": "1",
-      "sizeBytes": 1084529,
-      "sha256": "c714e182e128f19ba5ca0e57fb3e8363e79d5c9c51546c413676c80a2fc560cd",
+      "version": "2",
+      "sizeBytes": 1389988,
+      "sha256": "31438119f064507f492dca6e4a1a76d5954ef45d188a2ecb3ab9cff13d37fe1b",
       "url": "https://experiencingyah.com/passAges/translations/kjv_hebrewname.zip"
     }
   ]
