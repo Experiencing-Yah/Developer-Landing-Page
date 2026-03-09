@@ -74,84 +74,97 @@ function updateActiveNav() {
 window.addEventListener('scroll', updateActiveNav);
 updateActiveNav(); // Initial call
 
-// Form Submission Handling
+// Form Submission Handling - reCAPTCHA v3 uses button data-sitekey and callback
 const contactForm = document.getElementById('contact-form');
 const formMessage = document.getElementById('form-message');
 
-if (contactForm) {
-    contactForm.addEventListener('submit', async function(e) {
-        e.preventDefault();
-        
-        // Honeypot check - if this field is filled, it's likely a bot
-        const honeypot = contactForm.querySelector('#website');
-        if (honeypot && honeypot.value) {
-            // Silently reject - don't show error to avoid revealing honeypot
-            return;
-        }
+function submitFormWithToken(token) {
+    if (!contactForm) return;
 
-        const submitBtn = contactForm.querySelector('.submit-btn');
-        const originalBtnText = submitBtn.textContent;
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Sending...';
-        formMessage.style.display = 'none';
-        formMessage.classList.remove('success', 'error');
+    const honeypot = contactForm.querySelector('#website');
+    if (honeypot && honeypot.value) return;
 
-        // reCAPTCHA v3 (invisible) - get token then submit
-        const RECAPTCHA_SITE_KEY = '6LdFP4UsAAAAAMwUlwtwhkWpFsJmIZmK-D-Ar7py';
-        let recaptchaToken = '';
-        try {
-            if (typeof grecaptcha !== 'undefined' && grecaptcha.ready) {
-                await new Promise((resolve) => grecaptcha.ready(resolve));
-                recaptchaToken = await grecaptcha.execute(RECAPTCHA_SITE_KEY, { action: 'submit' });
-            }
-        } catch (err) {
-            formMessage.textContent = 'Security check failed. Please refresh and try again.';
-            formMessage.classList.add('error');
-            formMessage.style.display = 'block';
-            submitBtn.disabled = false;
-            submitBtn.textContent = originalBtnText;
-            return;
-        }
+    const submitBtn = contactForm.querySelector('.submit-btn');
+    const originalBtnText = submitBtn.textContent;
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Sending...';
+    formMessage.style.display = 'none';
+    formMessage.classList.remove('success', 'error');
 
-        const formData = new FormData(contactForm);
-        formData.delete('website');
-        formData.set('g-recaptcha-response', recaptchaToken);
+    const formData = new FormData(contactForm);
+    formData.delete('website');
+    formData.set('g-recaptcha-response', token);
 
-        try {
-            const response = await fetch(contactForm.action, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'Accept': 'application/json'
-                }
-            });
-            
+    fetch(contactForm.action, {
+        method: 'POST',
+        body: formData,
+        headers: { 'Accept': 'application/json' }
+    })
+        .then(async (response) => {
             if (response.ok) {
                 formMessage.textContent = 'Thank you! Your message has been sent successfully. We\'ll get back to you soon.';
                 formMessage.classList.add('success');
                 formMessage.style.display = 'block';
                 contactForm.reset();
-
-                // Scroll to message
                 formMessage.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             } else {
                 const data = await response.json();
-                if (data.errors) {
-                    formMessage.textContent = 'There was an error sending your message. Please try again.';
-                } else {
-                    formMessage.textContent = 'There was an error sending your message. Please try again.';
-                }
+                formMessage.textContent = 'There was an error sending your message. Please try again.';
                 formMessage.classList.add('error');
                 formMessage.style.display = 'block';
             }
-        } catch (error) {
+        })
+        .catch(() => {
             formMessage.textContent = 'There was an error sending your message. Please check your connection and try again.';
             formMessage.classList.add('error');
             formMessage.style.display = 'block';
-        } finally {
+        })
+        .finally(() => {
             submitBtn.disabled = false;
             submitBtn.textContent = originalBtnText;
+        });
+}
+
+window.onRecaptchaSuccess = submitFormWithToken;
+
+const RECAPTCHA_SITE_KEY = '6LdFP4UsAAAAAMwUlwtwhkWpFsJmIZmK-D-Ar7py';
+
+if (contactForm) {
+    const submitBtn = contactForm.querySelector('.submit-btn');
+    if (submitBtn) {
+        submitBtn.addEventListener('click', function() {
+            if (typeof grecaptcha === 'undefined' || !grecaptcha.ready) return;
+            grecaptcha.ready(function() {
+                grecaptcha.execute(RECAPTCHA_SITE_KEY, { action: 'submit' })
+                    .then(submitFormWithToken)
+                    .catch(function() {
+                        formMessage.textContent = 'Security check failed. Please refresh and try again.';
+                        formMessage.classList.add('error');
+                        formMessage.style.display = 'block';
+                    });
+            });
+        });
+    }
+    contactForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const honeypot = contactForm.querySelector('#website');
+        if (honeypot && honeypot.value) return;
+        // Enter key or other submit: get token programmatically then submit
+        if (typeof grecaptcha === 'undefined' || !grecaptcha.ready) {
+            formMessage.textContent = 'Security check is loading. Please wait a moment and try again.';
+            formMessage.classList.add('error');
+            formMessage.style.display = 'block';
+            return;
         }
+        grecaptcha.ready(function() {
+            grecaptcha.execute(RECAPTCHA_SITE_KEY, { action: 'submit' })
+                .then(submitFormWithToken)
+                .catch(function() {
+                    formMessage.textContent = 'Security check failed. Please refresh and try again.';
+                    formMessage.classList.add('error');
+                    formMessage.style.display = 'block';
+                });
+        });
     });
 }
 
