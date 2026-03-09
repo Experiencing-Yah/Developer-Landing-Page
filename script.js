@@ -88,20 +88,35 @@ if (contactForm) {
             // Silently reject - don't show error to avoid revealing honeypot
             return;
         }
-        
-        // Get form data
-        const formData = new FormData(contactForm);
-        // Remove honeypot field from submission
-        formData.delete('website');
+
         const submitBtn = contactForm.querySelector('.submit-btn');
         const originalBtnText = submitBtn.textContent;
-        
-        // Disable submit button and show loading state
         submitBtn.disabled = true;
         submitBtn.textContent = 'Sending...';
         formMessage.style.display = 'none';
         formMessage.classList.remove('success', 'error');
-        
+
+        // reCAPTCHA v3 (invisible) - get token then submit
+        const RECAPTCHA_SITE_KEY = '6LdFP4UsAAAAAMwUlwtwhkWpFsJmIZmK-D-Ar7py';
+        let recaptchaToken = '';
+        try {
+            if (typeof grecaptcha !== 'undefined' && grecaptcha.ready) {
+                await new Promise((resolve) => grecaptcha.ready(resolve));
+                recaptchaToken = await grecaptcha.execute(RECAPTCHA_SITE_KEY, { action: 'submit' });
+            }
+        } catch (err) {
+            formMessage.textContent = 'Security check failed. Please refresh and try again.';
+            formMessage.classList.add('error');
+            formMessage.style.display = 'block';
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalBtnText;
+            return;
+        }
+
+        const formData = new FormData(contactForm);
+        formData.delete('website');
+        formData.set('g-recaptcha-response', recaptchaToken);
+
         try {
             const response = await fetch(contactForm.action, {
                 method: 'POST',
@@ -116,7 +131,7 @@ if (contactForm) {
                 formMessage.classList.add('success');
                 formMessage.style.display = 'block';
                 contactForm.reset();
-                
+
                 // Scroll to message
                 formMessage.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             } else {
