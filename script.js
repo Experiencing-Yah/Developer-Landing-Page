@@ -127,7 +127,7 @@ function submitFormWithToken(token) {
 
 window.onRecaptchaSuccess = submitFormWithToken;
 
-const RECAPTCHA_SITE_KEY = '6LdFP4UsAAAAAMwUlwtwhkWpFsJmIZmK-D-Ar7py';
+const RECAPTCHA_SITE_KEY = '6LdFP4UsAAAAABXbpxRwm4AwPR3BA6vIPWKt4wnu';
 
 if (contactForm) {
     const submitBtn = contactForm.querySelector('.submit-btn');
