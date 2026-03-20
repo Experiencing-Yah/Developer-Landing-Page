@@ -8,6 +8,7 @@ A modern, minimalistic single-page website for Experiencing Yah, featuring smoot
 - **Material Design blue theme** with cell-shading and layering effects
 - **Responsive design** that works on mobile, tablet, and desktop
 - **Contact form** integrated with Formspree (no exposed email addresses)
+- **Email capture form** integrated with ConvertKit (free ebook delivery)
 - **Modern UI** with minimalistic design and smooth animations
 
 ## Setup Instructions
@@ -34,38 +35,51 @@ A modern, minimalistic single-page website for Experiencing Yah, featuring smoot
    - In the same Pages settings, you can add a custom domain
    - Follow GitHub's instructions for DNS configuration
 
-### Formspree Setup
+### Formspree Setup (Contact Form)
 
 The contact form uses Formspree to send emails without exposing your email address.
 
 1. **Create a Formspree Account**
    - Go to [https://formspree.io](https://formspree.io)
-   - Sign up for a free account (free tier includes 50 submissions/month)
+   - Sign up for an account
 
 2. **Create a New Form**
    - After logging in, click **New Form**
-   - Give your form a name (e.g., "Experiencing Yah Contact")
    - Copy the form endpoint URL (it will look like `https://formspree.io/f/YOUR_FORM_ID`)
 
 3. **Update the Form Endpoint**
    - Open `index.html`
-   - Find the contact form (around line 80)
-   - Replace `YOUR_FORM_ID` in the form action with your actual Formspree form ID:
-     ```html
-     <form class="contact-form" id="contact-form" action="https://formspree.io/f/YOUR_FORM_ID" method="POST">
-     ```
-   - Replace `YOUR_FORM_ID` with the ID from your Formspree form URL
+   - Find the contact form with `id="contact-form"`
+   - Replace the `action` value with your actual Formspree form URL
 
-4. **Configure Formspree Settings (Optional)**
-   - In your Formspree dashboard, you can:
-     - Set up email notifications
-     - Add custom redirect URLs
-     - Configure spam protection
-     - Set up webhooks
+4. **Test the Form**
+   - Submit a message and confirm it appears in Formspree / sends an email
 
-5. **Test the Form**
-   - After updating the form endpoint, test it by submitting a message
-   - Check your email (or Formspree dashboard) to confirm you received it
+### ConvertKit Setup (Free Ebook Email Capture)
+
+The book page uses ConvertKit to collect email subscribers and deliver a free ebook (via ConvertKit’s incentive/automation).
+
+1. **Create a ConvertKit form**
+   - Create a form for the ebook signup (example: “Book Free Ebook”)
+   - Attach your free ebook as the incentive / lead magnet (ConvertKit flow)
+
+2. **Get your ConvertKit public API key**
+   - ConvertKit: **Settings → Advanced → API**
+   - Copy your **Public API Key**
+
+3. **Get your ConvertKit Form ID**
+   - Find the **Form ID** for your ebook form
+
+4. **Paste the values into `book.html`**
+   - Open `book.html`
+   - Find the form with `id="ebook-form"`
+   - Set:
+     - `data-convertkit-form-id="YOUR_FORM_ID"`
+     - `data-convertkit-public-api-key="YOUR_PUBLIC_API_KEY"`
+
+5. **Test**
+   - Submit your email on the book page
+   - Confirm the subscriber appears in ConvertKit and the ebook is delivered
 
 ## File Structure
 

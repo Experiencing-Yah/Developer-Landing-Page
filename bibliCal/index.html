@@ -108,11 +108,13 @@
         box-shadow: var(--shadow-3);
       }
       .store-btn.ios {
-        background: #e9ecef;
-        color: #6c757d;
-        border: 2px solid #dee2e6;
-        cursor: not-allowed;
-        pointer-events: none;
+        background: linear-gradient(135deg, #1c1c1e, #000000);
+        color: white;
+        box-shadow: var(--shadow-2);
+      }
+      .store-btn.ios:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-3);
       }
       .app-header-text p {
         color: #555;
@@ -246,7 +248,13 @@
                     class="store-btn android"
                     >Android</a
                   >
-                  <span class="store-btn ios">iOS Coming Soon</span>
+                  <a
+                    href="https://apps.apple.com/us/app/biblical-biblical-calendar/id6759180346"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="store-btn ios"
+                    >iOS</a
+                  >
                 </div>
               </div>
             </div>
@@ -254,7 +262,7 @@
             <div class="about-section">
               <h3>About BibliCal</h3>
               <p>
-                BibliCal is an Android app designed to help you track and manage
+                BibliCal is an app designed to help you track and manage
                 a moon-sighting-based Biblical calendar system. The app provides
                 tools to observe the Biblical calendar according to the
                 traditional method of moon sighting, helping you stay connected

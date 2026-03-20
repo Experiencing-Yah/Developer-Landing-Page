@@ -3,18 +3,22 @@ const navToggle = document.getElementById('nav-toggle');
 const navMenu = document.getElementById('nav-menu');
 const navLinks = document.querySelectorAll('.nav-link');
 
-navToggle.addEventListener('click', () => {
-    navMenu.classList.toggle('active');
-    navToggle.classList.toggle('active');
-});
+if (navToggle && navMenu) {
+    navToggle.addEventListener('click', () => {
+        navMenu.classList.toggle('active');
+        navToggle.classList.toggle('active');
+    });
+}
 
 // Close mobile menu when clicking on a link
-navLinks.forEach(link => {
-    link.addEventListener('click', () => {
-        navMenu.classList.remove('active');
-        navToggle.classList.remove('active');
+if (navMenu && navToggle && navLinks?.length) {
+    navLinks.forEach(link => {
+        link.addEventListener('click', () => {
+            navMenu.classList.remove('active');
+            navToggle.classList.remove('active');
+        });
     });
-});
+}
 
 // Smooth Scroll Navigation
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
@@ -42,6 +46,7 @@ const sections = document.querySelectorAll('.section, .hero');
 const navLinksArray = Array.from(document.querySelectorAll('.nav-link'));
 
 function updateActiveNav() {
+    if (!sections?.length || !navLinksArray?.length) return;
     const scrollPosition = window.scrollY + 100; // Offset for navbar
     
     sections.forEach((section, index) => {
@@ -71,25 +76,40 @@ function updateActiveNav() {
 }
 
 // Update active nav on scroll
-window.addEventListener('scroll', updateActiveNav);
-updateActiveNav(); // Initial call
+if (sections?.length && navLinksArray?.length) {
+    window.addEventListener('scroll', updateActiveNav);
+    updateActiveNav(); // Initial call
+}
 
-// Form Submission Handling - reCAPTCHA v3 uses button data-sitekey and callback
+// Forms
 const contactForm = document.getElementById('contact-form');
 const formMessage = document.getElementById('form-message');
 
-function submitFormWithToken(token) {
+function setFormMessage(target, type, text) {
+    if (!target) return;
+    target.textContent = text;
+    target.classList.remove('success', 'error');
+    target.classList.add(type);
+    target.style.display = 'block';
+}
+
+// Contact Form (Formspree + reCAPTCHA v3)
+function submitContactFormWithToken(token) {
     if (!contactForm) return;
 
     const honeypot = contactForm.querySelector('#website');
     if (honeypot && honeypot.value) return;
 
     const submitBtn = contactForm.querySelector('.submit-btn');
-    const originalBtnText = submitBtn.textContent;
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Sending...';
-    formMessage.style.display = 'none';
-    formMessage.classList.remove('success', 'error');
+    const originalBtnText = submitBtn?.textContent || 'Send Message';
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Sending...';
+    }
+    if (formMessage) {
+        formMessage.style.display = 'none';
+        formMessage.classList.remove('success', 'error');
+    }
 
     const formData = new FormData(contactForm);
     formData.delete('website');
@@ -102,69 +122,155 @@ function submitFormWithToken(token) {
     })
         .then(async (response) => {
             if (response.ok) {
-                formMessage.textContent = 'Thank you! Your message has been sent successfully. We\'ll get back to you soon.';
-                formMessage.classList.add('success');
-                formMessage.style.display = 'block';
+                setFormMessage(
+                    formMessage,
+                    'success',
+                    'Thank you! Your message has been sent successfully. We\'ll get back to you soon.'
+                );
                 contactForm.reset();
-                formMessage.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                formMessage?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             } else {
-                const data = await response.json();
-                formMessage.textContent = 'There was an error sending your message. Please try again.';
-                formMessage.classList.add('error');
-                formMessage.style.display = 'block';
+                let message = 'There was an error sending your message. Please try again.';
+                try {
+                    const data = await response.json();
+                    if (data?.message) message = data.message;
+                } catch (_) {
+                    // ignore
+                }
+                setFormMessage(formMessage, 'error', message);
             }
         })
         .catch(() => {
-            formMessage.textContent = 'There was an error sending your message. Please check your connection and try again.';
-            formMessage.classList.add('error');
-            formMessage.style.display = 'block';
+            setFormMessage(formMessage, 'error', 'There was an error sending your message. Please check your connection and try again.');
         })
         .finally(() => {
-            submitBtn.disabled = false;
-            submitBtn.textContent = originalBtnText;
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalBtnText;
+            }
         });
 }
 
-window.onRecaptchaSuccess = submitFormWithToken;
+window.onRecaptchaSuccess = submitContactFormWithToken;
 
 const RECAPTCHA_SITE_KEY = '6LdFP4UsAAAAABXbpxRwm4AwPR3BA6vIPWKt4wnu';
 
 if (contactForm) {
     const submitBtn = contactForm.querySelector('.submit-btn');
     if (submitBtn) {
-        submitBtn.addEventListener('click', function() {
+        submitBtn.addEventListener('click', function () {
             if (typeof grecaptcha === 'undefined' || !grecaptcha.ready) return;
-            grecaptcha.ready(function() {
+            grecaptcha.ready(function () {
                 grecaptcha.execute(RECAPTCHA_SITE_KEY, { action: 'submit' })
-                    .then(submitFormWithToken)
-                    .catch(function() {
-                        formMessage.textContent = 'Security check failed. Please refresh and try again.';
-                        formMessage.classList.add('error');
-                        formMessage.style.display = 'block';
+                    .then(submitContactFormWithToken)
+                    .catch(function () {
+                        setFormMessage(formMessage, 'error', 'Security check failed. Please refresh and try again.');
                     });
             });
         });
     }
-    contactForm.addEventListener('submit', function(e) {
+
+    contactForm.addEventListener('submit', function (e) {
         e.preventDefault();
         const honeypot = contactForm.querySelector('#website');
         if (honeypot && honeypot.value) return;
-        // Enter key or other submit: get token programmatically then submit
+
         if (typeof grecaptcha === 'undefined' || !grecaptcha.ready) {
-            formMessage.textContent = 'Security check is loading. Please wait a moment and try again.';
-            formMessage.classList.add('error');
-            formMessage.style.display = 'block';
+            setFormMessage(formMessage, 'error', 'Security check is loading. Please wait a moment and try again.');
             return;
         }
-        grecaptcha.ready(function() {
+        grecaptcha.ready(function () {
             grecaptcha.execute(RECAPTCHA_SITE_KEY, { action: 'submit' })
-                .then(submitFormWithToken)
-                .catch(function() {
-                    formMessage.textContent = 'Security check failed. Please refresh and try again.';
-                    formMessage.classList.add('error');
-                    formMessage.style.display = 'block';
+                .then(submitContactFormWithToken)
+                .catch(function () {
+                    setFormMessage(formMessage, 'error', 'Security check failed. Please refresh and try again.');
                 });
         });
+    });
+}
+
+// Ebook Signup (ConvertKit)
+const ebookForm = document.getElementById('ebook-form');
+const ebookFormMessage = document.getElementById('ebook-form-message');
+
+if (ebookForm) {
+    ebookForm.addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const honeypot = ebookForm.querySelector('#ebook-website');
+        if (honeypot && honeypot.value) return;
+
+        const formId = (ebookForm.dataset.convertkitFormId || '').trim();
+        const publicApiKey = (ebookForm.dataset.convertkitPublicApiKey || '').trim();
+
+        if (!formId || !publicApiKey) {
+            setFormMessage(
+                ebookFormMessage,
+                'error',
+                'Signup isn’t configured yet. Please add your ConvertKit form ID and public API key.'
+            );
+            return;
+        }
+
+        const submitBtn = ebookForm.querySelector('.submit-btn');
+        const originalBtnText = submitBtn?.textContent || 'Get the free ebook';
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
+        }
+
+        if (ebookFormMessage) {
+            ebookFormMessage.style.display = 'none';
+            ebookFormMessage.classList.remove('success', 'error');
+        }
+
+        const email = String(ebookForm.querySelector('#ebook-email')?.value || '').trim();
+        const first_name = String(ebookForm.querySelector('#ebook-first-name')?.value || '').trim();
+
+        try {
+            const response = await fetch(`https://api.convertkit.com/v3/forms/${encodeURIComponent(formId)}/subscribe`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    api_key: publicApiKey,
+                    email,
+                    first_name: first_name || undefined
+                })
+            });
+
+            if (!response.ok) {
+                let message = 'There was an error subscribing. Please try again.';
+                try {
+                    const data = await response.json();
+                    if (data?.message) message = data.message;
+                } catch (_) {
+                    // ignore
+                }
+                throw new Error(message);
+            }
+
+            setFormMessage(
+                ebookFormMessage,
+                'success',
+                'Thanks! Please check your inbox to confirm and get the free ebook.'
+            );
+            ebookForm.reset();
+            ebookFormMessage?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        } catch (err) {
+            setFormMessage(
+                ebookFormMessage,
+                'error',
+                err?.message || 'There was an error subscribing. Please try again.'
+            );
+        } finally {
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalBtnText;
+            }
+        }
     });
 }
 
