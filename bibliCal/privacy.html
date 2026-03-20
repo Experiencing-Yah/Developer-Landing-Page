@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -124,7 +124,7 @@
     </nav>
 
     <!-- Privacy Policy Section -->
-    <section class="section" style="padding-top: 8rem;">
+    <section class="section" style="padding-top: 8rem">
       <div class="container">
         <h1 class="section-title">BibliCal Privacy Policy</h1>
         <div class="content-card">
@@ -140,49 +140,110 @@
                 <strong>Platform:</strong> Android
               </p>
               <p>
-                This privacy policy describes how BibliCal ("we", "our", or "the app") handles your data. 
-                BibliCal is a moon-sighting-based Biblical calendar application for Android devices. 
-                We are committed to protecting your privacy and being transparent about our data practices.
+                This privacy policy describes how BibliCal ("we", "our", or "the
+                app") handles your data. BibliCal is a moon-sighting-based
+                Biblical calendar application for Android devices. We are
+                committed to protecting your privacy and being transparent about
+                our data practices.
               </p>
             </div>
 
             <div class="privacy-section">
               <h3>Data Collection and Usage</h3>
-              
+
               <h4>1. Location Data</h4>
               <div class="highlight-box">
-                <p><strong>Location data is collected ONLY for calculating local sunset times.</strong></p>
+                <p>
+                  <strong
+                    >Location data is collected ONLY for calculating local
+                    sunset times.</strong
+                  >
+                </p>
               </div>
               <ul>
-                <li>The app requests location permissions (ACCESS_FINE_LOCATION and ACCESS_COARSE_LOCATION)</li>
-                <li>Location data is used <strong>exclusively</strong> to calculate local sunset times, which determine when Biblical days begin (Biblical days start at sunset)</li>
-                <li>Location data is stored locally on your device using Android DataStore</li>
-                <li>Location data is cached for up to 24 hours to improve widget performance</li>
-                <li><strong>Location data is NEVER transmitted off your device</strong></li>
-                <li><strong>Location data is NEVER shared with third parties</strong></li>
-                <li>If you deny location permissions, the app will use default coordinates (latitude 40.0, longitude -74.0) as a fallback</li>
+                <li>
+                  The app requests location permissions (ACCESS_FINE_LOCATION
+                  and ACCESS_COARSE_LOCATION)
+                </li>
+                <li>
+                  Location data is used <strong>exclusively</strong> to
+                  calculate local sunset times, which determine when Biblical
+                  days begin (Biblical days start at sunset)
+                </li>
+                <li>
+                  Location data is stored locally on your device using Android
+                  DataStore
+                </li>
+                <li>
+                  Location data is cached for up to 24 hours to improve widget
+                  performance
+                </li>
+                <li>
+                  <strong
+                    >Location data is NEVER transmitted off your device</strong
+                  >
+                </li>
+                <li>
+                  <strong
+                    >Location data is NEVER shared with third parties</strong
+                  >
+                </li>
+                <li>
+                  If you deny location permissions, the app will use default
+                  coordinates (latitude 40.0, longitude -74.0) as a fallback
+                </li>
               </ul>
 
               <h4>2. Calendar Data (Optional)</h4>
               <ul>
-                <li>The app requests calendar permissions (READ_CALENDAR and WRITE_CALENDAR) <strong>ONLY</strong> if you explicitly enable the calendar export feature in Settings</li>
-                <li>If enabled, the app writes Biblical month starts and feast days to a calendar you select on your device</li>
-                <li>The app does <strong>NOT</strong> read existing calendar events</li>
-                <li>Calendar data remains on your device and is <strong>NEVER</strong> transmitted</li>
+                <li>
+                  The app requests calendar permissions (READ_CALENDAR and
+                  WRITE_CALENDAR) <strong>ONLY</strong> if you explicitly enable
+                  the calendar export feature in Settings
+                </li>
+                <li>
+                  If enabled, the app writes Biblical month starts and feast
+                  days to a calendar you select on your device
+                </li>
+                <li>
+                  The app does <strong>NOT</strong> read existing calendar
+                  events
+                </li>
+                <li>
+                  Calendar data remains on your device and is
+                  <strong>NEVER</strong> transmitted
+                </li>
               </ul>
 
               <h4>3. App Data Storage</h4>
               <p>The app stores the following data locally on your device:</p>
               <ul>
                 <li>Biblical month start dates (stored using Room database)</li>
-                <li>Year decisions (whether a year has 12 or 13 months, stored using Room database)</li>
-                <li>User preferences and settings (notification preferences, month naming mode, etc., stored using Android DataStore)</li>
+                <li>
+                  Year decisions (whether a year has 12 or 13 months, stored
+                  using Room database)
+                </li>
+                <li>
+                  User preferences and settings (notification preferences, month
+                  naming mode, etc., stored using Android DataStore)
+                </li>
                 <li>Cached location coordinates (as described above)</li>
               </ul>
               <ul>
-                <li>All data is stored locally using Android's Room database and DataStore</li>
-                <li><strong>No data is transmitted to external servers</strong></li>
-                <li><strong>No data is backed up to cloud services by the app</strong> (you may have device-level backups enabled, which is outside our control)</li>
+                <li>
+                  All data is stored locally using Android's Room database and
+                  DataStore
+                </li>
+                <li>
+                  <strong>No data is transmitted to external servers</strong>
+                </li>
+                <li>
+                  <strong
+                    >No data is backed up to cloud services by the app</strong
+                  >
+                  (you may have device-level backups enabled, which is outside
+                  our control)
+                </li>
               </ul>
             </div>
 
@@ -198,8 +259,9 @@
                 <li>Any data to external servers</li>
               </ul>
               <p>
-                <strong>The app works completely offline</strong> and does not require an internet connection. 
-                All functionality is available without network access.
+                <strong>The app works completely offline</strong> and does not
+                require an internet connection. All functionality is available
+                without network access.
               </p>
             </div>
 
@@ -207,11 +269,27 @@
               <h3>Permissions</h3>
               <p>The app requests the following permissions:</p>
               <ul>
-                <li><strong>POST_NOTIFICATIONS:</strong> For displaying Biblical date notifications (optional, you can disable this in settings)</li>
-                <li><strong>RECEIVE_BOOT_COMPLETED:</strong> To reschedule notifications after device restart</li>
-                <li><strong>WAKE_LOCK:</strong> To ensure notifications are delivered on time</li>
-                <li><strong>Location permissions:</strong> As described above (for sunset calculations)</li>
-                <li><strong>Calendar permissions:</strong> As described above (optional, only if calendar export is enabled)</li>
+                <li>
+                  <strong>POST_NOTIFICATIONS:</strong> For displaying Biblical
+                  date notifications (optional, you can disable this in
+                  settings)
+                </li>
+                <li>
+                  <strong>RECEIVE_BOOT_COMPLETED:</strong> To reschedule
+                  notifications after device restart
+                </li>
+                <li>
+                  <strong>WAKE_LOCK:</strong> To ensure notifications are
+                  delivered on time
+                </li>
+                <li>
+                  <strong>Location permissions:</strong> As described above (for
+                  sunset calculations)
+                </li>
+                <li>
+                  <strong>Calendar permissions:</strong> As described above
+                  (optional, only if calendar export is enabled)
+                </li>
               </ul>
             </div>
 
@@ -219,8 +297,13 @@
               <h3>Data Security</h3>
               <ul>
                 <li>All data is stored locally on your device</li>
-                <li>No encryption is required as no sensitive data is transmitted</li>
-                <li>You can uninstall the app at any time, which will delete all locally stored data</li>
+                <li>
+                  No encryption is required as no sensitive data is transmitted
+                </li>
+                <li>
+                  You can uninstall the app at any time, which will delete all
+                  locally stored data
+                </li>
               </ul>
             </div>
 
@@ -228,8 +311,14 @@
               <h3>Your Rights</h3>
               <p>You have full control over your data:</p>
               <ul>
-                <li>You can revoke location permissions at any time through Android settings</li>
-                <li>You can revoke calendar permissions at any time through Android settings</li>
+                <li>
+                  You can revoke location permissions at any time through
+                  Android settings
+                </li>
+                <li>
+                  You can revoke calendar permissions at any time through
+                  Android settings
+                </li>
                 <li>You can disable notifications through app settings</li>
                 <li>You can delete all app data by uninstalling the app</li>
               </ul>
@@ -241,17 +330,29 @@
                 For privacy-related questions or concerns, please contact us:
               </p>
               <ul>
-                <li><strong>Website:</strong> <a href="https://ExperiencingYah.com" target="_blank" rel="noopener noreferrer">https://ExperiencingYah.com</a></li>
-                <li><strong>Support:</strong> <a href="support.html">BibliCal Support Page</a></li>
+                <li>
+                  <strong>Website:</strong>
+                  <a
+                    href="https://ExperiencingYah.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    >https://ExperiencingYah.com</a
+                  >
+                </li>
+                <li>
+                  <strong>Support:</strong>
+                  <a href="support.html">BibliCal Support Page</a>
+                </li>
               </ul>
             </div>
 
             <div class="privacy-section">
               <h3>Changes to Privacy Policy</h3>
               <p>
-                We reserve the right to update this privacy policy. If we make significant changes, 
-                we will notify users through app updates. The "Last Updated" date at the top of this 
-                page indicates when the policy was last revised.
+                We reserve the right to update this privacy policy. If we make
+                significant changes, we will notify users through app updates.
+                The "Last Updated" date at the top of this page indicates when
+                the policy was last revised.
               </p>
             </div>
 
@@ -264,11 +365,10 @@
     <!-- Footer -->
     <footer class="footer">
       <div class="container">
-        <p>&copy; 2025 Experiencing Yah. All rights reserved.</p>
+        <p>&copy; 2026 Experiencing Yah. All rights reserved.</p>
       </div>
     </footer>
 
     <script src="../script.js"></script>
   </body>
 </html>
-
