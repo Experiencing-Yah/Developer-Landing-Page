@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Experiencing Yah - Books and resources"
+    />
+    <title>Books | Experiencing Yah</title>
+    <link rel="icon" type="image/svg+xml" href="../FlameMaterial.svg" />
+    <link rel="alternate icon" href="../FlameMaterial.svg" />
+    <link rel="stylesheet" href="../styles.css" />
+    <style>
+      /* Ensure navbar logo matches homepage */
+      .nav-logo {
+        height: 80px;
+        display: flex;
+        align-items: center;
+      }
+      .nav-logo a {
+        height: 100%;
+        display: flex;
+        align-items: center;
+      }
+      .nav-logo img {
+        height: 100%;
+        width: auto;
+        max-width: 400px;
+        object-fit: contain;
+      }
+      @media (max-width: 768px) {
+        .nav-logo {
+          height: 60px;
+        }
+        .nav-logo img {
+          max-width: 250px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar" id="navbar">
+      <div class="nav-container">
+        <div class="nav-logo">
+          <a href="../index.html" aria-label="Experiencing Yah home">
+            <img src="../Logo.png" alt="Experiencing Yah" />
+          </a>
+        </div>
+        <ul class="nav-menu" id="nav-menu">
+          <li><a href="../index.html#hero" class="nav-link">Home</a></li>
+          <li><a href="../index.html#about" class="nav-link">About</a></li>
+          <li><a href="../index.html#apps" class="nav-link">Apps</a></li>
+          <li><a href="../index.html#books" class="nav-link">Books</a></li>
+          <li><a href="../index.html#contact" class="nav-link">Contact</a></li>
+        </ul>
+        <button
+          class="nav-toggle"
+          id="nav-toggle"
+          aria-label="Toggle navigation"
+        >
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+    </nav>
+
+    <section class="section books" style="padding-top: 7rem">
+      <div class="container">
+        <h1 class="section-title" style="margin-bottom: 1rem">Books</h1>
+        <div class="content-card">
+          <p class="section-text">
+            Resources to help you study Scripture with clarity and authenticity.
+          </p>
+
+          <div class="books-grid">
+            <a class="book-card" href="taking-back-your-power/index.html">
+              <div class="book-3d" aria-hidden="true">
+                <div class="book-3d__inner">
+                  <div class="book-3d__img">
+                    <img
+                      src="/books/assets/taking-back-your-power.jpg"
+                      alt=""
+                      loading="lazy"
+                    />
+                  </div>
+                  <div class="book-3d__page"></div>
+                  <div class="book-3d__page book-3d__page--2"></div>
+                  <div class="book-3d__page book-3d__page--3"></div>
+                  <div class="book-3d__img book-3d__final" aria-hidden="true">
+                    <img
+                      src="/books/assets/taking-back-your-power.jpg"
+                      alt=""
+                      loading="lazy"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div class="book-card__meta">
+                <h3 class="book-card__title">Taking Back Your Power</h3>
+                <p class="book-card__subtitle">
+                  A Biblical Reframing of Matthew 5:38–42
+                </p>
+              </div>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div class="container">
+        <div class="footer-tt">
+          <a
+            href="https://thinktransformationinc.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="footer-tt-link"
+            aria-label="Think Transformation Inc"
+          >
+            <img
+              src="../TT-Logo.svg"
+              alt="Think Transformation Inc"
+              class="footer-tt-logo"
+            />
+          </a>
+          <p class="footer-tt-note">A division of Think Transformation Inc</p>
+        </div>
+        <p>&copy; 2026 Experiencing Yah. All rights reserved.</p>
+      </div>
+    </footer>
+
+    <script src="../script.js"></script>
+  </body>
+</html>
