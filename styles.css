@@ -522,6 +522,29 @@ body {
   transform: translateY(-1px);
 }
 
+.book-3d--unreleased .book-3d__img {
+  background: linear-gradient(145deg, #d8dce6 0%, #a8b0c2 100%);
+}
+
+.book-3d--unreleased .book-3d__img:not(.book-3d__final)::after {
+  content: '?';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  font-size: clamp(2.75rem, 42%, 5rem);
+  font-weight: 700;
+  color: rgba(26, 26, 46, 0.38);
+  line-height: 1;
+  pointer-events: none;
+}
+
+.book-3d--unreleased .book-3d__final {
+  filter: brightness(0.92) saturate(0.85);
+}
+
 /* Buttons */
 .btn {
   display: inline-flex;
