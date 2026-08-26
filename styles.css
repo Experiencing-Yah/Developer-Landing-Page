@@ -273,25 +273,25 @@ body {
 }
 
 .app-item {
+  text-decoration: none;
+  color: inherit;
   text-align: center;
   padding: 1.5rem;
-  background: #f8f9fa;
-  border-radius: 8px;
-  transition: transform 0.2s ease;
+  background: linear-gradient(180deg, #ffffff 0%, #f7f8fb 100%);
+  border: 1px solid #e6e8ef;
+  border-radius: 12px;
+  box-shadow: var(--shadow-1);
+  transition: transform 180ms ease, box-shadow 180ms ease;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  cursor: pointer;
 }
 
 .app-item:hover {
-  transform: translateY(-2px);
-}
-
-.app-link {
-  text-decoration: none;
-  color: inherit;
-  display: block;
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-3);
 }
 
 .app-logo {
@@ -327,16 +327,31 @@ body {
 }
 
 /* Music Section */
+.music-videos {
+  margin-bottom: 0.5rem;
+}
+
 .music-embed {
   position: relative;
   width: 100%;
-  max-width: 720px;
-  margin: 0 auto 2rem;
   aspect-ratio: 16 / 9;
   border-radius: 12px;
   overflow: hidden;
   box-shadow: var(--shadow-2);
   border: 1px solid #e0e0e0;
+}
+
+.music-embed--featured {
+  max-width: 720px;
+  margin: 0 auto 1.25rem;
+}
+
+.music-videos__secondary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  max-width: 720px;
+  margin: 0 auto 2rem;
 }
 
 .music-embed iframe {
@@ -657,6 +672,10 @@ body {
     align-items: flex-start;
   }
 
+  .music-videos__secondary {
+    grid-template-columns: 1fr;
+  }
+
   .book-card {
     grid-template-columns: 1fr;
     justify-items: center;
@@ -670,6 +689,98 @@ body {
   .book-top__layout {
     grid-template-columns: 1fr;
   }
+}
+
+/* Beta reader signup (Books section) */
+.beta-reader {
+  margin-top: 2.5rem;
+  padding-top: 2rem;
+  border-top: 1px solid #e0e0e0;
+}
+
+.beta-reader__notice {
+  display: inline-block;
+  margin: 0 0 0.75rem;
+  color: #1a1a2e;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.beta-reader .btn {
+  margin-top: 0.5rem;
+}
+
+.beta-reader-form {
+  margin-top: 1.25rem;
+}
+
+/* Modal */
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+}
+
+.modal[hidden] {
+  display: none;
+}
+
+.modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(26, 26, 46, 0.55);
+}
+
+.modal__dialog {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 520px);
+  max-height: min(90vh, 720px);
+  overflow-y: auto;
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #e0e0e0;
+  box-shadow: var(--shadow-4);
+  padding: 1.75rem 1.5rem 1.5rem;
+}
+
+.modal__title {
+  margin: 0 2rem 0.75rem 0;
+  color: #1a1a2e;
+  font-size: 1.35rem;
+}
+
+.modal__close {
+  position: absolute;
+  top: 0.65rem;
+  right: 0.75rem;
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  background: transparent;
+  color: #1a1a2e;
+  font-size: 1.75rem;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+.modal__close:hover {
+  background: #f0f0f0;
+}
+
+.modal .contact-form {
+  margin-top: 1rem;
+}
+
+body.modal-open {
+  overflow: hidden;
 }
 
 /* Contact Form */

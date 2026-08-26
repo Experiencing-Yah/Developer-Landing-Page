@@ -84,48 +84,39 @@
             your faith.
           </p>
           <div class="apps-grid">
-            <div class="app-item">
-              <a href="bibliCal/index.html" class="app-link">
-                <img src="BibliCal.png" alt="BibliCal" class="app-logo" />
-                <h3 class="app-name">BibliCal</h3>
-                <p class="app-description">
-                  An app that lets you see the biblical calendar on your phone.
-                </p>
-              </a>
-            </div>
-            <div class="app-item">
-              <a href="passAges/index.html" class="app-link">
-                <img src="PassAges.png" alt="PassAges" class="app-logo" />
-                <h3 class="app-name">PassAges</h3>
-                <p class="app-description">
-                  Yearly Bible reading plan aligned with weekly Torah readings,
-                  prophets, and Gospel events.
-                </p>
-              </a>
-            </div>
-            <div class="app-item">
-              <a
-                href="https://ihbmr.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="app-link"
-              >
-                <img src="IHBMR.png" alt="IHBMR" class="app-logo ihbmr-logo" />
-                <h3 class="app-name">IHBMR</h3>
-                <p class="app-description">
-                  A non-profit that gives the world access to Hebrew
-                  manuscripts.
-                </p>
-              </a>
-            </div>
-            <div class="app-item">
-              <a href="#contact" class="app-link">
-                <h3 class="app-name">Have a suggestion? Let me know!</h3>
-                <p class="app-description">
-                  Share your ideas and feedback with us.
-                </p>
-              </a>
-            </div>
+            <a href="bibliCal/index.html" class="app-item">
+              <img src="BibliCal.png" alt="BibliCal" class="app-logo" />
+              <h3 class="app-name">BibliCal</h3>
+              <p class="app-description">
+                An app that lets you see the biblical calendar on your phone.
+              </p>
+            </a>
+            <a href="passAges/index.html" class="app-item">
+              <img src="PassAges.png" alt="PassAges" class="app-logo" />
+              <h3 class="app-name">PassAges</h3>
+              <p class="app-description">
+                Yearly Bible reading plan aligned with weekly Torah readings,
+                prophets, and Gospel events.
+              </p>
+            </a>
+            <a
+              href="https://ihbmr.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="app-item"
+            >
+              <img src="IHBMR.png" alt="IHBMR" class="app-logo ihbmr-logo" />
+              <h3 class="app-name">IHBMR</h3>
+              <p class="app-description">
+                A non-profit that gives the world access to Hebrew manuscripts.
+              </p>
+            </a>
+            <a href="#contact" class="app-item">
+              <h3 class="app-name">Have a suggestion? Let me know!</h3>
+              <p class="app-description">
+                Share your ideas and feedback with us.
+              </p>
+            </a>
           </div>
         </div>
       </div>
@@ -184,9 +175,105 @@
               </div>
             </a>
           </div>
+          <div class="beta-reader">
+            <p class="beta-reader__notice">Now accepting beta readers</p>
+            <p class="section-text">
+              Interested in reading early drafts and sharing feedback before
+              publication? Leave your contact info and we'll reach out when a
+              spot opens.
+            </p>
+            <button
+              type="button"
+              class="btn btn-primary"
+              id="beta-reader-open"
+            >
+              Become a beta reader
+            </button>
+          </div>
         </div>
       </div>
     </section>
+
+    <div
+      class="modal"
+      id="beta-reader-modal"
+      hidden
+      aria-hidden="true"
+    >
+      <div class="modal__backdrop" data-modal-close></div>
+      <div
+        class="modal__dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="beta-reader-modal-title"
+      >
+        <button
+          type="button"
+          class="modal__close"
+          data-modal-close
+          aria-label="Close"
+        >
+          &times;
+        </button>
+        <h3 class="modal__title" id="beta-reader-modal-title">
+          Become a beta reader
+        </h3>
+        <p class="section-text">
+          Share your contact info and any topics you'd love to read about.
+          We'll follow up when a spot opens.
+        </p>
+        <form
+          class="contact-form beta-reader-form"
+          id="beta-reader-form"
+          action="https://formspree.io/f/mqpzrrvg"
+          method="POST"
+        >
+          <div
+            class="form-group honeypot"
+            style="position: absolute; left: -9999px; opacity: 0"
+          >
+            <label for="beta-website">Website</label>
+            <input
+              type="text"
+              id="beta-website"
+              name="website"
+              tabindex="-1"
+              autocomplete="off"
+            />
+          </div>
+          <div class="form-group">
+            <label for="beta-name">Name</label>
+            <input type="text" id="beta-name" name="name" required />
+          </div>
+          <div class="form-group">
+            <label for="beta-email">Email</label>
+            <input type="email" id="beta-email" name="email" required />
+          </div>
+          <div class="form-group">
+            <label for="beta-message"
+              >Are there specific topics you're interested in reading about?
+              (optional)</label
+            >
+            <textarea
+              id="beta-message"
+              name="message"
+              rows="3"
+              placeholder="e.g. biblical studies, life application, etc"
+            ></textarea>
+          </div>
+          <button
+            type="button"
+            class="submit-btn g-recaptcha"
+            data-sitekey="6LdFP4UsAAAAABXbpxRwm4AwPR3BA6vIPWKt4wnu"
+            data-callback="onBetaRecaptchaSuccess"
+            data-action="submit"
+          >
+            Sign up as a beta reader
+          </button>
+          <div class="form-message" id="beta-reader-form-message"></div>
+        </form>
+      </div>
+    </div>
 
     <!-- Music Section -->
     <section id="music" class="section music">
@@ -198,14 +285,36 @@
             Our published songs are available to listen, stream, and share on
             our YouTube channel.
           </p>
-          <div class="music-embed">
-            <iframe
-              src="https://www.youtube.com/embed/c3HYPRVFwSs"
-              title="Experiencing Yah music"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              referrerpolicy="strict-origin-when-cross-origin"
-              allowfullscreen
-            ></iframe>
+          <div class="music-videos">
+            <div class="music-embed music-embed--featured">
+              <iframe
+                src="https://www.youtube.com/embed/r90aqPSLeu8"
+                title="Words Of Life - Music Video"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerpolicy="strict-origin-when-cross-origin"
+                allowfullscreen
+              ></iframe>
+            </div>
+            <div class="music-videos__secondary">
+              <div class="music-embed">
+                <iframe
+                  src="https://www.youtube.com/embed/A2fEHChWBKU"
+                  title="I'm Content (Lyric Video)"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  referrerpolicy="strict-origin-when-cross-origin"
+                  allowfullscreen
+                ></iframe>
+              </div>
+              <div class="music-embed">
+                <iframe
+                  src="https://www.youtube.com/embed/c3HYPRVFwSs"
+                  title="Yehovah Reigns - Lyric Video"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  referrerpolicy="strict-origin-when-cross-origin"
+                  allowfullscreen
+                ></iframe>
+              </div>
+            </div>
           </div>
           <div class="music-header-row">
             <p class="section-text" style="margin-bottom: 0">

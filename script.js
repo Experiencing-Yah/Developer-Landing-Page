@@ -84,6 +84,8 @@ if (sections?.length && navLinksArray?.length) {
 // Forms
 const contactForm = document.getElementById('contact-form');
 const formMessage = document.getElementById('form-message');
+const betaReaderForm = document.getElementById('beta-reader-form');
+const betaReaderFormMessage = document.getElementById('beta-reader-form-message');
 
 function setFormMessage(target, type, text) {
     if (!target) return;
@@ -93,55 +95,63 @@ function setFormMessage(target, type, text) {
     target.style.display = 'block';
 }
 
-// Contact Form (Formspree + reCAPTCHA v3)
-function submitContactFormWithToken(token) {
-    if (!contactForm) return;
+const RECAPTCHA_SITE_KEY = '6LdFP4UsAAAAABXbpxRwm4AwPR3BA6vIPWKt4wnu';
 
-    const honeypot = contactForm.querySelector('#website');
+function submitFormspreeFormWithToken({
+    form,
+    messageEl,
+    honeypotSelector,
+    successText,
+    defaultBtnText,
+    token
+}) {
+    if (!form) return;
+
+    const honeypot = form.querySelector(honeypotSelector);
     if (honeypot && honeypot.value) return;
 
-    const submitBtn = contactForm.querySelector('.submit-btn');
-    const originalBtnText = submitBtn?.textContent || 'Send Message';
+    const submitBtn = form.querySelector('.submit-btn');
+    const originalBtnText = submitBtn?.textContent || defaultBtnText;
     if (submitBtn) {
         submitBtn.disabled = true;
         submitBtn.textContent = 'Sending...';
     }
-    if (formMessage) {
-        formMessage.style.display = 'none';
-        formMessage.classList.remove('success', 'error');
+    if (messageEl) {
+        messageEl.style.display = 'none';
+        messageEl.classList.remove('success', 'error');
     }
 
-    const formData = new FormData(contactForm);
+    const formData = new FormData(form);
     formData.delete('website');
     formData.set('g-recaptcha-response', token);
 
-    fetch(contactForm.action, {
+    fetch(form.action, {
         method: 'POST',
         body: formData,
         headers: { 'Accept': 'application/json' }
     })
         .then(async (response) => {
             if (response.ok) {
-                setFormMessage(
-                    formMessage,
-                    'success',
-                    'Thank you! Your message has been sent successfully. We\'ll get back to you soon.'
-                );
-                contactForm.reset();
-                formMessage?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                setFormMessage(messageEl, 'success', successText);
+                form.reset();
+                messageEl?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             } else {
-                let message = 'There was an error sending your message. Please try again.';
+                let message = 'There was an error submitting the form. Please try again.';
                 try {
                     const data = await response.json();
                     if (data?.message) message = data.message;
                 } catch (_) {
                     // ignore
                 }
-                setFormMessage(formMessage, 'error', message);
+                setFormMessage(messageEl, 'error', message);
             }
         })
         .catch(() => {
-            setFormMessage(formMessage, 'error', 'There was an error sending your message. Please check your connection and try again.');
+            setFormMessage(
+                messageEl,
+                'error',
+                'There was an error submitting the form. Please check your connection and try again.'
+            );
         })
         .finally(() => {
             if (submitBtn) {
@@ -151,43 +161,125 @@ function submitContactFormWithToken(token) {
         });
 }
 
-window.onRecaptchaSuccess = submitContactFormWithToken;
+function executeRecaptchaThen(onToken, messageEl) {
+    if (typeof grecaptcha === 'undefined' || !grecaptcha.ready) {
+        setFormMessage(
+            messageEl,
+            'error',
+            'Security check is loading. Please wait a moment and try again.'
+        );
+        return;
+    }
+    grecaptcha.ready(function () {
+        grecaptcha.execute(RECAPTCHA_SITE_KEY, { action: 'submit' })
+            .then(onToken)
+            .catch(function () {
+                setFormMessage(messageEl, 'error', 'Security check failed. Please refresh and try again.');
+            });
+    });
+}
 
-const RECAPTCHA_SITE_KEY = '6LdFP4UsAAAAABXbpxRwm4AwPR3BA6vIPWKt4wnu';
+function wireFormspreeRecaptchaForm({
+    form,
+    messageEl,
+    honeypotSelector,
+    successText,
+    defaultBtnText,
+    callbackName
+}) {
+    if (!form) return;
 
-if (contactForm) {
-    const submitBtn = contactForm.querySelector('.submit-btn');
+    const submitWithToken = (token) =>
+        submitFormspreeFormWithToken({
+            form,
+            messageEl,
+            honeypotSelector,
+            successText,
+            defaultBtnText,
+            token
+        });
+
+    window[callbackName] = submitWithToken;
+
+    const submitBtn = form.querySelector('.submit-btn');
     if (submitBtn) {
         submitBtn.addEventListener('click', function () {
             if (typeof grecaptcha === 'undefined' || !grecaptcha.ready) return;
-            grecaptcha.ready(function () {
-                grecaptcha.execute(RECAPTCHA_SITE_KEY, { action: 'submit' })
-                    .then(submitContactFormWithToken)
-                    .catch(function () {
-                        setFormMessage(formMessage, 'error', 'Security check failed. Please refresh and try again.');
-                    });
-            });
+            executeRecaptchaThen(submitWithToken, messageEl);
         });
     }
 
-    contactForm.addEventListener('submit', function (e) {
+    form.addEventListener('submit', function (e) {
         e.preventDefault();
-        const honeypot = contactForm.querySelector('#website');
+        const honeypot = form.querySelector(honeypotSelector);
         if (honeypot && honeypot.value) return;
-
-        if (typeof grecaptcha === 'undefined' || !grecaptcha.ready) {
-            setFormMessage(formMessage, 'error', 'Security check is loading. Please wait a moment and try again.');
-            return;
-        }
-        grecaptcha.ready(function () {
-            grecaptcha.execute(RECAPTCHA_SITE_KEY, { action: 'submit' })
-                .then(submitContactFormWithToken)
-                .catch(function () {
-                    setFormMessage(formMessage, 'error', 'Security check failed. Please refresh and try again.');
-                });
-        });
+        executeRecaptchaThen(submitWithToken, messageEl);
     });
 }
+
+// Contact Form (Formspree + reCAPTCHA v3)
+wireFormspreeRecaptchaForm({
+    form: contactForm,
+    messageEl: formMessage,
+    honeypotSelector: '#website',
+    successText: 'Thank you! Your message has been sent successfully. We\'ll get back to you soon.',
+    defaultBtnText: 'Send Message',
+    callbackName: 'onRecaptchaSuccess'
+});
+
+// Beta Reader Form (Formspree + reCAPTCHA v3)
+wireFormspreeRecaptchaForm({
+    form: betaReaderForm,
+    messageEl: betaReaderFormMessage,
+    honeypotSelector: '#beta-website',
+    successText: 'Thanks! We\'ve received your interest and will be in touch.',
+    defaultBtnText: 'Sign up as a beta reader',
+    callbackName: 'onBetaRecaptchaSuccess'
+});
+
+// Beta Reader Modal
+const betaReaderModal = document.getElementById('beta-reader-modal');
+const betaReaderOpenBtn = document.getElementById('beta-reader-open');
+let betaReaderLastFocus = null;
+
+function openBetaReaderModal() {
+    if (!betaReaderModal) return;
+    betaReaderLastFocus = document.activeElement;
+    betaReaderModal.hidden = false;
+    betaReaderModal.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('modal-open');
+    const closeBtn = betaReaderModal.querySelector('.modal__close');
+    (closeBtn || betaReaderModal.querySelector('input'))?.focus();
+}
+
+function closeBetaReaderModal() {
+    if (!betaReaderModal || betaReaderModal.hidden) return;
+    betaReaderModal.hidden = true;
+    betaReaderModal.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('modal-open');
+    if (betaReaderFormMessage) {
+        betaReaderFormMessage.style.display = 'none';
+        betaReaderFormMessage.classList.remove('success', 'error');
+        betaReaderFormMessage.textContent = '';
+    }
+    betaReaderLastFocus?.focus?.();
+}
+
+if (betaReaderOpenBtn) {
+    betaReaderOpenBtn.addEventListener('click', openBetaReaderModal);
+}
+
+if (betaReaderModal) {
+    betaReaderModal.querySelectorAll('[data-modal-close]').forEach((el) => {
+        el.addEventListener('click', closeBetaReaderModal);
+    });
+}
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && betaReaderModal && !betaReaderModal.hidden) {
+        closeBetaReaderModal();
+    }
+});
 
 // Ebook Signup (ConvertKit)
 const ebookForm = document.getElementById('ebook-form');
