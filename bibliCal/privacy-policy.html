@@ -131,7 +131,7 @@
         <div class="content-card">
           <div class="privacy-content">
             <div class="last-updated">
-              <strong>Last Updated:</strong> January 2026 (10th month 6025)
+              <strong>Last Updated:</strong> September 2026
             </div>
 
             <div class="privacy-section">
@@ -156,15 +156,16 @@
               <div class="highlight-box">
                 <p>
                   <strong
-                    >Location data is collected ONLY for calculating local
-                    sunset times.</strong
+                    >Location is user-chosen (GPS or a city) and is stored only
+                    on your device.</strong
                   >
                 </p>
               </div>
               <ul>
                 <li>
-                  The app requests location permissions (ACCESS_FINE_LOCATION
-                  and ACCESS_COARSE_LOCATION)
+                  You choose how location is set: GPS, which requests location
+                  permissions (ACCESS_FINE_LOCATION and ACCESS_COARSE_LOCATION),
+                  or a city you select
                 </li>
                 <li>
                   Location data is used <strong>exclusively</strong> to
@@ -172,12 +173,12 @@
                   days begin (Biblical days start at sunset)
                 </li>
                 <li>
-                  Location data is stored locally on your device using Android
-                  DataStore
+                  The location you choose is stored locally on your device using
+                  Android DataStore
                 </li>
                 <li>
-                  Location data is cached for up to 24 hours to improve widget
-                  performance
+                  If GPS is used, location data may be cached for up to 24 hours
+                  to improve widget performance
                 </li>
                 <li>
                   <strong
@@ -189,10 +190,6 @@
                     >Location data is NEVER shared with third parties</strong
                   >
                 </li>
-                <li>
-                  If you deny location permissions, the app will use default
-                  coordinates (latitude 40.0, longitude -74.0) as a fallback
-                </li>
               </ul>
 
               <h4>2. Calendar Data (Optional)</h4>
@@ -200,15 +197,16 @@
                 <li>
                   The app requests calendar permissions (READ_CALENDAR and
                   WRITE_CALENDAR) <strong>ONLY</strong> if you explicitly enable
-                  the calendar export feature in Settings
+                  calendar features in Settings
                 </li>
                 <li>
-                  If enabled, the app writes Biblical month starts and feast
-                  days to a calendar you select on your device
+                  Optional calendar read: if you enable the calendar overlay,
+                  the app may read existing events on your device so they can be
+                  shown on the Biblical calendar
                 </li>
                 <li>
-                  The app does <strong>NOT</strong> read existing calendar
-                  events
+                  If calendar export is enabled, the app writes Biblical month
+                  starts and feast days to a calendar you select on your device
                 </li>
                 <li>
                   Calendar data remains on your device and is
@@ -228,7 +226,10 @@
                   User preferences and settings (notification preferences, month
                   naming mode, etc., stored using Android DataStore)
                 </li>
-                <li>Cached location coordinates (as described above)</li>
+                <li>
+                  Your chosen location (GPS coordinates or city), as described
+                  above
+                </li>
               </ul>
               <ul>
                 <li>
@@ -285,11 +286,12 @@
                 </li>
                 <li>
                   <strong>Location permissions:</strong> As described above (for
-                  sunset calculations)
+                  sunset calculations when you choose GPS; not required if you
+                  choose a city)
                 </li>
                 <li>
                   <strong>Calendar permissions:</strong> As described above
-                  (optional, only if calendar export is enabled)
+                  (optional, only if calendar overlay or export is enabled)
                 </li>
               </ul>
             </div>
