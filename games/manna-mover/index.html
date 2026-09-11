@@ -1,0 +1,1721 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Manna Mover — gather each day's manna and bring it home. A Scripture-inspired browser game from Experiencing Yah."
+    />
+    <title>Manna Mover | Experiencing Yah</title>
+    <link rel="icon" type="image/svg+xml" href="../../FlameMaterial.svg" />
+    <link rel="alternate icon" href="../../FlameMaterial.svg" />
+    <link rel="stylesheet" href="../../styles.css" />
+    <style>
+      :root {
+        --sand: #d4a96a;
+        --gold: #f0d878;
+        --parchment: #f5e6c8;
+        --night: #1a1525;
+      }
+      #game-container {
+        position: relative;
+        width: 660px;
+        max-width: 100%;
+        font-family: Georgia, 'Palatino Linotype', serif;
+        color: var(--parchment);
+      }
+      #hud {
+        background: linear-gradient(180deg, #2d2640, #221d33);
+        border: 2px solid var(--gold);
+        border-bottom: none;
+        border-radius: 10px 10px 0 0;
+        padding: 10px 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        font-size: 14px;
+      }
+      .hud-section {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
+      }
+      .hud-label {
+        color: var(--gold);
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+      .hud-value {
+        font-size: 18px;
+        font-weight: bold;
+        color: var(--parchment);
+      }
+      #day-display {
+        font-size: 17px;
+        color: var(--gold);
+        font-weight: bold;
+        white-space: nowrap;
+      }
+      #timer-bar {
+        width: 100%;
+        height: 5px;
+        background: rgba(0, 0, 0, 0.3);
+        border-left: 2px solid var(--gold);
+        border-right: 2px solid var(--gold);
+      }
+      #timer-fill {
+        height: 100%;
+        background: var(--gold);
+        transition:
+          width 0.1s linear,
+          background 0.3s;
+      }
+      .x2-badge {
+        background: #e74c3c;
+        color: #fff;
+        padding: 3px 10px;
+        border-radius: 4px;
+        font-weight: bold;
+        font-size: 12px;
+        animation: pulse 1s infinite;
+      }
+      @keyframes pulse {
+        0%,
+        100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.15);
+        }
+      }
+      #canvas-wrap {
+        position: relative;
+        border: 2px solid var(--gold);
+        border-top: none;
+        border-radius: 0 0 10px 10px;
+        overflow: hidden;
+      }
+      canvas {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+      #overlay {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        background: rgba(20, 15, 30, 0.94);
+        padding: 30px;
+        z-index: 10;
+      }
+      #overlay.hidden {
+        display: none;
+      }
+      .overlay-title {
+        font-size: 30px;
+        color: var(--gold);
+        margin-bottom: 14px;
+        text-shadow: 0 0 20px rgba(240, 216, 120, 0.3);
+      }
+      .overlay-sub {
+        font-size: 14px;
+        color: #aaa;
+        margin-top: 4px;
+        margin-bottom: 10px;
+        max-width: 480px;
+        line-height: 1.4;
+      }
+      .overlay-message {
+        font-size: 19px;
+        color: var(--parchment);
+        margin-bottom: 14px;
+        max-width: 500px;
+        line-height: 1.5;
+      }
+      .overlay-message.bad {
+        color: #e74c3c;
+      }
+      .overlay-stat {
+        font-size: 15px;
+        color: var(--gold);
+        margin-bottom: 18px;
+      }
+      .btn-prompt {
+        font-size: 15px;
+        color: var(--parchment);
+        border: 2px solid var(--gold);
+        padding: 8px 22px;
+        border-radius: 6px;
+        animation: blink 1.5s infinite;
+        cursor: pointer;
+        user-select: none;
+      }
+      @keyframes blink {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.4;
+        }
+      }
+    </style>
+  </head>
+  <body class="game-page">
+    <nav class="navbar navbar--compact" id="navbar">
+      <div class="nav-container">
+        <div class="nav-logo">
+          <a href="../../index.html" aria-label="Experiencing Yah home">
+            <img src="../../Logo.png" alt="Experiencing Yah" />
+          </a>
+        </div>
+        <a class="btn btn-secondary" href="/games/">All Games</a>
+      </div>
+    </nav>
+    <main class="game-main">
+      <div id="game-container">
+        <div id="hud">
+          <div class="hud-section">
+            <div class="hud-label">Progress</div>
+            <div id="day-display">Week 1 · Day 1</div>
+          </div>
+          <div class="hud-section" id="multiplier-section" style="display: none">
+            <span class="x2-badge">×2 BOUNTY</span>
+          </div>
+          <div class="hud-section">
+            <div class="hud-label">Carrying</div>
+            <div class="hud-value" id="carrying-display">0</div>
+          </div>
+          <div class="hud-section">
+            <div class="hud-label">Gathered</div>
+            <div class="hud-value" id="delivered-display">0</div>
+          </div>
+          <div class="hud-section">
+            <div class="hud-label">Total</div>
+            <div class="hud-value" id="total-display">0</div>
+          </div>
+          <div class="hud-section">
+            <div class="hud-label">Time</div>
+            <div class="hud-value" id="timer-display">15</div>
+          </div>
+        </div>
+        <div id="timer-bar"><div id="timer-fill" style="width: 100%"></div></div>
+        <div id="canvas-wrap">
+          <canvas id="game" width="640" height="640"></canvas>
+          <div id="overlay" class="hidden">
+            <div class="overlay-title" id="overlay-title"></div>
+            <div class="overlay-sub" id="overlay-sub"></div>
+            <div class="overlay-message" id="overlay-message"></div>
+            <div class="overlay-stat" id="overlay-stat"></div>
+            <div class="btn-prompt" id="btn-prompt">Press SPACE to continue</div>
+          </div>
+        </div>
+        <div class="touch-controls" aria-label="Touch controls">
+          <div class="touch-dpad">
+            <button
+              type="button"
+              class="touch-btn"
+              data-key="arrowup"
+              aria-label="Up"
+            >
+              ▲
+            </button>
+            <button
+              type="button"
+              class="touch-btn"
+              data-key="arrowleft"
+              aria-label="Left"
+            >
+              ◀
+            </button>
+            <button
+              type="button"
+              class="touch-btn"
+              data-key="arrowdown"
+              aria-label="Down"
+            >
+              ▼
+            </button>
+            <button
+              type="button"
+              class="touch-btn"
+              data-key="arrowright"
+              aria-label="Right"
+            >
+              ▶
+            </button>
+          </div>
+          <button
+            type="button"
+            class="touch-btn touch-btn--action"
+            id="touch-action"
+            aria-label="Action"
+          >
+            Go
+          </button>
+        </div>
+      </div>
+    </main>
+    <footer class="footer">
+      <div class="footer-tt">
+        <a
+          href="https://thinktransformationinc.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="footer-tt-link"
+          aria-label="Think Transformation Inc"
+        >
+          <img
+            src="../../TT-Logo.svg"
+            alt="Think Transformation Inc"
+            class="footer-tt-logo"
+          />
+        </a>
+        <p class="footer-tt-note">A division of Think Transformation Inc</p>
+      </div>
+      <p>&copy; 2026 Experiencing Yah. All rights reserved.</p>
+    </footer>
+    <script>
+      var canvas = document.getElementById('game');
+      var ctx = canvas.getContext('2d');
+      var W = canvas.width,
+        H = canvas.height;
+      function el(id) {
+        return document.getElementById(id);
+      }
+      var overlay = el('overlay'),
+        overlayTitle = el('overlay-title'),
+        overlayMessage = el('overlay-message'),
+        overlaySub = el('overlay-sub'),
+        overlayStat = el('overlay-stat'),
+        btnPrompt = el('btn-prompt'),
+        dayDisplay = el('day-display'),
+        carryingDisplay = el('carrying-display'),
+        deliveredDisplay = el('delivered-display'),
+        totalDisplay = el('total-display'),
+        timerDisplay = el('timer-display'),
+        timerFill = el('timer-fill'),
+        multiplierSection = el('multiplier-section');
+
+      var state = 'menu',
+        week = 1,
+        day = 1,
+        dayTimer = 0,
+        dayDuration = 0,
+        gridSize = 12,
+        cellSize = W / gridSize;
+      var player = { x: 0, y: 0, r: 12, carried: 0, facing: 1, walkAnim: 0 };
+      var manna = [],
+        house = { x: 0, y: 0, w: 0, h: 0, cx: 0, cy: 0, col: 0, row: 0 },
+        decorations = [];
+      var deposited = 0,
+        dayScore = 0,
+        totalScore = 0,
+        particles = [],
+        lastTime = 0,
+        animTime = 0,
+        spacePressed = false;
+      var menuStars = [],
+        menuSand = [],
+        menuManna = [];
+      var transData = {
+        prevTitle: '',
+        prevMessage: '',
+        prevSub: '',
+        prevStat: '',
+        nextTitle: '',
+        nextInstructions: '',
+      };
+      var gameOverData = {
+        title: '',
+        sub: '',
+        message: '',
+        stat: '',
+        type: 'rotten',
+      };
+
+      var keys = {};
+      window.addEventListener('keydown', function (e) {
+        var k = e.key.toLowerCase();
+        keys[k] = true;
+        if (
+          ['arrowup', 'arrowdown', 'arrowleft', 'arrowright', ' '].indexOf(k) >=
+          0
+        )
+          e.preventDefault();
+        if (k === ' ' && !spacePressed) {
+          spacePressed = true;
+          handleSpace();
+        }
+      });
+      window.addEventListener('keyup', function (e) {
+        keys[e.key.toLowerCase()] = false;
+        if (e.key.toLowerCase() === ' ') spacePressed = false;
+      });
+      btnPrompt.addEventListener('click', function () {
+        if (!spacePressed) {
+          spacePressed = true;
+          handleSpace();
+          setTimeout(function () {
+            spacePressed = false;
+          }, 250);
+        }
+      });
+      canvas.addEventListener('click', function () {
+        if (
+          !spacePressed &&
+          (state === 'menu' ||
+            state === 'dayIntro' ||
+            state === 'dayTransition' ||
+            state === 'weekTransition' ||
+            state === 'gameOver')
+        ) {
+          spacePressed = true;
+          handleSpace();
+          setTimeout(function () {
+            spacePressed = false;
+          }, 250);
+        }
+      });
+
+      (function setupTouchControls() {
+        var root = document.querySelector('.touch-controls');
+        if (!root) return;
+        function bindHold(btn, keyName) {
+          function down(e) {
+            e.preventDefault();
+            keys[keyName] = true;
+            btn.classList.add('is-active');
+          }
+          function up(e) {
+            e.preventDefault();
+            keys[keyName] = false;
+            btn.classList.remove('is-active');
+          }
+          btn.addEventListener('touchstart', down, { passive: false });
+          btn.addEventListener('touchend', up);
+          btn.addEventListener('touchcancel', up);
+          btn.addEventListener('mousedown', down);
+          btn.addEventListener('mouseup', up);
+          btn.addEventListener('mouseleave', up);
+        }
+        root.querySelectorAll('.touch-btn[data-key]').forEach(function (btn) {
+          bindHold(btn, btn.getAttribute('data-key'));
+        });
+        var actionBtn = document.getElementById('touch-action');
+        if (actionBtn) {
+          actionBtn.addEventListener(
+            'touchstart',
+            function (e) {
+              e.preventDefault();
+              if (!spacePressed) {
+                spacePressed = true;
+                handleSpace();
+                setTimeout(function () {
+                  spacePressed = false;
+                }, 250);
+              }
+            },
+            { passive: false },
+          );
+          actionBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            if (!spacePressed) {
+              spacePressed = true;
+              handleSpace();
+              setTimeout(function () {
+                spacePressed = false;
+              }, 250);
+            }
+          });
+        }
+      })();
+
+      function handleSpace() {
+        if (state === 'menu') startGame();
+        else if (state === 'dayIntro') state = 'playing';
+        else if (state === 'dayTransition') {
+          nextDay();
+          state = 'playing';
+        } else if (state === 'weekTransition') {
+          nextWeek();
+          state = 'playing';
+        } else if (state === 'gameOver') startGame();
+      }
+
+      function initMenuScene() {
+        menuStars = [];
+        for (var i = 0; i < 40; i++)
+          menuStars.push({
+            x: Math.random() * W,
+            y: Math.random() * H * 0.45,
+            tw: Math.random() * Math.PI * 2,
+            sz: 0.5 + Math.random() * 1.5,
+          });
+        menuSand = [];
+        for (var i = 0; i < 30; i++)
+          menuSand.push({
+            x: Math.random() * W,
+            y: Math.random() * H,
+            vx: 15 + Math.random() * 35,
+            vy: -5 + Math.random() * 10,
+            sz: 1 + Math.random() * 2,
+            op: 0.1 + Math.random() * 0.2,
+          });
+        menuManna = [];
+        for (var i = 0; i < 6; i++)
+          menuManna.push({
+            x: 60 + Math.random() * (W - 120),
+            y: 60 + Math.random() * (H - 120),
+            bob: Math.random() * Math.PI * 2,
+            vy: 20 + Math.random() * 15,
+          });
+      }
+
+      function getGridSize(w) {
+        return Math.min(12 + (w - 1) * 2, 28);
+      }
+      function getDayTime(w) {
+        return 15;
+      }
+      function getMannaCount(w) {
+        return 5 + Math.min(w, 6);
+      }
+      function getShabbatManna(w) {
+        return 4 + Math.min(w, 6);
+      }
+      function getDayName(d) {
+        return d === 7 ? 'Shabbat' : 'Day ' + d;
+      }
+      function getDayInstructions(d) {
+        if (d === 7)
+          return 'Today is the Sabbath. Do NOT collect any manna — you may walk freely, but touching any manna will end the game. Wait for the day to end.';
+        if (d === 6)
+          return 'Double bounty! Each manna you gather is worth ×2. Walk over manna to pick it up, then return to your tent to deliver it. Gather at least 1 piece before the day ends.';
+        return 'Walk over manna to pick it up, then return to your tent to deliver it. Gather at least 1 piece before the day ends.';
+      }
+
+      function startGame() {
+        week = 1;
+        day = 1;
+        totalScore = 0;
+        startDay();
+        hideOverlay();
+        state = 'dayIntro';
+        transData = {
+          prevTitle: '',
+          prevMessage: '',
+          prevSub: '',
+          prevStat: '',
+          nextTitle: 'Week 1 — Day 1',
+          nextInstructions: getDayInstructions(1),
+        };
+      }
+
+      function startDay() {
+        gridSize = getGridSize(week);
+        cellSize = W / gridSize;
+        dayDuration = getDayTime(week);
+        dayTimer = dayDuration;
+        deposited = 0;
+        dayScore = 0;
+        player.carried = 0;
+        particles = [];
+        var hc = Math.floor(gridSize / 2) - 1,
+          hr = Math.floor(gridSize / 2) - 1;
+        house.col = hc;
+        house.row = hr;
+        house.x = hc * cellSize;
+        house.y = hr * cellSize;
+        house.w = 2 * cellSize;
+        house.h = 2 * cellSize;
+        house.cx = house.x + house.w / 2;
+        house.cy = house.y + house.h / 2;
+        player.x = house.cx;
+        player.y = house.cy + cellSize;
+        player.r = cellSize * 0.28;
+        player.carried = 0;
+        player.walkAnim = 0;
+        manna = [];
+        var count = day === 7 ? getShabbatManna(week) : getMannaCount(week);
+        var attempts = 0;
+        while (manna.length < count && attempts < 800) {
+          attempts++;
+          var c = Math.floor(Math.random() * gridSize),
+            r = Math.floor(Math.random() * gridSize);
+          var mx = c * cellSize + cellSize / 2,
+            my = r * cellSize + cellSize / 2;
+          if (
+            mx >= house.x &&
+            mx <= house.x + house.w &&
+            my >= house.y &&
+            my <= house.y + house.h
+          )
+            continue;
+          var tooClose = false;
+          for (var i = 0; i < manna.length; i++) {
+            if (
+              Math.abs(manna[i].x - mx) < cellSize * 0.5 &&
+              Math.abs(manna[i].y - my) < cellSize * 0.5
+            ) {
+              tooClose = true;
+              break;
+            }
+          }
+          if (tooClose) continue;
+          if (Math.hypot(mx - player.x, my - player.y) < cellSize * 1.5)
+            continue;
+          manna.push({
+            x: mx,
+            y: my,
+            collected: false,
+            bob: Math.random() * Math.PI * 2,
+          });
+        }
+        decorations = [];
+        var dcount = Math.floor(gridSize / 2);
+        for (var d = 0; d < dcount; d++) {
+          var dc = Math.floor(Math.random() * gridSize),
+            dr = Math.floor(Math.random() * gridSize);
+          var dxx = dc * cellSize + cellSize / 2,
+            dyy = dr * cellSize + cellSize / 2;
+          if (
+            dxx >= house.x &&
+            dxx <= house.x + house.w &&
+            dyy >= house.y &&
+            dyy <= house.y + house.h
+          )
+            continue;
+          decorations.push({
+            x: dxx,
+            y: dyy,
+            type: Math.random() < 0.5 ? 'rock' : 'dune',
+            size: cellSize * (0.12 + Math.random() * 0.15),
+          });
+        }
+        updateHUD();
+      }
+
+      function nextDay() {
+        day++;
+        if (day > 7) {
+          day = 1;
+          week++;
+        }
+        startDay();
+      }
+      function nextWeek() {
+        week++;
+        day = 1;
+        startDay();
+      }
+
+      function endDay() {
+        if (day === 7) {
+          state = 'weekTransition';
+          transData = {
+            prevTitle: 'Shabbat Rested',
+            prevMessage: 'You kept the Sabbath holy. Your family is blessed.',
+            prevSub:
+              'Week ' + week + ' complete - the desert will grow larger.',
+            prevStat: 'Total Manna Gathered: ' + totalScore,
+            nextTitle: 'Week ' + (week + 1) + ' — Day 1',
+            nextInstructions: getDayInstructions(1),
+          };
+          updateHUD();
+        } else {
+          totalScore += dayScore;
+          dayScore = 0;
+          updateHUD();
+          if (deposited >= 1) {
+            state = 'dayTransition';
+            var nd = day + 1,
+              multTxt = day === 6 ? ' (×2 bounty!)' : '';
+            transData = {
+              prevTitle: 'Day ' + day + ' Complete',
+              prevMessage:
+                'Your family has exactly what they needed for today.',
+              prevSub: 'Gathered ' + deposited + ' manna' + multTxt,
+              prevStat: 'Total: ' + totalScore + ' manna',
+              nextTitle: getDayName(nd),
+              nextInstructions: getDayInstructions(nd),
+            };
+          } else {
+            state = 'gameOver';
+            hideOverlay();
+            gameOverData = {
+              title: 'Game Over',
+              sub: 'You gathered no manna on Day ' + day + '.',
+              message:
+                "You lazy wicked servant, yesterday's leftovers have spoiled and your family has died in the wilderness.",
+              stat: 'You reached Week ' + week + '. Total: ' + totalScore,
+              type: 'rotten',
+            };
+          }
+        }
+      }
+
+      function shabbatBroken() {
+        state = 'gameOver';
+        dayScore = 0;
+        updateHUD();
+        hideOverlay();
+        gameOverData = {
+          title: 'Game Over',
+          sub: 'You collected manna on the day of rest - this was forbidden.',
+          message:
+            'You broke the Sabbath and your family has died in the wilderness.',
+          stat: 'You reached Week ' + week + '. Total: ' + totalScore,
+          type: 'broken',
+        };
+      }
+
+      function showOverlay(title, msg, sub, stat, prompt, bad) {
+        overlay.classList.remove('hidden');
+        overlayTitle.textContent = title;
+        overlaySub.textContent = sub || '';
+        overlayMessage.textContent = msg;
+        overlayMessage.className = 'overlay-message' + (bad ? ' bad' : '');
+        overlayStat.textContent = stat || '';
+        btnPrompt.textContent = prompt || 'Press SPACE to continue';
+      }
+      function hideOverlay() {
+        overlay.classList.add('hidden');
+      }
+
+      function updateHUD() {
+        dayDisplay.textContent =
+          day === 7
+            ? 'Week ' + week + ' - Shabbat'
+            : 'Week ' + week + ' - Day ' + day;
+        carryingDisplay.textContent = player.carried;
+        deliveredDisplay.textContent = deposited;
+        totalDisplay.textContent = totalScore + dayScore;
+        timerDisplay.textContent = Math.ceil(dayTimer);
+        var ratio = dayTimer / dayDuration;
+        timerFill.style.width = ratio * 100 + '%';
+        timerFill.style.background =
+          ratio < 0.25 ? '#e74c3c' : ratio < 0.5 ? '#f39c12' : 'var(--gold)';
+        multiplierSection.style.display = day === 6 ? 'flex' : 'none';
+      }
+
+      function spawnParticles(x, y, color) {
+        for (var i = 0; i < 10; i++) {
+          var a = Math.random() * Math.PI * 2,
+            s = 40 + Math.random() * 80;
+          particles.push({
+            x: x,
+            y: y,
+            vx: Math.cos(a) * s,
+            vy: Math.sin(a) * s - 30,
+            life: 0.8 + Math.random() * 0.4,
+            color: color,
+            size: 2 + Math.random() * 3,
+            isText: false,
+          });
+        }
+      }
+      function spawnScoreText(x, y, text, color) {
+        particles.push({
+          x: x,
+          y: y,
+          vx: 0,
+          vy: -50,
+          life: 1.2,
+          color: color,
+          size: 0,
+          text: text,
+          isText: true,
+        });
+      }
+
+      function update(dt) {
+        animTime += dt;
+        dayTimer -= dt;
+        var speed = 200,
+          dx = 0,
+          dy = 0;
+        if (keys['arrowup'] || keys['w']) dy -= 1;
+        if (keys['arrowdown'] || keys['s']) dy += 1;
+        if (keys['arrowleft'] || keys['a']) dx -= 1;
+        if (keys['arrowright'] || keys['d']) dx += 1;
+        if (dx && dy) {
+          dx *= 0.707;
+          dy *= 0.707;
+        }
+        if (dx) player.facing = dx > 0 ? 1 : -1;
+        var moving = dx || dy;
+        if (moving) player.walkAnim += dt * 12;
+        else player.walkAnim = 0;
+        player.x += dx * speed * dt;
+        player.y += dy * speed * dt;
+        player.x = Math.max(player.r, Math.min(W - player.r, player.x));
+        player.y = Math.max(player.r, Math.min(H - player.r, player.y));
+        for (var i = 0; i < manna.length; i++) {
+          var m = manna[i];
+          if (m.collected) continue;
+          m.bob += dt * 2;
+          if (
+            Math.hypot(player.x - m.x, player.y - m.y) <
+            player.r + cellSize * 0.2
+          ) {
+            if (day === 7) {
+              m.collected = true;
+              spawnParticles(m.x, m.y, '#ff6b6b');
+              shabbatBroken();
+              return;
+            }
+            m.collected = true;
+            player.carried++;
+            spawnParticles(m.x, m.y, '#fff8d0');
+          }
+        }
+        if (
+          player.x >= house.x &&
+          player.x <= house.x + house.w &&
+          player.y >= house.y &&
+          player.y <= house.y + house.h &&
+          player.carried > 0
+        ) {
+          var mult = day === 6 ? 2 : 1;
+          var score = player.carried * mult;
+          deposited += player.carried;
+          dayScore += score;
+          spawnParticles(house.cx, house.cy, '#f0d878');
+          spawnScoreText(house.cx, house.cy - 15, '+' + score, '#f0d878');
+          player.carried = 0;
+        }
+        for (var p = 0; p < particles.length; p++) {
+          var pp = particles[p];
+          pp.x += pp.vx * dt;
+          pp.y += pp.vy * dt;
+          if (!pp.isText) pp.vy += 150 * dt;
+          pp.life -= dt * (pp.isText ? 0.9 : 2);
+        }
+        particles = particles.filter(function (p) {
+          return p.life > 0;
+        });
+        if (dayTimer <= 0) {
+          dayTimer = 0;
+          endDay();
+          return;
+        }
+        updateHUD();
+      }
+
+      function updateMenu(dt) {
+        animTime += dt;
+        for (var i = 0; i < menuStars.length; i++) menuStars[i].tw += dt * 2;
+        for (var i = 0; i < menuSand.length; i++) {
+          var s = menuSand[i];
+          s.x += s.vx * dt;
+          s.y += s.vy * dt;
+          if (s.x > W + 5) {
+            s.x = -5;
+            s.y = Math.random() * H;
+          }
+        }
+        for (var i = 0; i < menuManna.length; i++) {
+          var m = menuManna[i];
+          m.bob += dt * 2;
+          m.y += m.vy * dt;
+          if (m.y > H + 10) {
+            m.y = -20;
+            m.x = 60 + Math.random() * (W - 120);
+          }
+        }
+      }
+
+      function wrapText(text, cx, startY, maxWidth, lineHeight) {
+        var words = text.split(' '),
+          line = '',
+          lines = [];
+        for (var i = 0; i < words.length; i++) {
+          var test = line + words[i] + ' ';
+          if (ctx.measureText(test).width > maxWidth && line) {
+            lines.push(line.trim());
+            line = words[i] + ' ';
+          } else line = test;
+        }
+        lines.push(line.trim());
+        var y = startY;
+        for (var i = 0; i < lines.length; i++) {
+          ctx.fillText(lines[i], cx, y);
+          y += lineHeight;
+        }
+      }
+
+      function render() {
+        if (state === 'menu') {
+          renderMenu();
+          return;
+        }
+        if (
+          state === 'dayIntro' ||
+          state === 'dayTransition' ||
+          state === 'weekTransition'
+        ) {
+          renderTransition();
+          return;
+        }
+        if (state === 'gameOver') {
+          renderGameOver();
+          return;
+        }
+        var tr = state === 'playing' ? dayTimer / dayDuration : 1;
+        var sunset = 1 - tr;
+        var r1 = Math.round(212 - sunset * 55),
+          g1 = Math.round(169 - sunset * 35),
+          b1 = Math.round(106 - sunset * 15);
+        var grad = ctx.createLinearGradient(0, 0, 0, H);
+        grad.addColorStop(0, 'rgb(' + r1 + ',' + g1 + ',' + b1 + ')');
+        grad.addColorStop(
+          1,
+          'rgb(' +
+            Math.round(r1 * 0.82) +
+            ',' +
+            Math.round(g1 * 0.82) +
+            ',' +
+            Math.round(b1 * 0.78) +
+            ')',
+        );
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, W, H);
+        ctx.strokeStyle = 'rgba(139,94,60,0.13)';
+        ctx.lineWidth = 1;
+        for (var i = 0; i <= gridSize; i++) {
+          ctx.beginPath();
+          ctx.moveTo(i * cellSize, 0);
+          ctx.lineTo(i * cellSize, H);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(0, i * cellSize);
+          ctx.lineTo(W, i * cellSize);
+          ctx.stroke();
+        }
+        for (var d = 0; d < decorations.length; d++) {
+          var dd = decorations[d];
+          if (dd.type === 'rock') {
+            ctx.fillStyle = 'rgba(110,80,50,0.25)';
+            ctx.beginPath();
+            ctx.ellipse(dd.x, dd.y, dd.size, dd.size * 0.6, 0, 0, Math.PI * 2);
+            ctx.fill();
+          } else {
+            ctx.fillStyle = 'rgba(190,150,90,0.18)';
+            ctx.beginPath();
+            ctx.ellipse(
+              dd.x,
+              dd.y,
+              dd.size * 1.5,
+              dd.size * 0.8,
+              0,
+              0,
+              Math.PI * 2,
+            );
+            ctx.fill();
+          }
+        }
+        drawHouse();
+        drawManna();
+        drawPlayer();
+        for (var p = 0; p < particles.length; p++) {
+          var pp = particles[p];
+          ctx.globalAlpha = Math.max(0, pp.life);
+          if (pp.isText) {
+            ctx.fillStyle = pp.color;
+            ctx.font = 'bold 16px Georgia';
+            ctx.textAlign = 'center';
+            ctx.fillText(pp.text, pp.x, pp.y);
+          } else {
+            ctx.fillStyle = pp.color;
+            ctx.beginPath();
+            ctx.arc(pp.x, pp.y, pp.size, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+        ctx.globalAlpha = 1;
+        if (day === 7 && state === 'playing') {
+          ctx.fillStyle = 'rgba(180,30,30,0.85)';
+          ctx.font = 'bold 15px Georgia';
+          ctx.textAlign = 'center';
+          if (Math.sin(animTime * 3) > 0)
+            ctx.fillText(
+              '\u26A0 Do NOT collect manna - rest until the day ends \u26A0',
+              W / 2,
+              22,
+            );
+        }
+        var vig = ctx.createRadialGradient(
+          W / 2,
+          H / 2,
+          W * 0.35,
+          W / 2,
+          H / 2,
+          W * 0.72,
+        );
+        vig.addColorStop(0, 'rgba(0,0,0,0)');
+        vig.addColorStop(1, 'rgba(50,30,10,0.25)');
+        ctx.fillStyle = vig;
+        ctx.fillRect(0, 0, W, H);
+      }
+
+      function renderMenu() {
+        var sky = ctx.createLinearGradient(0, 0, 0, H);
+        sky.addColorStop(0, '#0d0a18');
+        sky.addColorStop(0.35, '#2d1f45');
+        sky.addColorStop(0.6, '#7a5a3a');
+        sky.addColorStop(1, '#c4a06a');
+        ctx.fillStyle = sky;
+        ctx.fillRect(0, 0, W, H);
+        for (var i = 0; i < menuStars.length; i++) {
+          var st = menuStars[i];
+          var tw = 0.3 + Math.abs(Math.sin(st.tw)) * 0.7;
+          ctx.globalAlpha = tw;
+          ctx.fillStyle = '#fff8d0';
+          ctx.beginPath();
+          ctx.arc(st.x, st.y, st.sz, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+        var mx = W * 0.78,
+          my = H * 0.18,
+          mr = 28;
+        ctx.fillStyle = 'rgba(255,248,200,0.9)';
+        ctx.beginPath();
+        ctx.arc(mx, my, mr, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = 'rgba(13,10,24,1)';
+        ctx.beginPath();
+        ctx.arc(mx + mr * 0.35, my - mr * 0.15, mr, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = 'rgba(255,248,200,0.15)';
+        ctx.beginPath();
+        ctx.arc(mx, my, mr + 12, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#3a2818';
+        ctx.beginPath();
+        ctx.moveTo(0, H * 0.62);
+        ctx.lineTo(W * 0.15, H * 0.48);
+        ctx.lineTo(W * 0.28, H * 0.55);
+        ctx.lineTo(W * 0.4, H * 0.42);
+        ctx.lineTo(W * 0.55, H * 0.52);
+        ctx.lineTo(W * 0.7, H * 0.46);
+        ctx.lineTo(W * 0.85, H * 0.54);
+        ctx.lineTo(W, H * 0.5);
+        ctx.lineTo(W, H * 0.62);
+        ctx.closePath();
+        ctx.fill();
+        var gnd = ctx.createLinearGradient(0, H * 0.6, 0, H);
+        gnd.addColorStop(0, '#a8845a');
+        gnd.addColorStop(0.5, '#c4a06a');
+        gnd.addColorStop(1, '#d4a96a');
+        ctx.fillStyle = gnd;
+        ctx.fillRect(0, H * 0.6, W, H * 0.4);
+        ctx.strokeStyle = 'rgba(160,130,80,0.2)';
+        ctx.lineWidth = 1;
+        for (var ry = 0; ry < 6; ry++) {
+          var yy = H * 0.65 + ry * (H * 0.06);
+          ctx.beginPath();
+          for (var xx = 0; xx <= W; xx += 8) {
+            var wave = Math.sin(xx * 0.03 + ry + animTime * 0.5) * 3;
+            if (xx === 0) ctx.moveTo(xx, yy + wave);
+            else ctx.lineTo(xx, yy + wave);
+          }
+          ctx.stroke();
+        }
+        for (var i = 0; i < menuSand.length; i++) {
+          var s = menuSand[i];
+          ctx.globalAlpha = s.op;
+          ctx.fillStyle = '#e8d0a0';
+          ctx.fillRect(s.x, s.y, s.sz, s.sz);
+        }
+        ctx.globalAlpha = 1;
+        drawMenuTent(W / 2, H * 0.78, 60, 50);
+        for (var i = 0; i < menuManna.length; i++) {
+          var m = menuManna[i];
+          var bobY = Math.sin(m.bob) * 6;
+          var glowR = 18 + Math.sin(animTime * 3 + m.bob) * 4;
+          var gg = ctx.createRadialGradient(
+            m.x,
+            m.y + bobY,
+            0,
+            m.x,
+            m.y + bobY,
+            glowR,
+          );
+          gg.addColorStop(0, 'rgba(255,248,200,0.35)');
+          gg.addColorStop(1, 'rgba(255,248,200,0)');
+          ctx.fillStyle = gg;
+          ctx.fillRect(m.x - glowR, m.y + bobY - glowR, glowR * 2, glowR * 2);
+          ctx.fillStyle = '#fff8d0';
+          ctx.beginPath();
+          ctx.arc(m.x, m.y + bobY, 5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = 'rgba(255,255,255,0.7)';
+          ctx.beginPath();
+          ctx.arc(m.x - 1.5, m.y + bobY - 1.5, 1.8, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.textAlign = 'center';
+        var titleY = H * 0.32,
+          glowPulse = 0.5 + Math.sin(animTime * 1.5) * 0.2;
+        ctx.shadowColor = 'rgba(240,216,120,' + glowPulse + ')';
+        ctx.shadowBlur = 30;
+        ctx.fillStyle = '#f0d878';
+        ctx.font = 'bold 52px Georgia';
+        ctx.fillText('MANNA MOVER', W / 2, titleY);
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = 'rgba(245,230,200,0.7)';
+        ctx.font = 'italic 16px Georgia';
+        ctx.fillText(
+          'Gather from the desert · Feed your family · Rest on the Sabbath',
+          W / 2,
+          titleY + 36,
+        );
+        var cy = H * 0.5;
+        ctx.fillStyle = 'rgba(0,0,0,0.35)';
+        roundRect(W / 2 - 140, cy - 5, 280, 56, 8);
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(240,216,120,0.4)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.fillStyle = 'rgba(240,216,120,0.85)';
+        ctx.font = 'bold 13px Georgia';
+        ctx.fillText('CONTROLS', W / 2, cy + 12);
+        ctx.fillStyle = 'rgba(245,230,200,0.8)';
+        ctx.font = '14px Georgia';
+        ctx.fillText('Arrow Keys, WASD, or on-screen pad', W / 2, cy + 34);
+        if (Math.sin(animTime * 3) > -0.3) {
+          ctx.fillStyle = '#f0d878';
+          ctx.shadowColor = 'rgba(240,216,120,0.5)';
+          ctx.shadowBlur = 15;
+          ctx.font = 'bold 20px Georgia';
+          ctx.fillText('PRESS SPACE TO BEGIN', W / 2, H * 0.9);
+          ctx.shadowBlur = 0;
+        }
+        var vig = ctx.createRadialGradient(
+          W / 2,
+          H / 2,
+          W * 0.3,
+          W / 2,
+          H / 2,
+          W * 0.75,
+        );
+        vig.addColorStop(0, 'rgba(0,0,0,0)');
+        vig.addColorStop(1, 'rgba(0,0,0,0.35)');
+        ctx.fillStyle = vig;
+        ctx.fillRect(0, 0, W, H);
+      }
+
+      function renderTransition() {
+        var hasPrev = transData.prevTitle !== '';
+        // Background: sunset top -> dawn bottom
+        var grad = ctx.createLinearGradient(0, 0, 0, H);
+        if (hasPrev) {
+          grad.addColorStop(0, '#1a1030');
+          grad.addColorStop(0.18, '#4a2820');
+          grad.addColorStop(0.4, '#6a3a28');
+          grad.addColorStop(0.46, '#3a2820');
+          grad.addColorStop(0.54, '#2a2040');
+          grad.addColorStop(0.72, '#4a4060');
+          grad.addColorStop(0.88, '#8a7050');
+          grad.addColorStop(1, '#b89868');
+        } else {
+          grad.addColorStop(0, '#0d0a18');
+          grad.addColorStop(0.3, '#2d1f45');
+          grad.addColorStop(0.6, '#5a4a6a');
+          grad.addColorStop(0.8, '#8a7050');
+          grad.addColorStop(1, '#c4a06a');
+        }
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, W, H);
+        // Stars (upper portion)
+        for (var i = 0; i < menuStars.length; i++) {
+          var st = menuStars[i];
+          if (st.y > H * 0.45) continue;
+          var tw = 0.3 + Math.abs(Math.sin(st.tw)) * 0.7;
+          ctx.globalAlpha = tw * (hasPrev ? 0.5 : 0.8);
+          ctx.fillStyle = '#fff8d0';
+          ctx.beginPath();
+          ctx.arc(st.x, st.y, st.sz, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+        // Setting sun (upper-left, if hasPrev)
+        if (hasPrev) {
+          var sx = W * 0.12,
+            sy = H * 0.13,
+            sr = 25;
+          var sg = ctx.createRadialGradient(sx, sy, 0, sx, sy, sr * 2.5);
+          sg.addColorStop(0, 'rgba(255,180,80,0.7)');
+          sg.addColorStop(0.4, 'rgba(255,140,60,0.2)');
+          sg.addColorStop(1, 'rgba(255,100,40,0)');
+          ctx.fillStyle = sg;
+          ctx.fillRect(sx - sr * 2.5, sy - sr * 2.5, sr * 5, sr * 5);
+          ctx.fillStyle = 'rgba(255,160,70,0.85)';
+          ctx.beginPath();
+          ctx.arc(sx, sy, sr, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        // (Rising sun removed per user request)
+        // Dune silhouettes
+        ctx.fillStyle = 'rgba(60,40,25,0.45)';
+        ctx.beginPath();
+        ctx.moveTo(0, H * 0.84);
+        ctx.lineTo(W * 0.15, H * 0.78);
+        ctx.lineTo(W * 0.3, H * 0.82);
+        ctx.lineTo(W * 0.5, H * 0.76);
+        ctx.lineTo(W * 0.7, H * 0.82);
+        ctx.lineTo(W * 0.85, H * 0.78);
+        ctx.lineTo(W, H * 0.84);
+        ctx.lineTo(W, H);
+        ctx.lineTo(0, H);
+        ctx.closePath();
+        ctx.fill();
+        // Sand ripples
+        ctx.strokeStyle = 'rgba(160,130,80,0.15)';
+        ctx.lineWidth = 1;
+        for (var r2 = 0; r2 < 4; r2++) {
+          var yy = H * 0.88 + r2 * (H * 0.03);
+          ctx.beginPath();
+          for (var xx = 0; xx <= W; xx += 8) {
+            var wv = Math.sin(xx * 0.025 + r2 + animTime * 0.3) * 2;
+            if (xx === 0) ctx.moveTo(xx, yy + wv);
+            else ctx.lineTo(xx, yy + wv);
+          }
+          ctx.stroke();
+        }
+        // Floating manna
+        for (var i = 0; i < menuManna.length; i++) {
+          var m = menuManna[i];
+          var bobY = Math.sin(m.bob) * 5;
+          ctx.globalAlpha = 0.25;
+          var gg = ctx.createRadialGradient(
+            m.x,
+            m.y + bobY,
+            0,
+            m.x,
+            m.y + bobY,
+            14,
+          );
+          gg.addColorStop(0, 'rgba(255,248,200,0.3)');
+          gg.addColorStop(1, 'rgba(255,248,200,0)');
+          ctx.fillStyle = gg;
+          ctx.fillRect(m.x - 14, m.y + bobY - 14, 28, 28);
+          ctx.globalAlpha = 0.5;
+          ctx.fillStyle = '#fff8d0';
+          ctx.beginPath();
+          ctx.arc(m.x, m.y + bobY, 2.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+        // Text
+        ctx.textAlign = 'center';
+        if (hasPrev) {
+          // Top section: previous day results
+          ctx.fillStyle = '#f0d878';
+          ctx.shadowColor = 'rgba(240,216,120,0.3)';
+          ctx.shadowBlur = 12;
+          ctx.font = 'bold 24px Georgia';
+          ctx.fillText(transData.prevTitle, W / 2, H * 0.15);
+          ctx.shadowBlur = 0;
+          ctx.fillStyle = 'rgba(245,230,200,0.7)';
+          ctx.font = '14px Georgia';
+          ctx.fillText(transData.prevSub, W / 2, H * 0.15 + 32);
+          ctx.fillStyle = 'rgba(245,230,200,0.9)';
+          ctx.font = '16px Georgia';
+          ctx.fillText(transData.prevMessage, W / 2, H * 0.15 + 58);
+          ctx.fillStyle = '#f0d878';
+          ctx.font = 'bold 15px Georgia';
+          ctx.fillText(transData.prevStat, W / 2, H * 0.15 + 84);
+          // Divider
+          var dy = H * 0.49;
+          ctx.strokeStyle = 'rgba(240,216,120,0.35)';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(W * 0.15, dy);
+          ctx.lineTo(W / 2 - 18, dy);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(W / 2 + 18, dy);
+          ctx.lineTo(W * 0.85, dy);
+          ctx.stroke();
+          ctx.fillStyle = 'rgba(240,216,120,0.5)';
+          ctx.beginPath();
+          ctx.arc(W / 2, dy, 5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = 'rgba(255,255,255,0.6)';
+          ctx.beginPath();
+          ctx.arc(W / 2 - 1.5, dy - 1.5, 1.8, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        // Bottom section: next day info
+        var botY = hasPrev ? H * 0.57 : H * 0.38;
+        ctx.fillStyle = '#f0d878';
+        ctx.shadowColor = 'rgba(240,216,120,0.4)';
+        ctx.shadowBlur = 18;
+        ctx.font = 'bold 26px Georgia';
+        ctx.fillText(transData.nextTitle, W / 2, botY);
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = 'rgba(245,230,200,0.85)';
+        ctx.font = '15px Georgia';
+        wrapText(transData.nextInstructions, W / 2, botY + 34, W * 0.72, 22);
+        // Press SPACE
+        if (Math.sin(animTime * 3) > -0.3) {
+          ctx.fillStyle = '#f0d878';
+          ctx.shadowColor = 'rgba(240,216,120,0.5)';
+          ctx.shadowBlur = 10;
+          ctx.font = 'bold 17px Georgia';
+          ctx.fillText('PRESS SPACE TO CONTINUE', W / 2, H - 28);
+          ctx.shadowBlur = 0;
+        }
+        // Vignette
+        var vig = ctx.createRadialGradient(
+          W / 2,
+          H / 2,
+          W * 0.3,
+          W / 2,
+          H / 2,
+          W * 0.75,
+        );
+        vig.addColorStop(0, 'rgba(0,0,0,0)');
+        vig.addColorStop(1, 'rgba(0,0,0,0.3)');
+        ctx.fillStyle = vig;
+        ctx.fillRect(0, 0, W, H);
+      }
+
+      function drawMenuTent(cx, cy, w, h) {
+        ctx.fillStyle = 'rgba(0,0,0,0.25)';
+        ctx.beginPath();
+        ctx.ellipse(cx, cy + h * 0.5, w * 0.6, h * 0.12, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#8b5e3c';
+        ctx.beginPath();
+        ctx.moveTo(cx - w / 2, cy + h * 0.4);
+        ctx.lineTo(cx, cy - h / 2);
+        ctx.lineTo(cx + w / 2, cy + h * 0.4);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = '#a07050';
+        ctx.beginPath();
+        ctx.moveTo(cx - w / 2, cy + h * 0.4);
+        ctx.lineTo(cx, cy - h / 2);
+        ctx.lineTo(cx - w * 0.15, cy + h * 0.4);
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = '#5a3818';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(cx - w / 2, cy + h * 0.4);
+        ctx.lineTo(cx, cy - h / 2);
+        ctx.lineTo(cx + w / 2, cy + h * 0.4);
+        ctx.stroke();
+        ctx.fillStyle = '#3d2817';
+        ctx.beginPath();
+        ctx.moveTo(cx - w * 0.12, cy + h * 0.4);
+        ctx.lineTo(cx, cy + h * 0.05);
+        ctx.lineTo(cx + w * 0.12, cy + h * 0.4);
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = '#5a3818';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy - h / 2);
+        ctx.lineTo(cx, cy - h / 2 - 15);
+        ctx.stroke();
+        var fw = Math.sin(animTime * 4) * 3;
+        ctx.fillStyle = '#f0d878';
+        ctx.beginPath();
+        ctx.moveTo(cx, cy - h / 2 - 15);
+        ctx.lineTo(cx + 14 + fw, cy - h / 2 - 10);
+        ctx.lineTo(cx, cy - h / 2 - 5);
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      function renderGameOver() {
+        var grad = ctx.createLinearGradient(0, 0, 0, H);
+        grad.addColorStop(0, '#0a0810');
+        grad.addColorStop(0.35, '#1a1520');
+        grad.addColorStop(0.65, '#2a2018');
+        grad.addColorStop(1, '#3a2a1a');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, W, H);
+        ctx.fillStyle = 'rgba(120,120,120,0.15)';
+        for (var i = 0; i < menuStars.length; i++) {
+          var st = menuStars[i];
+          if (st.y > H * 0.4) continue;
+          ctx.fillRect(st.x, st.y, st.sz * 0.8, st.sz * 0.8);
+        }
+        ctx.fillStyle = 'rgba(30,20,12,0.55)';
+        ctx.beginPath();
+        ctx.moveTo(0, H * 0.78);
+        ctx.lineTo(W * 0.14, H * 0.72);
+        ctx.lineTo(W * 0.3, H * 0.76);
+        ctx.lineTo(W * 0.5, H * 0.7);
+        ctx.lineTo(W * 0.7, H * 0.76);
+        ctx.lineTo(W * 0.86, H * 0.72);
+        ctx.lineTo(W, H * 0.78);
+        ctx.lineTo(W, H);
+        ctx.lineTo(0, H);
+        ctx.closePath();
+        ctx.fill();
+        var gnd = ctx.createLinearGradient(0, H * 0.76, 0, H);
+        gnd.addColorStop(0, '#2a1a0e');
+        gnd.addColorStop(1, '#1a1208');
+        ctx.fillStyle = gnd;
+        ctx.fillRect(0, H * 0.76, W, H * 0.24);
+
+        var jcx = W / 2,
+          jcy = H * 0.42;
+        if (gameOverData.type === 'broken')
+          drawImageJar(jcx, jcy, JAR_RIGHT, 10);
+        else drawImageJar(jcx, jcy, JAR_LEFT, 10);
+
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#e74c3c';
+        ctx.shadowColor = 'rgba(231,76,60,0.4)';
+        ctx.shadowBlur = 18;
+        ctx.font = 'bold 28px Georgia';
+        ctx.fillText(gameOverData.title, W / 2, H * 0.1);
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = 'rgba(245,230,200,0.65)';
+        ctx.font = '14px Georgia';
+        ctx.fillText(gameOverData.sub, W / 2, H * 0.1 + 28);
+        ctx.fillStyle = 'rgba(245,230,200,0.9)';
+        ctx.font = '17px Georgia';
+        wrapText(gameOverData.message, W / 2, H * 0.86, W * 0.72, 24);
+        ctx.fillStyle = '#f0d878';
+        ctx.font = 'bold 14px Georgia';
+        ctx.fillText(gameOverData.stat, W / 2, H * 0.86 + 46);
+        if (Math.sin(animTime * 3) > -0.3) {
+          ctx.fillStyle = '#f0d878';
+          ctx.shadowColor = 'rgba(240,216,120,0.4)';
+          ctx.shadowBlur = 10;
+          ctx.font = 'bold 17px Georgia';
+          ctx.fillText('PRESS SPACE TO TRY AGAIN', W / 2, H - 24);
+          ctx.shadowBlur = 0;
+        }
+        var vig = ctx.createRadialGradient(
+          W / 2,
+          H / 2,
+          W * 0.25,
+          W / 2,
+          H / 2,
+          W * 0.75,
+        );
+        vig.addColorStop(0, 'rgba(0,0,0,0)');
+        vig.addColorStop(1, 'rgba(0,0,0,0.4)');
+        ctx.fillStyle = vig;
+        ctx.fillRect(0, 0, W, H);
+      }
+
+      var JAR_PAL = {
+        1: 'rgb(120,64,32)',
+        2: 'rgb(72,40,24)',
+        4: 'rgb(104,56,32)',
+        7: 'rgb(88,48,24)',
+        8: 'rgb(112,64,32)',
+        B: 'rgb(80,40,24)',
+        '.': null,
+      };
+
+      var JAR_LEFT = [
+        '............................................',
+        '...................47811111111111111111187..',
+        '...................81111111111111111188848..',
+        '...................24411111111118477222222..',
+        '....................48884722222222.......4..',
+        '...................888118...................',
+        '..................81881184...............8..',
+        '.................18..18...................1.',
+        '................81.8118..8.................8',
+        '................81.111...................8.8',
+        '.................8411111711222.2.414.117...8',
+        '................4881111422118B222418818878.8',
+        '................4111184728414272117282721121',
+        '................8128181411172111177727742881',
+        '................8111117B24418441274727482271',
+        '................8111111148111818722472422471',
+        '................88411111811.88.8842722224821',
+        '................8111171118144..2874172422221',
+        '................817111B8472882488422272.2421',
+        '................811111111742488872172.22..21',
+        '................818111142741B2428177..222221',
+        '................811111727721474214.282.24841',
+        '................8111111112721172417218422228',
+        '4444777744444442811111244412824114411148..21',
+        '7777777777777772811111114....211487411872.21',
+        '77774477777777428111814.2...214211217474..21',
+        '77477477777774428111118...274171722227.22.71',
+        '444444444444444B81111718..111442B222.77.2771',
+        '77777777777777728118111844118817124847728721',
+        '8844488444488442414.411111741172.88188722278',
+        '1888811111111117.88247117724142..2888222.2..',
+        '1181111111111887..88112714272818.7427272....',
+        '44444111111184222.....442.272287.22.........',
+        '11111111848444147722.......4.............22B',
+        '444444444444444447777B22222222222222222BB744',
+        '18444111111111188181181111111111111111111111',
+        '11144418444811844444488881111188111184488111',
+        '11888888844488111888811114448181114444888444',
+        '11111111111111881111118111118111111111844111',
+        'BBBBBB22227BBB22BBBBBB22BBBBBBBBBBBBBBBBBBBB',
+        '.22222222222222222222222222...22222222222222',
+        '2222222222......22222222222222222222........',
+        '22222222222222222222222222222222222222222222',
+      ];
+
+      var JAR_RIGHT = [
+        '............................................',
+        '............1.88............................',
+        '...........818..88..........1...............',
+        '..............1888..........1...............',
+        '...........888..............14..............',
+        '..........8114.............18...............',
+        '..........111118........188..8..............',
+        '..........181188....8.8181..................',
+        '..........1.11..........8188818.............',
+        '..........1.81...........1...41.............',
+        '..........1.84..........1.....1.............',
+        '..........1.11................1.............',
+        '..........1..8................1.............',
+        '..........1..8..........8....81.............',
+        '..........1..8...............88.............',
+        '..........1..8............8.1.8.............',
+        '..........1..8.............8.88.............',
+        '..........1..8.............8.88.............',
+        '.44444444.1.88744777444444188182477774444444',
+        '.47777777.1.88747777777741848182777774444444',
+        '.47777774.1488747777777818448182477B74444444',
+        '.77777477.1888444444444148448112444444444444',
+        '.44444444.184844444444118818811.274444444444',
+        '.77777777.148877777777144418481.1..777777777',
+        '.44484448.188844444441148488181.188.78888444',
+        '2111184812188888222411448184181.888182811444',
+        '2241111842.1884444818444448881..84888.B88111',
+        '22B4844272..188117118444488......88..2244814',
+        '441114418277488.8...84.....84427722448811111',
+        '44444B...24884444877487777.8.8424444..244444',
+        '111111474188884811842.7148421844.41144811111',
+        '4444488472...8888..4841882872.....7811111111',
+        '1111111111888477774418...4111884441848111844',
+        '44111111111811111111111111441111111188114444',
+        '22BBBBB2222BBBBB2BBBBBBBBB22BB222BBB2BBB22BB',
+        '2222222222222.22222222.222222222222222222222',
+        '.......222222222.222.222222222222..22...2...',
+        '22222222222222222222222222222222222222222222',
+      ];
+
+      function drawImageJar(cx, cy, map, ps) {
+        var rows = map.length,
+          cols = map[0].length;
+        var ox = cx - (cols * ps) / 2,
+          oy = cy - (rows * ps) / 2;
+        for (var r = 0; r < rows; r++) {
+          for (var c = 0; c < cols; c++) {
+            var ch = map[r][c];
+            var color = JAR_PAL[ch];
+            if (color) {
+              ctx.fillStyle = color;
+              ctx.fillRect(
+                Math.round(ox + c * ps),
+                Math.round(oy + r * ps),
+                ps,
+                ps,
+              );
+            }
+          }
+        }
+        ctx.fillStyle = 'rgba(0,0,0,0.3)';
+        ctx.fillRect(
+          Math.round(ox + cols * ps * 0.1),
+          Math.round(oy + rows * ps),
+          cols * ps * 0.8,
+          3,
+        );
+      }
+
+      function roundRect(x, y, w, h, r) {
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.lineTo(x + w - r, y);
+        ctx.arcTo(x + w, y, x + w, y + r, r);
+        ctx.lineTo(x + w, y + h - r);
+        ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+        ctx.lineTo(x + r, y + h);
+        ctx.arcTo(x, y + h, x, y + h - r, r);
+        ctx.lineTo(x, y + r);
+        ctx.arcTo(x, y, x + r, y, r);
+        ctx.closePath();
+      }
+
+      function drawHouse() {
+        var x = house.x,
+          y = house.y,
+          w = house.w,
+          h = house.h;
+        ctx.fillStyle = 'rgba(0,0,0,0.2)';
+        ctx.beginPath();
+        ctx.ellipse(x + w / 2, y + h + 3, w * 0.5, h * 0.1, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#8b5e3c';
+        ctx.fillRect(x + w * 0.15, y + h * 0.42, w * 0.7, h * 0.48);
+        ctx.fillStyle = '#6b4423';
+        ctx.beginPath();
+        ctx.moveTo(x + w * 0.1, y + h * 0.45);
+        ctx.lineTo(x + w * 0.5, y + h * 0.08);
+        ctx.lineTo(x + w * 0.9, y + h * 0.45);
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = '#5a3818';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(x + w * 0.1, y + h * 0.45);
+        ctx.lineTo(x + w * 0.5, y + h * 0.08);
+        ctx.lineTo(x + w * 0.9, y + h * 0.45);
+        ctx.stroke();
+        ctx.fillStyle = '#3d2817';
+        ctx.fillRect(x + w * 0.42, y + h * 0.56, w * 0.16, h * 0.34);
+        if (deposited > 0) {
+          for (var i = 0; i < Math.min(deposited, 8); i++) {
+            var px = x + w * 0.5 + ((i % 4) - 1.5) * cellSize * 0.18,
+              py = y + h * 0.88 - Math.floor(i / 4) * cellSize * 0.12;
+            ctx.fillStyle = '#fff8d0';
+            ctx.beginPath();
+            ctx.arc(px, py, cellSize * 0.07, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+      }
+
+      function drawManna() {
+        for (var i = 0; i < manna.length; i++) {
+          var m = manna[i];
+          if (m.collected) continue;
+          var bobY = Math.sin(m.bob) * 3,
+            glow = 0.6 + Math.sin(animTime * 3 + m.bob) * 0.3;
+          var gg = ctx.createRadialGradient(
+            m.x,
+            m.y + bobY,
+            0,
+            m.x,
+            m.y + bobY,
+            cellSize * 0.4,
+          );
+          gg.addColorStop(0, 'rgba(255,248,200,' + glow * 0.35 + ')');
+          gg.addColorStop(1, 'rgba(255,248,200,0)');
+          ctx.fillStyle = gg;
+          ctx.fillRect(
+            m.x - cellSize * 0.4,
+            m.y + bobY - cellSize * 0.4,
+            cellSize * 0.8,
+            cellSize * 0.8,
+          );
+          var r = cellSize * 0.12;
+          ctx.fillStyle = day === 7 ? '#ffbbbb' : '#fff8d0';
+          ctx.beginPath();
+          ctx.arc(m.x, m.y + bobY, r, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = 'rgba(255,255,255,0.6)';
+          ctx.beginPath();
+          ctx.arc(m.x - r * 0.3, m.y + bobY - r * 0.3, r * 0.3, 0, Math.PI * 2);
+          ctx.fill();
+          if (day === 6) {
+            ctx.fillStyle = '#e74c3c';
+            ctx.font = 'bold ' + Math.floor(cellSize * 0.22) + 'px Georgia';
+            ctx.textAlign = 'center';
+            ctx.fillText('x2', m.x, m.y + bobY - r - 2);
+          }
+        }
+      }
+
+      function drawPlayer() {
+        var x = player.x,
+          y = player.y,
+          r = player.r;
+        var bob = Math.sin(player.walkAnim) * 2;
+        ctx.fillStyle = 'rgba(0,0,0,0.25)';
+        ctx.beginPath();
+        ctx.ellipse(x, y + r * 0.85, r * 0.65, r * 0.2, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#4a6fa5';
+        ctx.beginPath();
+        ctx.moveTo(x - r * 0.6, y + r * 0.7);
+        ctx.quadraticCurveTo(x, y + r * 0.9, x + r * 0.6, y + r * 0.7);
+        ctx.lineTo(x + r * 0.4, y - r * 0.2 + bob);
+        ctx.lineTo(x - r * 0.4, y - r * 0.2 + bob);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = '#d4a574';
+        ctx.beginPath();
+        ctx.arc(x, y - r * 0.35 + bob, r * 0.35, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#333';
+        ctx.beginPath();
+        ctx.arc(
+          x + player.facing * r * 0.12,
+          y - r * 0.38 + bob,
+          r * 0.06,
+          0,
+          Math.PI * 2,
+        );
+        ctx.fill();
+        for (var i = 0; i < Math.min(player.carried, 5); i++) {
+          var mx = x + r * 0.3,
+            my = y - r * 0.6 - i * r * 0.18 + bob;
+          ctx.fillStyle = '#fff8d0';
+          ctx.beginPath();
+          ctx.arc(mx, my, r * 0.14, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = 'rgba(200,180,100,0.4)';
+          ctx.lineWidth = 1;
+          ctx.stroke();
+        }
+        if (player.carried > 5) {
+          ctx.fillStyle = '#333';
+          ctx.font = 'bold ' + Math.floor(r * 0.5) + 'px Georgia';
+          ctx.textAlign = 'center';
+          ctx.fillText(
+            'x' + player.carried,
+            x + r * 0.3,
+            y - r * 0.6 - 5 * r * 0.18 + bob - 4,
+          );
+        }
+      }
+
+      function loop(ts) {
+        if (!lastTime) lastTime = ts;
+        var dt = Math.min((ts - lastTime) / 1000, 0.05);
+        lastTime = ts;
+        if (state === 'playing') update(dt);
+        else if (
+          state === 'menu' ||
+          state === 'dayIntro' ||
+          state === 'dayTransition' ||
+          state === 'weekTransition' ||
+          state === 'gameOver'
+        )
+          updateMenu(dt);
+        render();
+        requestAnimationFrame(loop);
+      }
+
+      initMenuScene();
+      week = 1;
+      day = 1;
+      startDay();
+      state = 'menu';
+      requestAnimationFrame(loop);
+    </script>
+  </body>
+</html>

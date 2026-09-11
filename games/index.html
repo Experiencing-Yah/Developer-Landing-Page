@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Experiencing Yah - Scripture-inspired games"
+    />
+    <title>Games | Experiencing Yah</title>
+    <link rel="icon" type="image/svg+xml" href="/FlameMaterial.svg" />
+    <link rel="alternate icon" href="/FlameMaterial.svg" />
+    <link rel="stylesheet" href="/styles.css" />
+    <style>
+      .nav-logo {
+        height: 80px;
+        display: flex;
+        align-items: center;
+      }
+      .nav-logo a {
+        height: 100%;
+        display: flex;
+        align-items: center;
+      }
+      .nav-logo img {
+        height: 100%;
+        width: auto;
+        max-width: 400px;
+        object-fit: contain;
+      }
+      @media (max-width: 768px) {
+        .nav-logo {
+          height: 60px;
+        }
+        .nav-logo img {
+          max-width: 250px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar" id="navbar">
+      <div class="nav-container">
+        <div class="nav-logo">
+          <a href="/" aria-label="Experiencing Yah home">
+            <img src="/Logo.png" alt="Experiencing Yah" />
+          </a>
+        </div>
+        <ul class="nav-menu" id="nav-menu">
+          <li><a href="/#hero" class="nav-link">Home</a></li>
+          <li><a href="/#about" class="nav-link">About</a></li>
+          <li><a href="/#apps" class="nav-link">Apps</a></li>
+          <li><a href="/#books" class="nav-link">Books</a></li>
+          <li><a href="/games/" class="nav-link">Games</a></li>
+          <li><a href="/#music" class="nav-link">Music</a></li>
+          <li><a href="/#contact" class="nav-link">Contact</a></li>
+        </ul>
+        <button
+          class="nav-toggle"
+          id="nav-toggle"
+          aria-label="Toggle navigation"
+        >
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+    </nav>
+
+    <section class="section games" style="padding-top: 7rem">
+      <div class="container">
+        <h1 class="section-title" style="margin-bottom: 1rem">Games</h1>
+        <div class="content-card">
+          <p class="section-text">
+            Scripture-inspired games you can play in the browser. More coming
+            soon.
+          </p>
+
+          <div class="games-grid">
+            <a class="game-card" href="/games/manna-mover/">
+              <img
+                class="game-card__preview"
+                src="/games/manna-mover/preview.png"
+                alt=""
+                width="640"
+                height="640"
+              />
+              <div class="game-card__meta">
+                <h3 class="game-card__title">Manna Mover</h3>
+                <p class="game-card__subtitle">
+                  Gather each day's manna and bring it home.
+                </p>
+              </div>
+            </a>
+            <a class="game-card" href="/games/babel-builder/">
+              <img
+                class="game-card__preview"
+                src="/games/babel-builder/preview.png"
+                alt=""
+                width="640"
+                height="640"
+              />
+              <div class="game-card__meta">
+                <h3 class="game-card__title">Babel Builder</h3>
+                <p class="game-card__subtitle">
+                  Stack the blocks and raise the tower.
+                </p>
+              </div>
+            </a>
+            <a class="game-card" href="/games/passover-pillage/">
+              <img
+                class="game-card__preview"
+                src="/games/passover-pillage/preview.png"
+                alt=""
+                width="640"
+                height="640"
+              />
+              <div class="game-card__meta">
+                <h3 class="game-card__title">Passover Pillage</h3>
+                <p class="game-card__subtitle">
+                  Plunder Egypt and gather gold for freedom.
+                </p>
+              </div>
+            </a>
+            <div class="game-card game-card--soon">
+              <h3 class="game-card__title">More coming soon</h3>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div class="container">
+        <div class="footer-tt">
+          <a
+            href="https://thinktransformationinc.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="footer-tt-link"
+            aria-label="Think Transformation Inc"
+          >
+            <img
+              src="/TT-Logo.svg"
+              alt="Think Transformation Inc"
+              class="footer-tt-logo"
+            />
+          </a>
+          <p class="footer-tt-note">A division of Think Transformation Inc</p>
+        </div>
+        <p>&copy; 2026 Experiencing Yah. All rights reserved.</p>
+      </div>
+    </footer>
+
+    <script src="/script.js"></script>
+  </body>
+</html>

@@ -1,0 +1,1997 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Passover Pillage — plunder Egypt, gather gold, and gain freedom. A Scripture-inspired browser game from Experiencing Yah."
+    />
+    <title>Passover Pillage | Experiencing Yah</title>
+    <link rel="icon" type="image/svg+xml" href="../../FlameMaterial.svg" />
+    <link rel="alternate icon" href="../../FlameMaterial.svg" />
+    <link rel="stylesheet" href="../../styles.css" />
+    <style>
+      :root {
+        --gold: #f0d878;
+        --parchment: #f5e6c8;
+        --night: #1a1525;
+        --sand: #d4a96a;
+      }
+      #game-container {
+        position: relative;
+        width: 660px;
+        max-width: 100%;
+        font-family: Georgia, 'Palatino Linotype', serif;
+        color: var(--parchment);
+      }
+      #hud {
+        background: linear-gradient(180deg, #2d2640, #221d33);
+        border: 2px solid var(--gold);
+        border-bottom: none;
+        border-radius: 10px 10px 0 0;
+        padding: 10px 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 14px;
+      }
+      .hud-section {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
+      }
+      .hud-label {
+        color: var(--gold);
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+      .hud-value {
+        font-size: 18px;
+        font-weight: bold;
+        color: var(--parchment);
+      }
+      #canvas-wrap {
+        position: relative;
+        border: 2px solid var(--gold);
+        border-top: none;
+        border-radius: 0 0 10px 10px;
+        overflow: hidden;
+      }
+      canvas {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+      #overlay {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        background: rgba(20, 15, 30, 0.94);
+        padding: 30px;
+        z-index: 10;
+      }
+      #overlay.hidden {
+        display: none;
+      }
+      .overlay-title {
+        font-size: 30px;
+        color: var(--gold);
+        margin-bottom: 14px;
+        text-shadow: 0 0 20px rgba(240, 216, 120, 0.3);
+      }
+      .overlay-message {
+        font-size: 19px;
+        color: var(--parchment);
+        margin-bottom: 14px;
+        max-width: 500px;
+        line-height: 1.5;
+      }
+      .overlay-sub {
+        font-size: 14px;
+        color: #aaa;
+        margin-top: 4px;
+        margin-bottom: 10px;
+        max-width: 480px;
+        line-height: 1.4;
+      }
+      .overlay-stat {
+        font-size: 15px;
+        color: var(--gold);
+        margin-bottom: 18px;
+      }
+      .btn-prompt {
+        font-size: 15px;
+        color: var(--parchment);
+        border: 2px solid var(--gold);
+        padding: 8px 22px;
+        border-radius: 6px;
+        animation: blink 1.5s infinite;
+        cursor: pointer;
+        user-select: none;
+      }
+      @keyframes blink {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.4;
+        }
+      }
+    </style>
+  </head>
+  <body class="game-page">
+    <nav class="navbar navbar--compact" id="navbar">
+      <div class="nav-container">
+        <div class="nav-logo">
+          <a href="../../index.html" aria-label="Experiencing Yah home">
+            <img src="../../Logo.png" alt="Experiencing Yah" />
+          </a>
+        </div>
+        <a class="btn btn-secondary" href="/games/">All Games</a>
+      </div>
+    </nav>
+    <main class="game-main">
+      <div id="game-container">
+        <div id="hud">
+          <div class="hud-section">
+            <div class="hud-label">Plunder</div>
+            <div class="hud-value" id="score-display">0</div>
+          </div>
+          <div class="hud-section">
+            <div class="hud-label">Time</div>
+            <div class="hud-value" id="time-display">0</div>
+          </div>
+          <div class="hud-section">
+            <div class="hud-label">Best</div>
+            <div class="hud-value" id="best-display">0</div>
+          </div>
+        </div>
+        <div id="canvas-wrap">
+          <canvas id="game" width="640" height="640"></canvas>
+          <div id="overlay" class="hidden">
+            <div class="overlay-title" id="overlay-title"></div>
+            <div class="overlay-sub" id="overlay-sub"></div>
+            <div class="overlay-message" id="overlay-message"></div>
+            <div class="overlay-stat" id="overlay-stat"></div>
+            <div class="btn-prompt" id="btn-prompt">Press SPACE to continue</div>
+          </div>
+        </div>
+        <div class="touch-controls" aria-label="Touch controls">
+          <div class="touch-dpad">
+            <button
+              type="button"
+              class="touch-btn"
+              data-dir="up"
+              aria-label="Up"
+            >
+              ▲
+            </button>
+            <button
+              type="button"
+              class="touch-btn"
+              data-dir="left"
+              aria-label="Left"
+            >
+              ◀
+            </button>
+            <button
+              type="button"
+              class="touch-btn"
+              data-dir="down"
+              aria-label="Down"
+            >
+              ▼
+            </button>
+            <button
+              type="button"
+              class="touch-btn"
+              data-dir="right"
+              aria-label="Right"
+            >
+              ▶
+            </button>
+          </div>
+          <button
+            type="button"
+            class="touch-btn touch-btn--action"
+            id="touch-action"
+            aria-label="Action"
+          >
+            Go
+          </button>
+        </div>
+      </div>
+    </main>
+    <footer class="footer">
+      <div class="footer-tt">
+        <a
+          href="https://thinktransformationinc.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="footer-tt-link"
+          aria-label="Think Transformation Inc"
+        >
+          <img
+            src="../../TT-Logo.svg"
+            alt="Think Transformation Inc"
+            class="footer-tt-logo"
+          />
+        </a>
+        <p class="footer-tt-note">A division of Think Transformation Inc</p>
+      </div>
+      <p>&copy; 2026 Experiencing Yah. All rights reserved.</p>
+    </footer>
+    <script>
+      var canvas = document.getElementById('game');
+      var ctx = canvas.getContext('2d');
+      var W = canvas.width,
+        H = canvas.height;
+      function el(id) {
+        return document.getElementById(id);
+      }
+      var overlay = el('overlay'),
+        overlayTitle = el('overlay-title'),
+        overlayMessage = el('overlay-message'),
+        overlaySub = el('overlay-sub'),
+        overlayStat = el('overlay-stat'),
+        btnPrompt = el('btn-prompt'),
+        scoreDisplay = el('score-display'),
+        timeDisplay = el('time-display'),
+        bestDisplay = el('best-display');
+
+      var CELL = 32,
+        COLS = 16,
+        ROWS = 16;
+      var FX = 64,
+        FY = 64,
+        FW = COLS * CELL,
+        FH = ROWS * CELL;
+      var state = 'menu',
+        snake = [],
+        dir = { x: 1, y: 0 },
+        nextDir = { x: 1, y: 0 };
+      var egyptians = [],
+        score = 0,
+        best = 0;
+      var moveTimer = 0,
+        moveSpeed = 280,
+        lastTime = 0,
+        animTime = 0,
+        spacePressed = false;
+      var particles = [],
+        popups = [];
+      var shake = 0;
+      var jewelryTypes = [
+        'bracelet',
+        'ring',
+        'necklace',
+        'earring',
+        'armlet',
+        'pendent',
+      ];
+      var tailJewelry = [];
+
+      var keys = {};
+      window.addEventListener('keydown', function (e) {
+        var k = e.key.toLowerCase();
+        if (
+          ['arrowup', 'arrowdown', 'arrowleft', 'arrowright', ' '].indexOf(k) >=
+          0
+        )
+          e.preventDefault();
+        if (!keys[k]) {
+          keys[k] = true;
+          if (k === ' ' && !spacePressed) {
+            spacePressed = true;
+            handleSpace();
+          }
+          if (state === 'playing') {
+            if (k === 'arrowup' || k === 'w') setDir(0, -1);
+            else if (k === 'arrowdown' || k === 's') setDir(0, 1);
+            else if (k === 'arrowleft' || k === 'a') setDir(-1, 0);
+            else if (k === 'arrowright' || k === 'd') setDir(1, 0);
+            else if (k === 'p') {
+              state = 'paused';
+              showOverlay(
+                'Paused',
+                'Press P to resume',
+                '',
+                '',
+                'Press P to resume',
+                false,
+              );
+            }
+          } else if (state === 'paused' && k === 'p') {
+            state = 'playing';
+            hideOverlay();
+          }
+        }
+      });
+      window.addEventListener('keyup', function (e) {
+        keys[e.key.toLowerCase()] = false;
+        if (e.key.toLowerCase() === ' ') spacePressed = false;
+      });
+      btnPrompt.addEventListener('click', function () {
+        if (!spacePressed) {
+          spacePressed = true;
+          handleSpace();
+          setTimeout(function () {
+            spacePressed = false;
+          }, 250);
+        }
+      });
+      canvas.addEventListener('click', function () {
+        if (
+          !spacePressed &&
+          (state === 'menu' || state === 'gameOver')
+        ) {
+          spacePressed = true;
+          handleSpace();
+          setTimeout(function () {
+            spacePressed = false;
+          }, 250);
+        }
+      });
+
+      (function setupTouchControls() {
+        var root = document.querySelector('.touch-controls');
+        if (!root) return;
+        function bindDir(btn, x, y) {
+          function fire(e) {
+            e.preventDefault();
+            btn.classList.add('is-active');
+            if (state === 'playing') setDir(x, y);
+            setTimeout(function () {
+              btn.classList.remove('is-active');
+            }, 120);
+          }
+          btn.addEventListener('touchstart', fire, { passive: false });
+          btn.addEventListener('mousedown', fire);
+        }
+        var map = {
+          up: [0, -1],
+          down: [0, 1],
+          left: [-1, 0],
+          right: [1, 0],
+        };
+        root.querySelectorAll('.touch-btn[data-dir]').forEach(function (btn) {
+          var d = map[btn.getAttribute('data-dir')];
+          if (d) bindDir(btn, d[0], d[1]);
+        });
+        var actionBtn = document.getElementById('touch-action');
+        if (actionBtn) {
+          function doAction(e) {
+            e.preventDefault();
+            if (state === 'menu' || state === 'gameOver') {
+              if (!spacePressed) {
+                spacePressed = true;
+                handleSpace();
+                setTimeout(function () {
+                  spacePressed = false;
+                }, 250);
+              }
+            } else if (state === 'paused') {
+              state = 'playing';
+              hideOverlay();
+            } else if (state === 'playing') {
+              state = 'paused';
+              showOverlay(
+                'Paused',
+                'Tap Go or press P to resume',
+                '',
+                '',
+                'Tap Go to resume',
+                false,
+              );
+            }
+          }
+          actionBtn.addEventListener('touchstart', doAction, { passive: false });
+          actionBtn.addEventListener('click', doAction);
+        }
+      })();
+
+      function handleSpace() {
+        if (state === 'menu') startGame();
+        else if (state === 'gameOver') startGame();
+      }
+
+      function setDir(x, y) {
+        if (dir.x !== -x || dir.y !== -y) {
+          nextDir = { x: x, y: y };
+        }
+      }
+
+      function startGame() {
+        snake = [{ x: 8, y: 8 }];
+        tailJewelry = [];
+        dir = { x: 1, y: 0 };
+        nextDir = { x: 1, y: 0 };
+        egyptians = [];
+        score = 0;
+        particles = [];
+        popups = [];
+        shake = 0;
+        moveSpeed = 280;
+        moveTimer = 0;
+        spawnEgyptians(3);
+        state = 'playing';
+        hideOverlay();
+        gameStartTime = Date.now();
+        goRunnerX = -60;
+        goInit = false;
+        updateHUD();
+      }
+
+      function spawnEgyptians(count) {
+        for (var i = 0; i < count; i++) spawnOne();
+      }
+
+      function spawnOne() {
+        var attempts = 0;
+        while (attempts < 100) {
+          attempts++;
+          var ex = Math.floor(Math.random() * COLS),
+            ey = Math.floor(Math.random() * ROWS);
+          if (occupied(ex, ey)) continue;
+          egyptians.push({
+            x: ex,
+            y: ey,
+            pop: 0,
+            phase: Math.random() * Math.PI * 2,
+          });
+          return;
+        }
+      }
+
+      function occupied(x, y) {
+        for (var i = 0; i < snake.length; i++)
+          if (snake[i].x === x && snake[i].y === y) return true;
+        for (var i = 0; i < egyptians.length; i++)
+          if (egyptians[i].x === x && egyptians[i].y === y) return true;
+        return false;
+      }
+
+      function step() {
+        dir = nextDir;
+        var head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
+        if (head.x < 0 || head.x >= COLS || head.y < 0 || head.y >= ROWS) {
+          gameOver();
+          return;
+        }
+        for (var i = 0; i < snake.length; i++) {
+          if (snake[i].x === head.x && snake[i].y === head.y) {
+            gameOver();
+            return;
+          }
+        }
+        snake.unshift(head);
+        var hit = -1;
+        for (var i = 0; i < egyptians.length; i++) {
+          if (egyptians[i].x === head.x && egyptians[i].y === head.y) {
+            hit = i;
+            break;
+          }
+        }
+        if (hit >= 0) {
+          egyptians.splice(hit, 1);
+          score++;
+          var jewelType =
+            jewelryTypes[Math.floor(Math.random() * jewelryTypes.length)];
+          tailJewelry.push(jewelType);
+          spawnGoldParticles(
+            FX + head.x * CELL + CELL / 2,
+            FY + head.y * CELL + CELL / 2,
+          );
+          popups.push({
+            x: FX + head.x * CELL + CELL / 2,
+            y: FY + head.y * CELL,
+            text: '+1',
+            life: 1,
+          });
+          shake = 4;
+          moveSpeed = Math.max(120, 280 - score * 2);
+          var toSpawn = egyptians.length < 5 ? 2 : 1;
+          spawnEgyptians(toSpawn);
+        } else {
+          snake.pop();
+        }
+        updateHUD();
+      }
+
+      function gameOver() {
+        state = 'gameOver';
+        hideOverlay();
+        if (score > best) best = score;
+      }
+
+      function showOverlay(title, msg, sub, stat, prompt, bad) {
+        overlay.classList.remove('hidden');
+        overlayTitle.textContent = title;
+        overlaySub.textContent = sub || '';
+        overlayMessage.textContent = msg;
+        overlayMessage.className = 'overlay-message' + (bad ? ' bad' : '');
+        overlayStat.textContent = stat || '';
+        btnPrompt.textContent = prompt || 'Press SPACE to continue';
+      }
+      function hideOverlay() {
+        overlay.classList.add('hidden');
+      }
+
+      var gameStartTime = 0;
+      function updateHUD() {
+        scoreDisplay.textContent = score;
+        var elapsed =
+          state === 'playing'
+            ? Math.floor((Date.now() - gameStartTime) / 1000)
+            : 0;
+        timeDisplay.textContent = elapsed;
+        bestDisplay.textContent = best;
+      }
+
+      function spawnGoldParticles(x, y) {
+        for (var i = 0; i < 12; i++) {
+          var a = Math.random() * Math.PI * 2,
+            s = 50 + Math.random() * 100;
+          particles.push({
+            x: x,
+            y: y,
+            vx: Math.cos(a) * s,
+            vy: Math.sin(a) * s - 40,
+            life: 0.6 + Math.random() * 0.4,
+            color: '#f0d878',
+            size: 2 + Math.random() * 3,
+          });
+        }
+      }
+
+      function update(dt) {
+        animTime += dt;
+        for (var i = 0; i < particles.length; i++) {
+          var p = particles[i];
+          p.x += p.vx * dt;
+          p.y += p.vy * dt;
+          p.vy += 200 * dt;
+          p.life -= dt * 2;
+        }
+        particles = particles.filter(function (p) {
+          return p.life > 0;
+        });
+        for (var i = 0; i < popups.length; i++) popups[i].life -= dt * 1.5;
+        popups = popups.filter(function (p) {
+          return p.life > 0;
+        });
+        for (var i = 0; i < egyptians.length; i++)
+          egyptians[i].pop = Math.min(1, egyptians[i].pop + dt * 4);
+        if (shake > 0) shake -= dt * 30;
+        if (state !== 'playing') return;
+        moveTimer += dt * 1000;
+        if (moveTimer >= moveSpeed) {
+          moveTimer = 0;
+          step();
+        }
+      }
+
+      function render() {
+        if (state === 'menu') {
+          renderMenu();
+          return;
+        }
+        if (state === 'gameOver') {
+          renderGameOver();
+          return;
+        }
+        var sx = shake > 0 ? (Math.random() - 0.5) * shake : 0;
+        var sy = shake > 0 ? (Math.random() - 0.5) * shake : 0;
+        ctx.save();
+        ctx.translate(sx, sy);
+        drawBackground();
+        drawField();
+        drawEgyptians();
+        drawSnake();
+        drawParticles();
+        drawPopups();
+        ctx.restore();
+        if (state === 'paused') drawPauseOverlay();
+      }
+
+      function shadeColor(color, pct) {
+        var R = parseInt(color.substr(1, 2), 16),
+          G = parseInt(color.substr(3, 2), 16),
+          B = parseInt(color.substr(5, 2), 16);
+        R = Math.min(
+          255,
+          Math.max(0, Math.round(R + (pct < 0 ? R : 255 - R) * pct)),
+        );
+        G = Math.min(
+          255,
+          Math.max(0, Math.round(G + (pct < 0 ? G : 255 - G) * pct)),
+        );
+        B = Math.min(
+          255,
+          Math.max(0, Math.round(B + (pct < 0 ? B : 255 - B) * pct)),
+        );
+        return (
+          '#' +
+          (R < 16 ? '0' : '') +
+          R.toString(16) +
+          (G < 16 ? '0' : '') +
+          G.toString(16) +
+          (B < 16 ? '0' : '') +
+          B.toString(16)
+        );
+      }
+
+      function drawBackground() {
+        var grad = ctx.createLinearGradient(0, 0, 0, H);
+        grad.addColorStop(0, '#0d0a18');
+        grad.addColorStop(0.3, '#2a1f35');
+        grad.addColorStop(0.6, '#4a3a28');
+        grad.addColorStop(1, '#6a5030');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, W, H);
+        ctx.fillStyle = '#fff8d0';
+        for (var i = 0; i < 40; i++) {
+          var stx = (i * 137) % W,
+            sty = (i * 71) % (H * 0.35),
+            sz = 0.5 + (i % 3) * 0.5;
+          ctx.globalAlpha = 0.3 + Math.abs(Math.sin(animTime * 2 + i)) * 0.5;
+          ctx.fillRect(stx, sty, sz, sz);
+        }
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = 'rgba(40,28,16,0.5)';
+        ctx.beginPath();
+        ctx.moveTo(0, H * 0.88);
+        ctx.lineTo(W * 0.2, H * 0.82);
+        ctx.lineTo(W * 0.4, H * 0.86);
+        ctx.lineTo(W * 0.6, H * 0.8);
+        ctx.lineTo(W * 0.8, H * 0.85);
+        ctx.lineTo(W, H * 0.83);
+        ctx.lineTo(W, H);
+        ctx.lineTo(0, H);
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      function drawField() {
+        var grad = ctx.createLinearGradient(0, FY, 0, FY + FH);
+        grad.addColorStop(0, '#b89860');
+        grad.addColorStop(0.5, '#d4a96a');
+        grad.addColorStop(1, '#a88450');
+        ctx.fillStyle = grad;
+        ctx.fillRect(FX, FY, FW, FH);
+        ctx.strokeStyle = 'rgba(139,94,60,0.12)';
+        ctx.lineWidth = 1;
+        for (var i = 0; i <= COLS; i++) {
+          ctx.beginPath();
+          ctx.moveTo(FX + i * CELL, FY);
+          ctx.lineTo(FX + i * CELL, FY + FH);
+          ctx.stroke();
+        }
+        for (var i = 0; i <= ROWS; i++) {
+          ctx.beginPath();
+          ctx.moveTo(FX, FY + i * CELL);
+          ctx.lineTo(FX + FW, FY + i * CELL);
+          ctx.stroke();
+        }
+        ctx.fillStyle = 'rgba(160,120,70,0.15)';
+        for (var i = 0; i < 60; i++) {
+          var tx = FX + ((i * 37) % FW),
+            ty = FY + ((i * 53) % FH);
+          ctx.fillRect(tx, ty, 1, 1);
+        }
+        ctx.strokeStyle = '#5a3818';
+        ctx.lineWidth = 4;
+        ctx.strokeRect(FX - 2, FY - 2, FW + 4, FH + 4);
+        ctx.strokeStyle = '#8b5e3c';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(FX - 2, FY - 2, FW + 4, FH + 4);
+        var vig = ctx.createRadialGradient(
+          W / 2,
+          H / 2,
+          W * 0.3,
+          W / 2,
+          H / 2,
+          W * 0.72,
+        );
+        vig.addColorStop(0, 'rgba(0,0,0,0)');
+        vig.addColorStop(1, 'rgba(50,30,10,0.2)');
+        ctx.fillStyle = vig;
+        ctx.fillRect(0, 0, W, H);
+      }
+
+      function drawSnake() {
+        for (var i = snake.length - 1; i >= 0; i--) {
+          var s = snake[i];
+          var x = FX + s.x * CELL,
+            y = FY + s.y * CELL;
+          if (i === 0) drawIsraelite(x, y, dir);
+          else drawJewelry(x, y, i, tailJewelry[i - 1]);
+        }
+      }
+
+      function drawIsraelite(x, y, d) {
+        var cx = x + CELL / 2,
+          cy = y + CELL / 2;
+        ctx.fillStyle = 'rgba(0,0,0,0.2)';
+        ctx.beginPath();
+        ctx.ellipse(
+          cx,
+          cy + CELL * 0.35,
+          CELL * 0.32,
+          CELL * 0.1,
+          0,
+          0,
+          Math.PI * 2,
+        );
+        ctx.fill();
+        ctx.fillStyle = '#4a6fa5';
+        ctx.beginPath();
+        ctx.moveTo(cx - CELL * 0.28, cy + CELL * 0.3);
+        ctx.quadraticCurveTo(
+          cx,
+          cy + CELL * 0.38,
+          cx + CELL * 0.28,
+          cy + CELL * 0.3,
+        );
+        ctx.lineTo(cx + CELL * 0.2, cy - CELL * 0.1);
+        ctx.lineTo(cx - CELL * 0.2, cy - CELL * 0.1);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = '#5a7fb5';
+        ctx.fillRect(cx - CELL * 0.18, cy - CELL * 0.08, 3, CELL * 0.35);
+        ctx.fillStyle = '#d4853a';
+        ctx.fillRect(cx - CELL * 0.2, cy + CELL * 0.02, CELL * 0.4, 3);
+        ctx.fillStyle = '#d4a574';
+        ctx.beginPath();
+        ctx.arc(cx, cy - CELL * 0.2, CELL * 0.18, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#333';
+        var ex = d.x * CELL * 0.06,
+          ey = d.y * CELL * 0.04;
+        ctx.fillRect(cx - 3 + ex, cy - CELL * 0.22 + ey, 2, 2);
+        ctx.fillRect(cx + 1 + ex, cy - CELL * 0.22 + ey, 2, 2);
+        ctx.strokeStyle = '#8b5e3c';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(cx + CELL * 0.25, cy - CELL * 0.15);
+        ctx.lineTo(cx + CELL * 0.32, cy + CELL * 0.3);
+        ctx.stroke();
+      }
+
+      function drawJewelry(x, y, index, type) {
+        var cx = x + CELL / 2,
+          cy = y + CELL / 2;
+        var bob = Math.sin(animTime * 4 + index * 0.5) * 2;
+        var py = cy + bob;
+        ctx.fillStyle = 'rgba(0,0,0,0.15)';
+        ctx.beginPath();
+        ctx.ellipse(
+          cx,
+          cy + CELL * 0.28,
+          CELL * 0.2,
+          CELL * 0.06,
+          0,
+          0,
+          Math.PI * 2,
+        );
+        ctx.fill();
+        var g = ctx.createRadialGradient(
+          cx - 3,
+          py - 3,
+          0,
+          cx,
+          py,
+          CELL * 0.22,
+        );
+        g.addColorStop(0, '#fff8d0');
+        g.addColorStop(0.4, '#f0d878');
+        g.addColorStop(1, '#c4a030');
+        if (type === 'bracelet') drawBracelet(cx, py, g);
+        else if (type === 'ring') drawRing(cx, py, g);
+        else if (type === 'necklace') drawNecklace(cx, py, g);
+        else if (type === 'earring') drawEarring(cx, py, g);
+        else if (type === 'armlet') drawArmlet(cx, py, g);
+        else drawPendent(cx, py, g);
+      }
+
+      function drawBracelet(cx, cy, grad) {
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.arc(cx, cy, CELL * 0.18, 0, Math.PI * 1.6);
+        ctx.stroke();
+        ctx.fillStyle = '#e74c3c';
+        ctx.beginPath();
+        ctx.arc(cx + CELL * 0.14, cy + CELL * 0.12, 3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = 'rgba(255,255,255,0.4)';
+        ctx.beginPath();
+        ctx.arc(cx - CELL * 0.08, cy - CELL * 0.1, 1.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      function drawRing(cx, cy, grad) {
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(cx, cy, CELL * 0.12, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.fillStyle = '#e74c3c';
+        ctx.beginPath();
+        ctx.moveTo(cx, cy - CELL * 0.18);
+        ctx.lineTo(cx - 3, cy - CELL * 0.12);
+        ctx.lineTo(cx + 3, cy - CELL * 0.12);
+        ctx.closePath();
+        ctx.fill();
+      }
+      function drawNecklace(cx, cy, grad) {
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(cx, cy - CELL * 0.05, CELL * 0.2, 0.1, Math.PI - 0.1);
+        ctx.stroke();
+        for (var i = -2; i <= 2; i++) {
+          var px = cx + i * CELL * 0.08,
+            py =
+              cy -
+              CELL * 0.05 +
+              Math.sqrt(
+                Math.max(
+                  0,
+                  CELL * 0.2 * CELL * 0.2 - i * CELL * 0.08 * (i * CELL * 0.08),
+                ),
+              );
+          ctx.fillStyle = grad;
+          ctx.beginPath();
+          ctx.arc(px, py, 2.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.fillStyle = '#9a5cc4';
+        ctx.beginPath();
+        ctx.arc(cx, cy + CELL * 0.12, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = 'rgba(255,255,255,0.3)';
+        ctx.beginPath();
+        ctx.arc(cx - 1, cy + CELL * 0.12 - 1, 1.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      function drawEarring(cx, cy, grad) {
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(cx, cy - CELL * 0.1, CELL * 0.08, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(cx, cy + CELL * 0.08, CELL * 0.1, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#a88820';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(cx, cy + CELL * 0.08, CELL * 0.1, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.fillStyle = '#5cb85c';
+        ctx.fillRect(cx - 1.5, cy + CELL * 0.05, 3, 3);
+      }
+      function drawArmlet(cx, cy, grad) {
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = 5;
+        ctx.beginPath();
+        ctx.arc(cx, cy, CELL * 0.16, 0, Math.PI * 1.4);
+        ctx.stroke();
+        ctx.strokeStyle = '#a88820';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(cx, cy, CELL * 0.16, 0, Math.PI * 1.4);
+        ctx.stroke();
+        ctx.fillStyle = '#4a9ad4';
+        ctx.beginPath();
+        ctx.arc(cx + CELL * 0.12, cy + CELL * 0.1, 3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      function drawPendent(cx, cy, grad) {
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy - CELL * 0.2);
+        ctx.lineTo(cx, cy + CELL * 0.05);
+        ctx.stroke();
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy + CELL * 0.05);
+        ctx.lineTo(cx - 5, cy + CELL * 0.12);
+        ctx.lineTo(cx, cy + CELL * 0.2);
+        ctx.lineTo(cx + 5, cy + CELL * 0.12);
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = '#a88820';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy + CELL * 0.05);
+        ctx.lineTo(cx - 5, cy + CELL * 0.12);
+        ctx.lineTo(cx, cy + CELL * 0.2);
+        ctx.lineTo(cx + 5, cy + CELL * 0.12);
+        ctx.closePath();
+        ctx.stroke();
+        ctx.fillStyle = '#d4554a';
+        ctx.fillRect(cx - 1.5, cy + CELL * 0.1, 3, 3);
+      }
+
+      function drawEgyptians() {
+        for (var i = 0; i < egyptians.length; i++) {
+          var e = egyptians[i];
+          drawEgyptian(FX + e.x * CELL, FY + e.y * CELL, e.pop, e.phase);
+        }
+      }
+
+      function drawParticles() {
+        for (var i = 0; i < particles.length; i++) {
+          var p = particles[i];
+          ctx.globalAlpha = Math.max(0, p.life);
+          ctx.fillStyle = p.color;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+      }
+
+      function drawPopups() {
+        for (var i = 0; i < popups.length; i++) {
+          var p = popups[i];
+          ctx.globalAlpha = Math.min(1, p.life);
+          ctx.fillStyle = '#f0d878';
+          ctx.font = 'bold 14px Georgia';
+          ctx.textAlign = 'center';
+          ctx.fillText(p.text, p.x, p.y - (1 - p.life) * 20);
+        }
+        ctx.globalAlpha = 1;
+      }
+
+      function drawPauseOverlay() {
+        ctx.fillStyle = 'rgba(20,15,30,0.7)';
+        ctx.fillRect(0, 0, W, H);
+        ctx.fillStyle = '#f0d878';
+        ctx.font = 'bold 36px Georgia';
+        ctx.textAlign = 'center';
+        ctx.fillText('PAUSED', W / 2, H / 2);
+      }
+
+      function roundRect(x, y, w, h, r) {
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.lineTo(x + w - r, y);
+        ctx.arcTo(x + w, y, x + w, y + r, r);
+        ctx.lineTo(x + w, y + h - r);
+        ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+        ctx.lineTo(x + r, y + h);
+        ctx.arcTo(x, y + h, x, y + h - r, r);
+        ctx.lineTo(x, y + r);
+        ctx.arcTo(x, y, x + r, y, r);
+        ctx.closePath();
+      }
+
+      // === Artistic Egypt menu background ===
+      var menuStars = [];
+      function initMenuScene() {
+        menuStars = [];
+        for (var i = 0; i < 30; i++)
+          menuStars.push({
+            x: Math.random() * W,
+            y: Math.random() * H * 0.3,
+            tw: Math.random() * Math.PI * 2,
+            sz: 0.5 + Math.random() * 1.5,
+          });
+      }
+      initMenuScene();
+
+      function renderMenu() {
+        // Sunset sky
+        var sky = ctx.createLinearGradient(0, 0, 0, H);
+        sky.addColorStop(0, '#1a0a30');
+        sky.addColorStop(0.2, '#4a2040');
+        sky.addColorStop(0.4, '#8a3828');
+        sky.addColorStop(0.55, '#c46838');
+        sky.addColorStop(0.7, '#d48a48');
+        sky.addColorStop(1, '#a87840');
+        ctx.fillStyle = sky;
+        ctx.fillRect(0, 0, W, H);
+        // Stars (fading in upper sky)
+        for (var i = 0; i < menuStars.length; i++) {
+          var st = menuStars[i];
+          var tw = 0.3 + Math.abs(Math.sin(st.tw + animTime * 2)) * 0.5;
+          ctx.globalAlpha = tw * (1 - st.y / (H * 0.3));
+          ctx.fillStyle = '#fff8d0';
+          ctx.fillRect(st.x, st.y, st.sz, st.sz);
+        }
+        ctx.globalAlpha = 1;
+        // Sun (setting on horizon)
+        var sunX = W * 0.72,
+          sunY = H * 0.45,
+          sunR = 30;
+        var sunGlow = ctx.createRadialGradient(
+          sunX,
+          sunY,
+          0,
+          sunX,
+          sunY,
+          sunR * 3,
+        );
+        sunGlow.addColorStop(0, 'rgba(255,200,100,0.4)');
+        sunGlow.addColorStop(0.3, 'rgba(255,160,60,0.15)');
+        sunGlow.addColorStop(1, 'rgba(255,120,40,0)');
+        ctx.fillStyle = sunGlow;
+        ctx.fillRect(sunX - sunR * 3, sunY - sunR * 3, sunR * 6, sunR * 6);
+        var sunGrad = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunR);
+        sunGrad.addColorStop(0, '#fff8d0');
+        sunGrad.addColorStop(0.5, '#ffc870');
+        sunGrad.addColorStop(1, '#e88830');
+        ctx.fillStyle = sunGrad;
+        ctx.beginPath();
+        ctx.arc(sunX, sunY, sunR, 0, Math.PI * 2);
+        ctx.fill();
+        // Pyramids (silhouettes against sunset)
+        ctx.fillStyle = 'rgba(80,50,30,0.7)';
+        // Large pyramid (left)
+        ctx.beginPath();
+        ctx.moveTo(W * 0.08, H * 0.55);
+        ctx.lineTo(W * 0.22, H * 0.3);
+        ctx.lineTo(W * 0.36, H * 0.55);
+        ctx.closePath();
+        ctx.fill();
+        // Medium pyramid (right of large)
+        ctx.beginPath();
+        ctx.moveTo(W * 0.28, H * 0.55);
+        ctx.lineTo(W * 0.38, H * 0.36);
+        ctx.lineTo(W * 0.48, H * 0.55);
+        ctx.closePath();
+        ctx.fill();
+        // Small distant pyramid
+        ctx.fillStyle = 'rgba(60,40,25,0.5)';
+        ctx.beginPath();
+        ctx.moveTo(W * 0.5, H * 0.55);
+        ctx.lineTo(W * 0.57, H * 0.42);
+        ctx.lineTo(W * 0.64, H * 0.55);
+        ctx.closePath();
+        ctx.fill();
+        // Pyramid edge highlight (sunlit side)
+        ctx.strokeStyle = 'rgba(200,140,80,0.4)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(W * 0.22, H * 0.3);
+        ctx.lineTo(W * 0.08, H * 0.55);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(W * 0.38, H * 0.36);
+        ctx.lineTo(W * 0.28, H * 0.55);
+        ctx.stroke();
+        // Sphinx silhouette (small, between pyramids)
+        ctx.fillStyle = 'rgba(70,45,28,0.6)';
+        ctx.beginPath();
+        ctx.moveTo(W * 0.4, H * 0.52);
+        ctx.lineTo(W * 0.42, H * 0.48);
+        ctx.lineTo(W * 0.44, H * 0.47);
+        ctx.lineTo(W * 0.46, H * 0.49);
+        ctx.lineTo(W * 0.47, H * 0.52);
+        ctx.closePath();
+        ctx.fill();
+        // Nile river (bottom band, reflecting sunset)
+        var nileGrad = ctx.createLinearGradient(0, H * 0.55, 0, H * 0.68);
+        nileGrad.addColorStop(0, '#8a6840');
+        nileGrad.addColorStop(0.3, '#5a8090');
+        nileGrad.addColorStop(0.7, '#4a7080');
+        nileGrad.addColorStop(1, '#3a6070');
+        ctx.fillStyle = nileGrad;
+        ctx.fillRect(0, H * 0.55, W, H * 0.13);
+        // Nile reflections (shimmering)
+        ctx.fillStyle = 'rgba(255,200,100,0.15)';
+        for (var i = 0; i < 20; i++) {
+          var rx = (i * 37) % W,
+            ry = H * 0.56 + (i % 5) * 5,
+            rw = 8 + (i % 4) * 4;
+          ctx.globalAlpha = 0.3 + Math.abs(Math.sin(animTime * 3 + i)) * 0.3;
+          ctx.fillRect(rx, ry, rw, 1);
+        }
+        ctx.globalAlpha = 1;
+        // Palm trees (silhouettes on riverbank)
+        function drawPalm(px, py, scale) {
+          ctx.fillStyle = 'rgba(50,35,20,0.7)';
+          ctx.fillRect(px - 2 * scale, py - 30 * scale, 4 * scale, 30 * scale);
+          for (var f = -2; f <= 2; f++) {
+            ctx.beginPath();
+            ctx.moveTo(px, py - 30 * scale);
+            ctx.quadraticCurveTo(
+              px + f * 18 * scale,
+              py - 38 * scale,
+              px + f * 28 * scale,
+              py - 34 * scale,
+            );
+            ctx.lineWidth = 2 * scale;
+            ctx.strokeStyle = 'rgba(50,35,20,0.6)';
+            ctx.stroke();
+          }
+          // Fronds
+          for (var f = -2; f <= 2; f++) {
+            ctx.beginPath();
+            ctx.moveTo(px + f * 28 * scale, py - 34 * scale);
+            ctx.quadraticCurveTo(
+              px + f * 32 * scale,
+              py - 30 * scale,
+              px + f * 30 * scale,
+              py - 25 * scale,
+            );
+            ctx.lineWidth = 1.5 * scale;
+            ctx.stroke();
+          }
+        }
+        drawPalm(W * 0.05, H * 0.62, 1.2);
+        drawPalm(W * 0.93, H * 0.62, 1);
+        drawPalm(W * 0.88, H * 0.64, 0.7);
+        // Sandy riverbank
+        var bankGrad = ctx.createLinearGradient(0, H * 0.68, 0, H);
+        bankGrad.addColorStop(0, '#a88450');
+        bankGrad.addColorStop(0.5, '#c4a06a');
+        bankGrad.addColorStop(1, '#8a6840');
+        ctx.fillStyle = bankGrad;
+        ctx.fillRect(0, H * 0.68, W, H * 0.32);
+        // Sand texture
+        ctx.fillStyle = 'rgba(100,70,40,0.1)';
+        for (var i = 0; i < 50; i++) {
+          var tx = (i * 53) % W,
+            ty = H * 0.7 + ((i * 37) % (H * 0.3));
+          ctx.fillRect(tx, ty, 2, 2);
+        }
+        // Dark overlay for text legibility
+        var grad = ctx.createLinearGradient(0, 0, 0, H);
+        grad.addColorStop(0, 'rgba(10,8,16,0.4)');
+        grad.addColorStop(0.5, 'rgba(20,15,30,0.2)');
+        grad.addColorStop(1, 'rgba(30,20,30,0.3)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, W, H);
+        // Characters
+        drawMenuIsraelite(W * 0.18, H * 0.72);
+        var eScale = 0.85 + Math.sin(animTime * 3) * 0.05;
+        drawMenuEgyptian(W * 0.82, H * 0.72, eScale);
+        // === Text ===
+        ctx.textAlign = 'center';
+        var titleY = H * 0.2;
+        ctx.shadowColor = 'rgba(240,216,120,0.5)';
+        ctx.shadowBlur = 30;
+        ctx.fillStyle = '#f0d878';
+        ctx.font = 'bold 44px Georgia';
+        ctx.fillText('PASSOVER', W / 2, titleY);
+        ctx.fillText('PILLAGE', W / 2, titleY + 44);
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = 'rgba(245,230,200,0.6)';
+        ctx.font = 'italic 13px Georgia';
+        ctx.fillText(
+          'Plunder Egypt \u00B7 Gather gold \u00B7 Gain freedom',
+          W / 2,
+          titleY + 72,
+        );
+        // Controls box
+        var cy = H * 0.43;
+        ctx.fillStyle = 'rgba(0,0,0,0.45)';
+        roundRect(W / 2 - 160, cy, 320, 72, 8);
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(240,216,120,0.4)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.fillStyle = 'rgba(240,216,120,0.85)';
+        ctx.font = 'bold 12px Georgia';
+        ctx.fillText('CONTROLS', W / 2, cy + 16);
+        ctx.fillStyle = 'rgba(245,230,200,0.75)';
+        ctx.font = '12px Georgia';
+        ctx.fillText('Arrow Keys, WASD, or on-screen pad', W / 2, cy + 36);
+        ctx.fillText('P \u2014 Pause', W / 2, cy + 54);
+        // Description
+        ctx.fillStyle = 'rgba(240,216,120,0.55)';
+        ctx.font = 'italic 11px Georgia';
+        ctx.fillText(
+          'Touch an Egyptian to plunder their gold jewelry.',
+          W / 2,
+          H * 0.87,
+        );
+        // PRESS SPACE
+        if (Math.sin(animTime * 3) > -0.3) {
+          ctx.fillStyle = '#f0d878';
+          ctx.shadowColor = 'rgba(240,216,120,0.5)';
+          ctx.shadowBlur = 15;
+          ctx.font = 'bold 20px Georgia';
+          ctx.fillText('PRESS SPACE TO BEGIN', W / 2, H * 0.94);
+          ctx.shadowBlur = 0;
+        }
+        var vig = ctx.createRadialGradient(
+          W / 2,
+          H / 2,
+          W * 0.3,
+          W / 2,
+          H / 2,
+          W * 0.75,
+        );
+        vig.addColorStop(0, 'rgba(0,0,0,0)');
+        vig.addColorStop(1, 'rgba(0,0,0,0.25)');
+        ctx.fillStyle = vig;
+        ctx.fillRect(0, 0, W, H);
+      }
+
+      function drawField() {
+        var grad = ctx.createLinearGradient(0, FY, 0, FY + FH);
+        grad.addColorStop(0, '#b89860');
+        grad.addColorStop(0.5, '#d4a96a');
+        grad.addColorStop(1, '#a88450');
+        ctx.fillStyle = grad;
+        ctx.fillRect(FX, FY, FW, FH);
+        ctx.strokeStyle = 'rgba(139,94,60,0.12)';
+        ctx.lineWidth = 1;
+        for (var i = 0; i <= COLS; i++) {
+          ctx.beginPath();
+          ctx.moveTo(FX + i * CELL, FY);
+          ctx.lineTo(FX + i * CELL, FY + FH);
+          ctx.stroke();
+        }
+        for (var i = 0; i <= ROWS; i++) {
+          ctx.beginPath();
+          ctx.moveTo(FX, FY + i * CELL);
+          ctx.lineTo(FX + FW, FY + i * CELL);
+          ctx.stroke();
+        }
+        ctx.fillStyle = 'rgba(160,120,70,0.15)';
+        for (var i = 0; i < 60; i++) {
+          var tx = FX + ((i * 37) % FW),
+            ty = FY + ((i * 53) % FH);
+          ctx.fillRect(tx, ty, 1, 1);
+        }
+        ctx.strokeStyle = '#5a3818';
+        ctx.lineWidth = 4;
+        ctx.strokeRect(FX - 2, FY - 2, FW + 4, FH + 4);
+        ctx.strokeStyle = '#8b5e3c';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(FX - 2, FY - 2, FW + 4, FH + 4);
+        var vig = ctx.createRadialGradient(
+          W / 2,
+          H / 2,
+          W * 0.3,
+          W / 2,
+          H / 2,
+          W * 0.72,
+        );
+        vig.addColorStop(0, 'rgba(0,0,0,0)');
+        vig.addColorStop(1, 'rgba(50,30,10,0.2)');
+        ctx.fillStyle = vig;
+        ctx.fillRect(0, 0, W, H);
+      }
+
+      function drawSnake() {
+        for (var i = snake.length - 1; i >= 0; i--) {
+          var s = snake[i];
+          var x = FX + s.x * CELL,
+            y = FY + s.y * CELL;
+          if (i === 0) drawIsraelite(x, y, dir);
+          else drawJewelry(x, y, i, tailJewelry[i - 1]);
+        }
+      }
+
+      function drawIsraelite(x, y, d) {
+        var cx = x + CELL / 2,
+          cy = y + CELL / 2;
+        ctx.fillStyle = 'rgba(0,0,0,0.2)';
+        ctx.beginPath();
+        ctx.ellipse(
+          cx,
+          cy + CELL * 0.35,
+          CELL * 0.32,
+          CELL * 0.1,
+          0,
+          0,
+          Math.PI * 2,
+        );
+        ctx.fill();
+        ctx.fillStyle = '#4a6fa5';
+        ctx.beginPath();
+        ctx.moveTo(cx - CELL * 0.28, cy + CELL * 0.3);
+        ctx.quadraticCurveTo(
+          cx,
+          cy + CELL * 0.38,
+          cx + CELL * 0.28,
+          cy + CELL * 0.3,
+        );
+        ctx.lineTo(cx + CELL * 0.2, cy - CELL * 0.1);
+        ctx.lineTo(cx - CELL * 0.2, cy - CELL * 0.1);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = '#5a7fb5';
+        ctx.fillRect(cx - CELL * 0.18, cy - CELL * 0.08, 3, CELL * 0.35);
+        ctx.fillStyle = '#d4853a';
+        ctx.fillRect(cx - CELL * 0.2, cy + CELL * 0.02, CELL * 0.4, 3);
+        ctx.fillStyle = '#d4a574';
+        ctx.beginPath();
+        ctx.arc(cx, cy - CELL * 0.2, CELL * 0.18, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#333';
+        var ex = d.x * CELL * 0.06,
+          ey = d.y * CELL * 0.04;
+        ctx.fillRect(cx - 3 + ex, cy - CELL * 0.22 + ey, 2, 2);
+        ctx.fillRect(cx + 1 + ex, cy - CELL * 0.22 + ey, 2, 2);
+        ctx.strokeStyle = '#8b5e3c';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(cx + CELL * 0.25, cy - CELL * 0.15);
+        ctx.lineTo(cx + CELL * 0.32, cy + CELL * 0.3);
+        ctx.stroke();
+      }
+
+      function drawJewelry(x, y, index, type) {
+        var cx = x + CELL / 2,
+          cy = y + CELL / 2;
+        var bob = Math.sin(animTime * 4 + index * 0.5) * 2;
+        var py = cy + bob;
+        ctx.fillStyle = 'rgba(0,0,0,0.15)';
+        ctx.beginPath();
+        ctx.ellipse(
+          cx,
+          cy + CELL * 0.28,
+          CELL * 0.2,
+          CELL * 0.06,
+          0,
+          0,
+          Math.PI * 2,
+        );
+        ctx.fill();
+        var g = ctx.createRadialGradient(
+          cx - 3,
+          py - 3,
+          0,
+          cx,
+          py,
+          CELL * 0.22,
+        );
+        g.addColorStop(0, '#fff8d0');
+        g.addColorStop(0.4, '#f0d878');
+        g.addColorStop(1, '#c4a030');
+        if (type === 'bracelet') drawBracelet(cx, py, g);
+        else if (type === 'ring') drawRing(cx, py, g);
+        else if (type === 'necklace') drawNecklace(cx, py, g);
+        else if (type === 'earring') drawEarring(cx, py, g);
+        else if (type === 'armlet') drawArmlet(cx, py, g);
+        else drawPendent(cx, py, g);
+      }
+
+      function drawBracelet(cx, cy, grad) {
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.arc(cx, cy, CELL * 0.18, 0, Math.PI * 1.6);
+        ctx.stroke();
+        ctx.fillStyle = '#e74c3c';
+        ctx.beginPath();
+        ctx.arc(cx + CELL * 0.14, cy + CELL * 0.12, 3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = 'rgba(255,255,255,0.4)';
+        ctx.beginPath();
+        ctx.arc(cx - CELL * 0.08, cy - CELL * 0.1, 1.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      function drawRing(cx, cy, grad) {
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(cx, cy, CELL * 0.12, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.fillStyle = '#e74c3c';
+        ctx.beginPath();
+        ctx.moveTo(cx, cy - CELL * 0.18);
+        ctx.lineTo(cx - 3, cy - CELL * 0.12);
+        ctx.lineTo(cx + 3, cy - CELL * 0.12);
+        ctx.closePath();
+        ctx.fill();
+      }
+      function drawNecklace(cx, cy, grad) {
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(cx, cy - CELL * 0.05, CELL * 0.2, 0.1, Math.PI - 0.1);
+        ctx.stroke();
+        for (var i = -2; i <= 2; i++) {
+          var px = cx + i * CELL * 0.08,
+            py =
+              cy -
+              CELL * 0.05 +
+              Math.sqrt(
+                Math.max(
+                  0,
+                  CELL * 0.2 * CELL * 0.2 - i * CELL * 0.08 * (i * CELL * 0.08),
+                ),
+              );
+          ctx.fillStyle = grad;
+          ctx.beginPath();
+          ctx.arc(px, py, 2.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.fillStyle = '#9a5cc4';
+        ctx.beginPath();
+        ctx.arc(cx, cy + CELL * 0.12, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = 'rgba(255,255,255,0.3)';
+        ctx.beginPath();
+        ctx.arc(cx - 1, cy + CELL * 0.12 - 1, 1.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      function drawEarring(cx, cy, grad) {
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(cx, cy - CELL * 0.1, CELL * 0.08, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(cx, cy + CELL * 0.08, CELL * 0.1, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#a88820';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(cx, cy + CELL * 0.08, CELL * 0.1, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.fillStyle = '#5cb85c';
+        ctx.fillRect(cx - 1.5, cy + CELL * 0.05, 3, 3);
+      }
+      function drawArmlet(cx, cy, grad) {
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = 5;
+        ctx.beginPath();
+        ctx.arc(cx, cy, CELL * 0.16, 0, Math.PI * 1.4);
+        ctx.stroke();
+        ctx.strokeStyle = '#a88820';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(cx, cy, CELL * 0.16, 0, Math.PI * 1.4);
+        ctx.stroke();
+        ctx.fillStyle = '#4a9ad4';
+        ctx.beginPath();
+        ctx.arc(cx + CELL * 0.12, cy + CELL * 0.1, 3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      function drawPendent(cx, cy, grad) {
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy - CELL * 0.2);
+        ctx.lineTo(cx, cy + CELL * 0.05);
+        ctx.stroke();
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy + CELL * 0.05);
+        ctx.lineTo(cx - 5, cy + CELL * 0.12);
+        ctx.lineTo(cx, cy + CELL * 0.2);
+        ctx.lineTo(cx + 5, cy + CELL * 0.12);
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = '#a88820';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy + CELL * 0.05);
+        ctx.lineTo(cx - 5, cy + CELL * 0.12);
+        ctx.lineTo(cx, cy + CELL * 0.2);
+        ctx.lineTo(cx + 5, cy + CELL * 0.12);
+        ctx.closePath();
+        ctx.stroke();
+        ctx.fillStyle = '#d4554a';
+        ctx.fillRect(cx - 1.5, cy + CELL * 0.1, 3, 3);
+      }
+
+      function drawEgyptians() {
+        for (var i = 0; i < egyptians.length; i++) {
+          var e = egyptians[i];
+          drawEgyptian(FX + e.x * CELL, FY + e.y * CELL, e.pop, e.phase);
+        }
+      }
+
+      function drawEgyptian(x, y, scale, phase) {
+        var cx = x + CELL / 2,
+          cy = y + CELL / 2;
+        var s = Math.max(0.01, scale);
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.scale(s, s);
+        ctx.translate(-cx, -cy);
+        // Shadow
+        ctx.fillStyle = 'rgba(0,0,0,0.2)';
+        ctx.beginPath();
+        ctx.ellipse(
+          cx,
+          cy + CELL * 0.35,
+          CELL * 0.3,
+          CELL * 0.1,
+          0,
+          0,
+          Math.PI * 2,
+        );
+        ctx.fill();
+        // Shendyt (white linen kilt with red sash)
+        ctx.fillStyle = '#f0e8d8';
+        ctx.beginPath();
+        ctx.moveTo(cx - CELL * 0.22, cy + CELL * 0.3);
+        ctx.quadraticCurveTo(
+          cx,
+          cy + CELL * 0.38,
+          cx + CELL * 0.22,
+          cy + CELL * 0.3,
+        );
+        ctx.lineTo(cx + CELL * 0.18, cy - CELL * 0.05);
+        ctx.lineTo(cx - CELL * 0.18, cy - CELL * 0.05);
+        ctx.closePath();
+        ctx.fill();
+        // Red sash diagonal
+        ctx.fillStyle = '#c44030';
+        ctx.save();
+        ctx.translate(cx, cy + CELL * 0.12);
+        ctx.rotate(0.3);
+        ctx.fillRect(-CELL * 0.18, -3, CELL * 0.36, 4);
+        ctx.restore();
+        // Bare chest (brownish skin)
+        ctx.fillStyle = '#c89868';
+        ctx.fillRect(
+          cx - CELL * 0.13,
+          cy - CELL * 0.18,
+          CELL * 0.26,
+          CELL * 0.16,
+        );
+        // Gold pectoral collar (broad necklace)
+        ctx.fillStyle = '#d4a030';
+        ctx.beginPath();
+        ctx.moveTo(cx - CELL * 0.16, cy - CELL * 0.14);
+        ctx.quadraticCurveTo(
+          cx,
+          cy - CELL * 0.02,
+          cx + CELL * 0.16,
+          cy - CELL * 0.14,
+        );
+        ctx.lineTo(cx + CELL * 0.12, cy - CELL * 0.08);
+        ctx.quadraticCurveTo(
+          cx,
+          cy + CELL * 0.02,
+          cx - CELL * 0.12,
+          cy - CELL * 0.08,
+        );
+        ctx.closePath();
+        ctx.fill();
+        // Collar gem
+        ctx.fillStyle = '#3a8a4a';
+        ctx.beginPath();
+        ctx.arc(cx, cy - CELL * 0.08, 2, 0, Math.PI * 2);
+        ctx.fill();
+        // Gold arm bands
+        ctx.fillStyle = '#d4a030';
+        ctx.fillRect(cx - CELL * 0.22, cy - CELL * 0.02, 4, 3);
+        ctx.fillRect(cx + CELL * 0.18, cy - CELL * 0.02, 4, 3);
+        // Arms (bare)
+        ctx.fillStyle = '#c89868';
+        ctx.fillRect(cx - CELL * 0.25, cy - CELL * 0.05, 4, CELL * 0.18);
+        ctx.fillRect(cx + CELL * 0.21, cy - CELL * 0.05, 4, CELL * 0.18);
+        // Head
+        ctx.fillStyle = '#c89868';
+        ctx.beginPath();
+        ctx.arc(cx, cy - CELL * 0.24, CELL * 0.14, 0, Math.PI * 2);
+        ctx.fill();
+        // Egyptian headdress side flaps (drape down behind shoulders)
+        ctx.fillStyle = '#d4a030';
+        ctx.fillRect(cx - CELL * 0.18, cy - CELL * 0.14, 5, CELL * 0.2);
+        ctx.fillRect(cx + CELL * 0.13, cy - CELL * 0.14, 5, CELL * 0.2);
+        // Headdress dome (covers top of head only, not face)
+        ctx.fillStyle = '#d4a030';
+        ctx.beginPath();
+        ctx.arc(
+          cx,
+          cy - CELL * 0.24,
+          CELL * 0.15,
+          Math.PI * 1.1,
+          Math.PI * 1.9,
+        );
+        ctx.fill();
+        // Gold band at forehead
+        ctx.fillStyle = '#d4a030';
+        ctx.fillRect(cx - CELL * 0.15, cy - CELL * 0.2, CELL * 0.3, 3);
+        // Headdress highlight
+        ctx.fillStyle = 'rgba(255,235,160,0.3)';
+        ctx.beginPath();
+        ctx.arc(
+          cx - CELL * 0.06,
+          cy - CELL * 0.32,
+          CELL * 0.05,
+          0,
+          Math.PI * 2,
+        );
+        ctx.fill();
+        // Simple eyes (no kohl)
+        ctx.fillStyle = '#222';
+        ctx.fillRect(cx - 4, cy - CELL * 0.25, 2, 2);
+        ctx.fillRect(cx + 2, cy - CELL * 0.25, 2, 2);
+        ctx.restore();
+        if (scale < 1) {
+          ctx.fillStyle = 'rgba(255,248,200,0.5)';
+          for (var i = 0; i < 3; i++) {
+            var sa = phase + i * 2.1;
+            var sr = CELL * 0.35 * (1 - scale) * 2;
+            ctx.fillRect(cx + Math.cos(sa) * sr, cy + Math.sin(sa) * sr, 2, 2);
+          }
+        }
+      }
+
+      function drawParticles() {
+        for (var i = 0; i < particles.length; i++) {
+          var p = particles[i];
+          ctx.globalAlpha = Math.max(0, p.life);
+          ctx.fillStyle = p.color;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+      }
+
+      function drawPopups() {
+        for (var i = 0; i < popups.length; i++) {
+          var p = popups[i];
+          ctx.globalAlpha = Math.min(1, p.life);
+          ctx.fillStyle = '#f0d878';
+          ctx.font = 'bold 14px Georgia';
+          ctx.textAlign = 'center';
+          ctx.fillText(p.text, p.x, p.y - (1 - p.life) * 20);
+        }
+        ctx.globalAlpha = 1;
+      }
+
+      function drawPauseOverlay() {
+        ctx.fillStyle = 'rgba(20,15,30,0.7)';
+        ctx.fillRect(0, 0, W, H);
+        ctx.fillStyle = '#f0d878';
+        ctx.font = 'bold 36px Georgia';
+        ctx.textAlign = 'center';
+        ctx.fillText('PAUSED', W / 2, H / 2);
+      }
+
+      function roundRect(x, y, w, h, r) {
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.lineTo(x + w - r, y);
+        ctx.arcTo(x + w, y, x + w, y + r, r);
+        ctx.lineTo(x + w, y + h - r);
+        ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+        ctx.lineTo(x + r, y + h);
+        ctx.arcTo(x, y + h, x, y + h - r, r);
+        ctx.lineTo(x, y + r);
+        ctx.arcTo(x, y, x + r, y, r);
+        ctx.closePath();
+      }
+
+      function drawMenuIsraelite(cx, cy) {
+        ctx.fillStyle = 'rgba(0,0,0,0.25)';
+        ctx.beginPath();
+        ctx.ellipse(cx, cy + 30, 18, 5, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#4a6fa5';
+        ctx.beginPath();
+        ctx.moveTo(cx - 16, cy + 25);
+        ctx.quadraticCurveTo(cx, cy + 32, cx + 16, cy + 25);
+        ctx.lineTo(cx + 12, cy - 8);
+        ctx.lineTo(cx - 12, cy - 8);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = '#5a7fb5';
+        ctx.fillRect(cx - 10, cy - 6, 3, 30);
+        ctx.fillStyle = '#d4853a';
+        ctx.fillRect(cx - 14, cy + 2, 28, 3);
+        ctx.fillStyle = '#d4a574';
+        ctx.beginPath();
+        ctx.arc(cx, cy - 14, 14, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#333';
+        ctx.fillRect(cx - 4, cy - 16, 2, 2);
+        ctx.fillRect(cx + 2, cy - 16, 2, 2);
+        ctx.strokeStyle = '#8b5e3c';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(cx + 16, cy - 10);
+        ctx.lineTo(cx + 22, cy + 25);
+        ctx.stroke();
+        // Jewelry trail (3 different pieces)
+        var menuJewelry = ['ring', 'necklace', 'armlet'];
+        for (var i = 0; i < 3; i++) {
+          var gx = cx - 26 - i * 16,
+            gy = cy + 22 + Math.sin(animTime * 4 + i) * 3;
+          var g = ctx.createRadialGradient(gx - 2, gy - 2, 0, gx, gy, 8);
+          g.addColorStop(0, '#fff8d0');
+          g.addColorStop(0.5, '#f0d878');
+          g.addColorStop(1, '#c4a030');
+          var jt = menuJewelry[i];
+          if (jt === 'ring') drawRing(gx, gy, g);
+          else if (jt === 'necklace') drawNecklace(gx, gy, g);
+          else drawArmlet(gx, gy, g);
+        }
+      }
+
+      function drawMenuEgyptian(cx, cy, scale) {
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.scale(scale, scale);
+        ctx.translate(-cx, -cy);
+        ctx.fillStyle = 'rgba(0,0,0,0.25)';
+        ctx.beginPath();
+        ctx.ellipse(cx, cy + 30, 18, 5, 0, 0, Math.PI * 2);
+        ctx.fill();
+        // Shendyt kilt
+        ctx.fillStyle = '#f0e8d8';
+        ctx.beginPath();
+        ctx.moveTo(cx - 16, cy + 25);
+        ctx.quadraticCurveTo(cx, cy + 32, cx + 16, cy + 25);
+        ctx.lineTo(cx + 12, cy - 6);
+        ctx.lineTo(cx - 12, cy - 6);
+        ctx.closePath();
+        ctx.fill();
+        // Red sash
+        ctx.fillStyle = '#c44030';
+        ctx.save();
+        ctx.translate(cx, cy + 10);
+        ctx.rotate(0.25);
+        ctx.fillRect(-14, -3, 28, 4);
+        ctx.restore();
+        // Bare chest
+        ctx.fillStyle = '#c89868';
+        ctx.fillRect(cx - 10, cy - 14, 20, 12);
+        // Gold pectoral collar
+        ctx.fillStyle = '#d4a030';
+        ctx.beginPath();
+        ctx.moveTo(cx - 13, cy - 12);
+        ctx.quadraticCurveTo(cx, cy - 2, cx + 13, cy - 12);
+        ctx.lineTo(cx + 10, cy - 7);
+        ctx.quadraticCurveTo(cx, cy + 1, cx - 10, cy - 7);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = '#3a8a4a';
+        ctx.beginPath();
+        ctx.arc(cx, cy - 7, 2, 0, Math.PI * 2);
+        ctx.fill();
+        // Arms
+        ctx.fillStyle = '#c89868';
+        ctx.fillRect(cx - 18, cy - 5, 5, 16);
+        ctx.fillRect(cx + 13, cy - 5, 5, 16);
+        ctx.fillStyle = '#d4a030';
+        ctx.fillRect(cx - 18, cy, 5, 3);
+        ctx.fillRect(cx + 13, cy, 5, 3);
+        // Head
+        ctx.fillStyle = '#c89868';
+        ctx.beginPath();
+        ctx.arc(cx, cy - 18, 11, 0, Math.PI * 2);
+        ctx.fill();
+        // Egyptian headdress side flaps (drape down behind shoulders)
+        ctx.fillStyle = '#d4a030';
+        ctx.fillRect(cx - 14, cy - 10, 4, 16);
+        ctx.fillRect(cx + 10, cy - 10, 4, 16);
+        // Headdress dome (covers top of head only, not face)
+        ctx.fillStyle = '#d4a030';
+        ctx.beginPath();
+        ctx.arc(cx, cy - 18, 12, Math.PI * 1.1, Math.PI * 1.9);
+        ctx.fill();
+        // Gold band at forehead
+        ctx.fillStyle = '#d4a030';
+        ctx.fillRect(cx - 12, cy - 15, 24, 3);
+        // Headdress highlight
+        ctx.fillStyle = 'rgba(255,235,160,0.3)';
+        ctx.beginPath();
+        ctx.arc(cx - 5, cy - 24, 4, 0, Math.PI * 2);
+        ctx.fill();
+        // Simple eyes (no kohl)
+        ctx.fillStyle = '#222';
+        ctx.fillRect(cx - 4, cy - 18, 2, 2);
+        ctx.fillRect(cx + 2, cy - 18, 2, 2);
+        ctx.restore();
+      }
+
+      // === Game Over: Split Red Sea scene ===
+      var goRunnerX = -60,
+        goRunnerBob = 0,
+        goInit = false;
+
+      function renderGameOver() {
+        if (!goInit) {
+          goRunnerX = -60;
+          goInit = true;
+        }
+        // Sky (dawn gradient)
+        var sky = ctx.createLinearGradient(0, 0, 0, H);
+        sky.addColorStop(0, '#1a0820');
+        sky.addColorStop(0.3, '#4a2030');
+        sky.addColorStop(0.55, '#8a4030');
+        sky.addColorStop(0.7, '#c46838');
+        ctx.fillStyle = sky;
+        ctx.fillRect(0, 0, W, H);
+        // Stars fading
+        ctx.fillStyle = 'rgba(255,248,200,0.3)';
+        for (var i = 0; i < 20; i++) {
+          var sx = (i * 137) % W,
+            sy = (i * 71) % (H * 0.2),
+            sz = 0.5 + (i % 3) * 0.5;
+          ctx.globalAlpha = 0.3 * Math.abs(Math.sin(animTime + i));
+          ctx.fillRect(sx, sy, sz, sz);
+        }
+        ctx.globalAlpha = 1;
+        // Water wall - single unit across full width, ~1/3 height, in middle of screen
+        var wallY = H * 0.45,
+          wallH = H * 0.33;
+        // Water gradient (blue-green, darker at edges)
+        var waterGrad = ctx.createLinearGradient(0, wallY, 0, wallY + wallH);
+        waterGrad.addColorStop(0, '#1a5070');
+        waterGrad.addColorStop(0.3, '#3a80a0');
+        waterGrad.addColorStop(0.7, '#2a6080');
+        waterGrad.addColorStop(1, '#1a4060');
+        ctx.fillStyle = waterGrad;
+        ctx.fillRect(0, wallY, W, wallH);
+        // Water surface ripples (top edge)
+        ctx.strokeStyle = 'rgba(150,200,240,0.3)';
+        ctx.lineWidth = 1;
+        for (var rx = 0; rx < W; rx += 6) {
+          var rippleY = wallY + Math.sin(rx * 0.05 + animTime * 2) * 3;
+          ctx.beginPath();
+          ctx.moveTo(rx, rippleY);
+          ctx.lineTo(
+            rx + 6,
+            rippleY + Math.sin((rx + 6) * 0.05 + animTime * 2) * 3,
+          );
+          ctx.stroke();
+        }
+        // Water wall detail (vertical lines suggesting water depth)
+        ctx.strokeStyle = 'rgba(120,180,220,0.15)';
+        ctx.lineWidth = 1;
+        for (var wy = 0; wy < wallH; wy += 4) {
+          var wave = Math.sin(wy * 0.08 + animTime * 1.5) * 4;
+          ctx.beginPath();
+          ctx.moveTo(0, wallY + wy);
+          ctx.lineTo(W, wallY + wy + wave);
+          ctx.stroke();
+        }
+        // Water spray at top edge
+        ctx.fillStyle = 'rgba(150,200,240,0.4)';
+        for (var i = 0; i < 15; i++) {
+          var spx = ((i * 43) % W) + Math.sin(animTime * 3 + i) * 8;
+          var spy = wallY - i * 2 - Math.cos(animTime * 2 + i) * 5;
+          ctx.fillRect(spx, spy, 2, 2);
+        }
+        // Fish in the water
+        ctx.fillStyle = 'rgba(200,210,220,0.3)';
+        for (var i = 0; i < 6; i++) {
+          var fx = ((i * 107) % W) + Math.sin(animTime * 0.5 + i) * 30;
+          var fy =
+            wallY + wallH * 0.2 + i * wallH * 0.12 + Math.sin(animTime + i) * 8;
+          if (fy > wallY + wallH - 10) continue;
+          ctx.fillRect(fx, fy, 4, 2);
+          ctx.fillRect(fx - 2, fy + 1, 2, 1);
+          ctx.fillRect(fx + 4, fy + 1, 2, 1);
+        }
+        // Sandy ground (below the water wall)
+        var groundGrad = ctx.createLinearGradient(0, wallY + wallH, 0, H);
+        groundGrad.addColorStop(0, '#a88450');
+        groundGrad.addColorStop(0.5, '#c4a06a');
+        groundGrad.addColorStop(1, '#8a6840');
+        ctx.fillStyle = groundGrad;
+        ctx.fillRect(0, wallY + wallH, W, H - (wallY + wallH));
+        // Ground texture
+        ctx.fillStyle = 'rgba(100,70,40,0.15)';
+        for (var i = 0; i < 50; i++) {
+          var tx = (i * 53) % W,
+            ty = wallY + wallH + ((i * 37) % (H - wallY - wallH));
+          ctx.fillRect(tx, ty, 2, 2);
+        }
+
+        // Runner (Israelite) crossing on the sandy ground
+        goRunnerX += 60 * 0.016;
+        if (goRunnerX > W + 40) goRunnerX = -40;
+        goRunnerBob = Math.sin(animTime * 10) * 3;
+        var runnerY = H * 0.82 + goRunnerBob;
+        ctx.fillStyle = '#4a6fa5';
+        ctx.fillRect(goRunnerX - 6, runnerY - 16, 12, 14);
+        ctx.fillStyle = '#5a7fb5';
+        ctx.fillRect(goRunnerX - 6, runnerY - 16, 3, 14);
+        ctx.fillStyle = '#d4853a';
+        ctx.fillRect(goRunnerX - 6, runnerY - 8, 12, 2);
+        ctx.fillStyle = '#d4a574';
+        ctx.beginPath();
+        ctx.arc(goRunnerX, runnerY - 20, 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#333';
+        ctx.fillRect(goRunnerX - 2, runnerY - 21, 1, 1);
+        ctx.fillRect(goRunnerX + 1, runnerY - 21, 1, 1);
+        var legPhase = Math.sin(animTime * 10);
+        ctx.fillStyle = '#3a2818';
+        ctx.fillRect(goRunnerX - 4, runnerY - 2, 3, 5 + legPhase * 2);
+        ctx.fillRect(goRunnerX + 1, runnerY - 2, 3, 5 - legPhase * 2);
+        ctx.strokeStyle = '#8b5e3c';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(goRunnerX + 8, runnerY - 18);
+        ctx.lineTo(goRunnerX + 12, runnerY + 2);
+        ctx.stroke();
+
+        // Jewelry trail behind runner (actual jewelry pieces, not gold coins)
+        for (var i = 0; i < Math.min(score, 12); i++) {
+          var jx = goRunnerX - 15 - i * 12;
+          if (jx < -20) continue;
+          var jy = runnerY + 6 + Math.sin(animTime * 4 + i) * 3;
+          var g = ctx.createRadialGradient(jx - 2, jy - 2, 0, jx, jy, 8);
+          g.addColorStop(0, '#fff8d0');
+          g.addColorStop(0.4, '#f0d878');
+          g.addColorStop(1, '#c4a030');
+          var jt = tailJewelry[i % tailJewelry.length] || 'ring';
+          if (jt === 'bracelet') drawBracelet(jx, jy, g);
+          else if (jt === 'ring') drawRing(jx, jy, g);
+          else if (jt === 'necklace') drawNecklace(jx, jy, g);
+          else if (jt === 'earring') drawEarring(jx, jy, g);
+          else if (jt === 'armlet') drawArmlet(jx, jy, g);
+          else drawPendent(jx, jy, g);
+        }
+
+        // === Text overlay ===
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#f0d878';
+        ctx.shadowColor = 'rgba(240,216,120,0.4)';
+        ctx.shadowBlur = 18;
+        ctx.font = 'bold 28px Georgia';
+        ctx.fillText('You Escaped!', W / 2, H * 0.1);
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = 'rgba(245,230,200,0.9)';
+        ctx.font = '17px Georgia';
+        ctx.fillText(
+          'You plundered ' + score + ' pieces of gold jewelry.',
+          W / 2,
+          H * 0.16,
+        );
+        ctx.fillStyle = '#f0d878';
+        ctx.font = 'bold 14px Georgia';
+        ctx.fillText(
+          'Best: ' + best + ' \u00B7 Plunder: ' + score,
+          W / 2,
+          H * 0.16 + 24,
+        );
+        if (Math.sin(animTime * 3) > -0.3) {
+          ctx.fillStyle = '#f0d878';
+          ctx.shadowColor = 'rgba(240,216,120,0.4)';
+          ctx.shadowBlur = 10;
+          ctx.font = 'bold 17px Georgia';
+          ctx.fillText('PRESS SPACE TO PLAY AGAIN', W / 2, H * 0.3);
+          ctx.shadowBlur = 0;
+        }
+        var vig = ctx.createRadialGradient(
+          W / 2,
+          H / 2,
+          W * 0.25,
+          W / 2,
+          H / 2,
+          W * 0.75,
+        );
+        vig.addColorStop(0, 'rgba(0,0,0,0)');
+        vig.addColorStop(1, 'rgba(0,0,0,0.35)');
+        ctx.fillStyle = vig;
+        ctx.fillRect(0, 0, W, H);
+      }
+
+      function loop(ts) {
+        if (!lastTime) lastTime = ts;
+        var dt = Math.min((ts - lastTime) / 1000, 0.05);
+        lastTime = ts;
+        update(dt);
+        render();
+        requestAnimationFrame(loop);
+      }
+
+      state = 'menu';
+      updateHUD();
+      requestAnimationFrame(loop);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,1593 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Babel Builder — stack the blocks and raise the tower before confusion takes hold. A Scripture-inspired browser game from Experiencing Yah."
+    />
+    <title>Babel Builder | Experiencing Yah</title>
+    <link rel="icon" type="image/svg+xml" href="../../FlameMaterial.svg" />
+    <link rel="alternate icon" href="../../FlameMaterial.svg" />
+    <link rel="stylesheet" href="../../styles.css" />
+    <style>
+      :root {
+        --gold: #f0d878;
+        --parchment: #f5e6c8;
+        --night: #1a1525;
+        --sand: #d4a96a;
+      }
+      #game-container {
+        position: relative;
+        width: 640px;
+        max-width: 100%;
+        font-family: Georgia, 'Palatino Linotype', serif;
+        color: var(--parchment);
+      }
+      #hud {
+        background: linear-gradient(180deg, #2d2640, #221d33);
+        border: 2px solid var(--gold);
+        border-bottom: none;
+        border-radius: 10px 10px 0 0;
+        padding: 10px 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 14px;
+      }
+      .hud-section {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
+      }
+      .hud-label {
+        color: var(--gold);
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+      .hud-value {
+        font-size: 18px;
+        font-weight: bold;
+        color: var(--parchment);
+      }
+      #canvas-wrap {
+        position: relative;
+        border: 2px solid var(--gold);
+        border-top: none;
+        border-radius: 0 0 10px 10px;
+        overflow: hidden;
+      }
+      canvas {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+      #overlay {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        background: rgba(20, 15, 30, 0.94);
+        padding: 30px;
+        z-index: 10;
+      }
+      #overlay.hidden {
+        display: none;
+      }
+      .overlay-title {
+        font-size: 30px;
+        color: var(--gold);
+        margin-bottom: 14px;
+        text-shadow: 0 0 20px rgba(240, 216, 120, 0.3);
+      }
+      .overlay-message {
+        font-size: 19px;
+        color: var(--parchment);
+        margin-bottom: 14px;
+        max-width: 500px;
+        line-height: 1.5;
+      }
+      .overlay-sub {
+        font-size: 14px;
+        color: #aaa;
+        margin-top: 4px;
+        margin-bottom: 10px;
+        max-width: 480px;
+        line-height: 1.4;
+      }
+      .overlay-stat {
+        font-size: 15px;
+        color: var(--gold);
+        margin-bottom: 18px;
+      }
+      .btn-prompt {
+        font-size: 15px;
+        color: var(--parchment);
+        border: 2px solid var(--gold);
+        padding: 8px 22px;
+        border-radius: 6px;
+        animation: blink 1.5s infinite;
+        cursor: pointer;
+        user-select: none;
+      }
+      @keyframes blink {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.4;
+        }
+      }
+    </style>
+  </head>
+  <body class="game-page">
+    <nav class="navbar navbar--compact" id="navbar">
+      <div class="nav-container">
+        <div class="nav-logo">
+          <a href="../../index.html" aria-label="Experiencing Yah home">
+            <img src="../../Logo.png" alt="Experiencing Yah" />
+          </a>
+        </div>
+        <a class="btn btn-secondary" href="/games/">All Games</a>
+      </div>
+    </nav>
+    <main class="game-main">
+      <div id="game-container">
+        <div id="hud">
+          <div class="hud-section">
+            <div class="hud-label">Score</div>
+            <div class="hud-value" id="score-display">0</div>
+          </div>
+          <div class="hud-section">
+            <div class="hud-label">Lines</div>
+            <div class="hud-value" id="lines-display">0</div>
+          </div>
+          <div class="hud-section">
+            <div class="hud-label">Level</div>
+            <div class="hud-value" id="level-display">1</div>
+          </div>
+          <div class="hud-section">
+            <div class="hud-label">Confusion</div>
+            <div class="hud-value" id="confusion-display">0%</div>
+          </div>
+        </div>
+        <div id="canvas-wrap">
+          <canvas id="game" width="640" height="640"></canvas>
+          <div id="overlay" class="hidden">
+            <div class="overlay-title" id="overlay-title"></div>
+            <div class="overlay-sub" id="overlay-sub"></div>
+            <div class="overlay-message" id="overlay-message"></div>
+            <div class="overlay-stat" id="overlay-stat"></div>
+            <div class="btn-prompt" id="btn-prompt">Press SPACE to continue</div>
+          </div>
+        </div>
+        <div
+          class="touch-controls touch-controls--babel"
+          aria-label="Touch controls"
+        >
+          <button
+            type="button"
+            class="touch-btn"
+            data-key="arrowleft"
+            aria-label="Left"
+          >
+            ◀
+          </button>
+          <button
+            type="button"
+            class="touch-btn touch-btn--wide"
+            id="touch-rotate"
+            aria-label="Rotate"
+          >
+            ↻
+          </button>
+          <button
+            type="button"
+            class="touch-btn"
+            data-key="arrowright"
+            aria-label="Right"
+          >
+            ▶
+          </button>
+          <button
+            type="button"
+            class="touch-btn"
+            data-key="arrowdown"
+            aria-label="Soft drop"
+          >
+            ▼
+          </button>
+          <button
+            type="button"
+            class="touch-btn touch-btn--action"
+            id="touch-action"
+            aria-label="Start or continue"
+          >
+            Go
+          </button>
+        </div>
+      </div>
+    </main>
+    <footer class="footer">
+      <div class="footer-tt">
+        <a
+          href="https://thinktransformationinc.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="footer-tt-link"
+          aria-label="Think Transformation Inc"
+        >
+          <img
+            src="../../TT-Logo.svg"
+            alt="Think Transformation Inc"
+            class="footer-tt-logo"
+          />
+        </a>
+        <p class="footer-tt-note">A division of Think Transformation Inc</p>
+      </div>
+      <p>&copy; 2026 Experiencing Yah. All rights reserved.</p>
+    </footer>
+    <script>
+      var canvas = document.getElementById('game');
+      var ctx = canvas.getContext('2d');
+      var W = canvas.width,
+        H = canvas.height;
+      function el(id) {
+        return document.getElementById(id);
+      }
+      var overlay = el('overlay'),
+        overlayTitle = el('overlay-title'),
+        overlayMessage = el('overlay-message'),
+        overlaySub = el('overlay-sub'),
+        overlayStat = el('overlay-stat'),
+        btnPrompt = el('btn-prompt'),
+        scoreDisplay = el('score-display'),
+        linesDisplay = el('lines-display'),
+        levelDisplay = el('level-display'),
+        confusionDisplay = el('confusion-display');
+
+      var CELL = 30,
+        COLS = 10,
+        ROWS = 20;
+      var FX = 170,
+        FY = 20,
+        FW = COLS * CELL,
+        FH = ROWS * CELL;
+      var SCAFFOLD_CX = 85,
+        INFO_X = 470;
+
+      var PIECES = {
+        I: {
+          shape: [
+            [0, 0, 0, 0],
+            [1, 1, 1, 1],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+          ],
+          color: '#4a9ad4',
+        },
+        O: {
+          shape: [
+            [1, 1],
+            [1, 1],
+          ],
+          color: '#e0c850',
+        },
+        T: {
+          shape: [
+            [0, 1, 0],
+            [1, 1, 1],
+            [0, 0, 0],
+          ],
+          color: '#9a5cc4',
+        },
+        S: {
+          shape: [
+            [0, 1, 1],
+            [1, 1, 0],
+            [0, 0, 0],
+          ],
+          color: '#5cb85c',
+        },
+        Z: {
+          shape: [
+            [1, 1, 0],
+            [0, 1, 1],
+            [0, 0, 0],
+          ],
+          color: '#d4554a',
+        },
+        L: {
+          shape: [
+            [0, 0, 1],
+            [1, 1, 1],
+            [0, 0, 0],
+          ],
+          color: '#d4853a',
+        },
+        J: {
+          shape: [
+            [1, 0, 0],
+            [1, 1, 1],
+            [0, 0, 0],
+          ],
+          color: '#4a7ad4',
+        },
+      };
+      var PIECE_NAMES = {
+        I: 'I-piece',
+        O: 'O-piece',
+        T: 'T-piece',
+        S: 'S-piece',
+        Z: 'Z-piece',
+        L: 'L-piece',
+        J: 'J-piece',
+      };
+      var PIECE_TYPES = Object.keys(PIECES);
+
+      var personRows = [2, 6, 10, 14, 18];
+      var personNames = ['Nimrod', 'Peleg', 'Reu', 'Serug', 'Terah'];
+      var personColors = [
+        '#c0504a',
+        '#4a70c4',
+        '#5ca05c',
+        '#9060c4',
+        '#c4a030',
+      ];
+      var personRobes = ['#a04040', '#3a60a4', '#4c904c', '#704ca4', '#a48420'];
+
+      var state = 'menu',
+        grid = [],
+        currentPiece = null,
+        nextPiece = null;
+      var score = 0,
+        lines = 0,
+        level = 1,
+        dropTimer = 0,
+        dropSpeed = 800;
+      var triggered = [false, false, false, false, false];
+      var speechBubbles = [];
+      var particles = [];
+      var transformFlash = 0,
+        transformFlashY = 0;
+      var bag = [];
+      var lastTime = 0,
+        animTime = 0,
+        spacePressed = false;
+      var leftHold = 0,
+        leftRepeat = 0,
+        rightHold = 0,
+        rightRepeat = 0,
+        softDropT = 0;
+      var lockDelay = 0,
+        lockTimer = 0,
+        isLocking = false;
+      var lineFlash = [],
+        lineFlashTimer = 0;
+      var keys = {};
+
+      function shadeColor(color, pct) {
+        var R = parseInt(color.substr(1, 2), 16),
+          G = parseInt(color.substr(3, 2), 16),
+          B = parseInt(color.substr(5, 2), 16);
+        R = Math.min(
+          255,
+          Math.max(0, Math.round(R + (pct < 0 ? R : 255 - R) * pct)),
+        );
+        G = Math.min(
+          255,
+          Math.max(0, Math.round(G + (pct < 0 ? G : 255 - G) * pct)),
+        );
+        B = Math.min(
+          255,
+          Math.max(0, Math.round(B + (pct < 0 ? B : 255 - B) * pct)),
+        );
+        return (
+          '#' +
+          (R < 16 ? '0' : '') +
+          R.toString(16) +
+          (G < 16 ? '0' : '') +
+          G.toString(16) +
+          (B < 16 ? '0' : '') +
+          B.toString(16)
+        );
+      }
+
+      function shuffleBag() {
+        bag = ['I', 'O', 'T', 'S', 'Z', 'L', 'J'];
+        for (var i = bag.length - 1; i > 0; i--) {
+          var j = Math.floor(Math.random() * (i + 1));
+          var t = bag[i];
+          bag[i] = bag[j];
+          bag[j] = t;
+        }
+      }
+      function nextType() {
+        if (bag.length === 0) shuffleBag();
+        return bag.pop();
+      }
+
+      function makePiece(type) {
+        var p = {
+          type: type,
+          shape: JSON.parse(JSON.stringify(PIECES[type].shape)),
+          color: PIECES[type].color,
+          x: 3,
+          y: 0,
+        };
+        if (type === 'O') p.x = 4;
+        return p;
+      }
+
+      function rotateMatrix(m, dir) {
+        var n = m.length,
+          res = [];
+        for (var i = 0; i < n; i++) {
+          res.push([]);
+          for (var j = 0; j < n; j++) {
+            res[i].push(dir > 0 ? m[n - 1 - j][i] : m[j][n - 1 - i]);
+          }
+        }
+        return res;
+      }
+
+      function collides(piece, dx, dy, shape) {
+        shape = shape || piece.shape;
+        for (var r = 0; r < shape.length; r++) {
+          for (var c = 0; c < shape[r].length; c++) {
+            if (shape[r][c]) {
+              var nx = piece.x + c + dx,
+                ny = piece.y + r + dy;
+              if (nx < 0 || nx >= COLS || ny >= ROWS) return true;
+              if (ny >= 0 && grid[ny][nx]) return true;
+            }
+          }
+        }
+        return false;
+      }
+
+      function getPieceTopRow(piece) {
+        for (var r = 0; r < piece.shape.length; r++) {
+          for (var c = 0; c < piece.shape[r].length; c++) {
+            if (piece.shape[r][c]) return piece.y + r;
+          }
+        }
+        return piece.y;
+      }
+
+      function getGhostY(piece) {
+        var gy = piece.y;
+        while (!collides(piece, 0, gy - piece.y + 1)) gy++;
+        return gy;
+      }
+
+      function movePiece(dx) {
+        if (!currentPiece) return;
+        if (!collides(currentPiece, dx, 0)) {
+          currentPiece.x += dx;
+          if (isLocking) lockTimer = 0;
+          return true;
+        }
+        return false;
+      }
+
+      function rotatePiece(dir) {
+        if (!currentPiece || currentPiece.type === 'O') return;
+        var rotated = rotateMatrix(currentPiece.shape, dir);
+        if (!collides(currentPiece, 0, 0, rotated)) {
+          currentPiece.shape = rotated;
+          if (isLocking) lockTimer = 0;
+          return;
+        }
+        for (var k = 1; k <= 2; k++) {
+          if (!collides(currentPiece, k, 0, rotated)) {
+            currentPiece.x += k;
+            currentPiece.shape = rotated;
+            if (isLocking) lockTimer = 0;
+            return;
+          }
+          if (!collides(currentPiece, -k, 0, rotated)) {
+            currentPiece.x -= k;
+            currentPiece.shape = rotated;
+            if (isLocking) lockTimer = 0;
+            return;
+          }
+        }
+      }
+
+      function dropPiece() {
+        if (!currentPiece) return;
+        if (!collides(currentPiece, 0, 1)) {
+          currentPiece.y++;
+          score++;
+          isLocking = false;
+          return true;
+        } else {
+          isLocking = true;
+          return false;
+        }
+      }
+
+      function lockPiece() {
+        if (!currentPiece) return;
+        for (var r = 0; r < currentPiece.shape.length; r++) {
+          for (var c = 0; c < currentPiece.shape[r].length; c++) {
+            if (currentPiece.shape[r][c]) {
+              var ny = currentPiece.y + r,
+                nx = currentPiece.x + c;
+              if (ny >= 0 && ny < ROWS && nx >= 0 && nx < COLS)
+                grid[ny][nx] = currentPiece.type;
+            }
+          }
+        }
+        var cleared = clearLines();
+        if (cleared > 0) {
+          var pts = [0, 100, 300, 500, 800][cleared] * level;
+          score += pts;
+          lines += cleared;
+          var newLevel = Math.floor(lines / 10) + 1;
+          if (newLevel > level) {
+            level = newLevel;
+            dropSpeed = Math.max(60, 800 - (level - 1) * 65);
+          }
+        }
+        spawnPiece();
+      }
+
+      function clearLines() {
+        var cleared = 0;
+        for (var r = ROWS - 1; r >= 0; r--) {
+          if (
+            grid[r].every(function (c) {
+              return c !== 0;
+            })
+          ) {
+            lineFlash.push(r);
+            grid.splice(r, 1);
+            grid.unshift(new Array(COLS).fill(0));
+            cleared++;
+            r++;
+          }
+        }
+        if (cleared > 0) lineFlashTimer = 0.4;
+        return cleared;
+      }
+
+      function spawnPiece() {
+        currentPiece = nextPiece || makePiece(nextType());
+        nextPiece = makePiece(nextType());
+        triggered = [false, false, false, false, false];
+        speechBubbles = [];
+        isLocking = false;
+        lockTimer = 0;
+        if (collides(currentPiece, 0, 0)) {
+          state = 'gameOver';
+          showOverlay(
+            'Game Over',
+            'The tower of Babel has crumbled. God wins!',
+            'You reached Level ' + level + '.',
+            'Score: ' + score + ' · Lines: ' + lines,
+            'Press SPACE to try again',
+            true,
+          );
+        }
+      }
+
+      function getTransformChance() {
+        return Math.min(
+          0.7,
+          Math.max(0, lines * 0.01 + Math.floor(lines / 5) * 0.02),
+        );
+      }
+
+      function checkPersonTriggers() {
+        if (!currentPiece) return;
+        var topRow = getPieceTopRow(currentPiece);
+        for (var i = 0; i < personRows.length; i++) {
+          if (!triggered[i] && topRow >= personRows[i]) {
+            triggered[i] = true;
+            addSpeechBubble(i, PIECE_NAMES[currentPiece.type], false);
+            var chance = getTransformChance();
+            if (Math.random() < chance) {
+              transformPiece(i);
+            }
+          }
+        }
+      }
+
+      function transformPiece(personIndex) {
+        var oldType = currentPiece.type;
+        var oldShape = currentPiece.shape;
+        var newType;
+        do {
+          newType = PIECE_TYPES[Math.floor(Math.random() * PIECE_TYPES.length)];
+        } while (newType === oldType);
+        var newShape = JSON.parse(JSON.stringify(PIECES[newType].shape));
+        // Keep the same x and y position - only change shape
+        currentPiece.type = newType;
+        currentPiece.color = PIECES[newType].color;
+        currentPiece.shape = newShape;
+        // If the new shape collides at current position, try nudging left/right
+        // but never recenter - just shift minimally to avoid overlap
+        if (collides(currentPiece, 0, 0)) {
+          var placed = false;
+          for (var dx = 1; dx <= 3 && !placed; dx++) {
+            if (!collides(currentPiece, -dx, 0)) {
+              currentPiece.x -= dx;
+              placed = true;
+            } else if (!collides(currentPiece, dx, 0)) {
+              currentPiece.x += dx;
+              placed = true;
+            }
+          }
+          if (!placed) {
+            // Can't place - revert to original
+            currentPiece.type = oldType;
+            currentPiece.color = PIECES[oldType].color;
+            currentPiece.shape = oldShape;
+            return;
+          }
+        }
+        transformFlash = 0.5;
+        transformFlashY = getPieceTopRow(currentPiece);
+        spawnTransformParticles();
+        speechBubbles = [];
+        addSpeechBubble(personIndex, PIECE_NAMES[newType] + '!', true);
+        score += 50;
+      }
+
+      function addSpeechBubble(personIndex, text, isTransform) {
+        speechBubbles = [];
+        speechBubbles.push({
+          personIndex: personIndex,
+          text: text,
+          isTransform: isTransform,
+          timer: 2.5,
+          fade: 1,
+        });
+      }
+
+      function spawnTransformParticles() {
+        if (!currentPiece) return;
+        for (var r = 0; r < currentPiece.shape.length; r++) {
+          for (var c = 0; c < currentPiece.shape[r].length; c++) {
+            if (currentPiece.shape[r][c]) {
+              var px = FX + (currentPiece.x + c) * CELL + CELL / 2;
+              var py = FY + (currentPiece.y + r) * CELL + CELL / 2;
+              for (var i = 0; i < 4; i++) {
+                var a = Math.random() * Math.PI * 2,
+                  s = 40 + Math.random() * 80;
+                particles.push({
+                  x: px,
+                  y: py,
+                  vx: Math.cos(a) * s,
+                  vy: Math.sin(a) * s - 30,
+                  life: 0.5 + Math.random() * 0.3,
+                  color: '#f0d878',
+                  size: 2 + Math.random() * 3,
+                });
+              }
+            }
+          }
+        }
+      }
+
+      function startGame() {
+        grid = [];
+        for (var r = 0; r < ROWS; r++) grid.push(new Array(COLS).fill(0));
+        score = 0;
+        lines = 0;
+        level = 1;
+        dropSpeed = 800;
+        bag = [];
+        shuffleBag();
+        currentPiece = null;
+        nextPiece = makePiece(nextType());
+        spawnPiece();
+        particles = [];
+        speechBubbles = [];
+        transformFlash = 0;
+        lineFlash = [];
+        state = 'playing';
+        hideOverlay();
+      }
+
+      function showOverlay(title, msg, sub, stat, prompt, bad) {
+        overlay.classList.remove('hidden');
+        overlayTitle.textContent = title;
+        overlaySub.textContent = sub || '';
+        overlayMessage.textContent = msg;
+        overlayMessage.className = 'overlay-message' + (bad ? ' bad' : '');
+        overlayStat.textContent = stat || '';
+        btnPrompt.textContent = prompt || 'Press SPACE to continue';
+      }
+      function hideOverlay() {
+        overlay.classList.add('hidden');
+      }
+
+      function updateHUD() {
+        scoreDisplay.textContent = score;
+        linesDisplay.textContent = lines;
+        levelDisplay.textContent = level;
+        confusionDisplay.textContent =
+          Math.round(getTransformChance() * 100) + '%';
+      }
+
+      var keys = {};
+      window.addEventListener('keydown', function (e) {
+        var k = e.key.toLowerCase();
+        if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright'].indexOf(k) >= 0)
+          e.preventDefault();
+        if (!keys[k]) {
+          keys[k] = true;
+          if (state === 'menu' && k === ' ') {
+            startGame();
+          } else if (state === 'gameOver' && k === ' ') {
+            startGame();
+          } else if (state === 'playing') {
+            if (k === 'arrowleft' || k === 'a') movePiece(-1);
+            else if (k === 'arrowright' || k === 'd') movePiece(1);
+            else if (k === 'arrowup' || k === 'w' || k === 'x') rotatePiece(1);
+            else if (k === 'z') rotatePiece(-1);
+            else if (k === 'arrowdown' || k === 's') dropPiece();
+            else if (k === 'p') {
+              state = 'paused';
+              showOverlay(
+                'Paused',
+                'Press P to resume',
+                '',
+                '',
+                'Press P to resume',
+                false,
+              );
+            }
+          } else if (state === 'paused' && k === 'p') {
+            state = 'playing';
+            hideOverlay();
+          }
+        }
+      });
+      window.addEventListener('keyup', function (e) {
+        keys[e.key.toLowerCase()] = false;
+      });
+      btnPrompt.addEventListener('click', function () {
+        if (state === 'menu' || state === 'gameOver') startGame();
+      });
+      canvas.addEventListener('click', function () {
+        if (state === 'menu' || state === 'gameOver') startGame();
+      });
+
+      (function setupTouchControls() {
+        var root = document.querySelector('.touch-controls');
+        if (!root) return;
+        function bindHold(btn, keyName, onDown) {
+          function down(e) {
+            e.preventDefault();
+            if (!keys[keyName]) {
+              keys[keyName] = true;
+              if (onDown) onDown();
+            } else {
+              keys[keyName] = true;
+            }
+            btn.classList.add('is-active');
+          }
+          function up(e) {
+            e.preventDefault();
+            keys[keyName] = false;
+            btn.classList.remove('is-active');
+          }
+          btn.addEventListener('touchstart', down, { passive: false });
+          btn.addEventListener('touchend', up);
+          btn.addEventListener('touchcancel', up);
+          btn.addEventListener('mousedown', down);
+          btn.addEventListener('mouseup', up);
+          btn.addEventListener('mouseleave', up);
+        }
+        var leftBtn = root.querySelector('[data-key="arrowleft"]');
+        var rightBtn = root.querySelector('[data-key="arrowright"]');
+        var downBtn = root.querySelector('[data-key="arrowdown"]');
+        if (leftBtn)
+          bindHold(leftBtn, 'arrowleft', function () {
+            if (state === 'playing') movePiece(-1);
+          });
+        if (rightBtn)
+          bindHold(rightBtn, 'arrowright', function () {
+            if (state === 'playing') movePiece(1);
+          });
+        if (downBtn)
+          bindHold(downBtn, 'arrowdown', function () {
+            if (state === 'playing') dropPiece();
+          });
+        var rotateBtn = document.getElementById('touch-rotate');
+        if (rotateBtn) {
+          function rotateDown(e) {
+            e.preventDefault();
+            rotateBtn.classList.add('is-active');
+            if (state === 'playing') rotatePiece(1);
+          }
+          function rotateUp(e) {
+            e.preventDefault();
+            rotateBtn.classList.remove('is-active');
+          }
+          rotateBtn.addEventListener('touchstart', rotateDown, {
+            passive: false,
+          });
+          rotateBtn.addEventListener('touchend', rotateUp);
+          rotateBtn.addEventListener('touchcancel', rotateUp);
+          rotateBtn.addEventListener('mousedown', rotateDown);
+          rotateBtn.addEventListener('mouseup', rotateUp);
+          rotateBtn.addEventListener('mouseleave', rotateUp);
+        }
+        var actionBtn = document.getElementById('touch-action');
+        if (actionBtn) {
+          function doAction(e) {
+            e.preventDefault();
+            if (state === 'menu' || state === 'gameOver') startGame();
+            else if (state === 'paused') {
+              state = 'playing';
+              hideOverlay();
+            } else if (state === 'playing') {
+              state = 'paused';
+              showOverlay(
+                'Paused',
+                'Tap Go or press P to resume',
+                '',
+                '',
+                'Tap Go to resume',
+                false,
+              );
+            }
+          }
+          actionBtn.addEventListener('touchstart', doAction, { passive: false });
+          actionBtn.addEventListener('click', doAction);
+        }
+      })();
+
+      function update(dt) {
+        animTime += dt;
+        if (lineFlashTimer > 0) lineFlashTimer -= dt;
+        if (transformFlash > 0) transformFlash -= dt;
+
+        for (var i = 0; i < particles.length; i++) {
+          var p = particles[i];
+          p.x += p.vx * dt;
+          p.y += p.vy * dt;
+          p.vy += 200 * dt;
+          p.life -= dt * 2;
+        }
+        particles = particles.filter(function (p) {
+          return p.life > 0;
+        });
+
+        for (var i = 0; i < speechBubbles.length; i++) {
+          speechBubbles[i].timer -= dt;
+          if (speechBubbles[i].timer < 0.5)
+            speechBubbles[i].fade = speechBubbles[i].timer / 0.5;
+        }
+        speechBubbles = speechBubbles.filter(function (b) {
+          return b.timer > 0;
+        });
+
+        if (state !== 'playing') return;
+
+        var dtMs = dt * 1000;
+        if (keys['arrowleft'] || keys['a']) {
+          leftHold += dtMs;
+          if (leftHold >= 150) {
+            leftRepeat += dtMs;
+            if (leftRepeat >= 50) {
+              movePiece(-1);
+              leftRepeat = 0;
+            }
+          }
+        } else {
+          leftHold = 0;
+          leftRepeat = 0;
+        }
+        if (keys['arrowright'] || keys['d']) {
+          rightHold += dtMs;
+          if (rightHold >= 150) {
+            rightRepeat += dtMs;
+            if (rightRepeat >= 50) {
+              movePiece(1);
+              rightRepeat = 0;
+            }
+          }
+        } else {
+          rightHold = 0;
+          rightRepeat = 0;
+        }
+        if (keys['arrowdown'] || keys['s']) {
+          softDropT += dtMs;
+          if (softDropT >= 50) {
+            dropPiece();
+            softDropT = 0;
+          }
+        } else {
+          softDropT = 0;
+        }
+
+        if (isLocking) {
+          lockTimer += dtMs;
+          if (!collides(currentPiece, 0, 1)) {
+            isLocking = false;
+            lockTimer = 0;
+          } else if (lockTimer >= 500) {
+            lockPiece();
+          }
+        } else {
+          dropTimer += dtMs;
+          if (dropTimer >= dropSpeed) {
+            dropTimer = 0;
+            if (!collides(currentPiece, 0, 1)) {
+              currentPiece.y++;
+            } else {
+              isLocking = true;
+              lockTimer = 0;
+            }
+          }
+        }
+
+        checkPersonTriggers();
+        updateHUD();
+      }
+
+      function render() {
+        if (state === 'menu') {
+          renderMenu();
+          return;
+        }
+        drawBackground();
+        drawScaffolding();
+        drawField();
+        if (currentPiece && state !== 'gameOver') {
+          drawGhost();
+          drawPiece(currentPiece, FX, FY, 1);
+        }
+        drawParticles();
+        drawSpeechBubbles();
+        drawTransformFlash();
+        drawInfo();
+        if (state === 'paused') drawPauseOverlay();
+      }
+
+      function drawBackground() {
+        var grad = ctx.createLinearGradient(0, 0, 0, H);
+        grad.addColorStop(0, '#0d0a18');
+        grad.addColorStop(0.4, '#2a1f35');
+        grad.addColorStop(0.7, '#4a3a28');
+        grad.addColorStop(1, '#6a5030');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, W, H);
+        ctx.fillStyle = 'rgba(255,255,255,0.3)';
+        for (var i = 0; i < 30; i++) {
+          var sx = (i * 137) % W,
+            sy = (i * 71) % (H * 0.4),
+            sz = 1 + (i % 3) * 0.5;
+          var tw = 0.5 + Math.abs(Math.sin(animTime * 2 + i)) * 0.5;
+          ctx.globalAlpha = tw * 0.6;
+          ctx.fillRect(sx, sy, sz, sz);
+        }
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = 'rgba(40,30,20,0.5)';
+        ctx.beginPath();
+        ctx.moveTo(0, H * 0.85);
+        ctx.lineTo(W * 0.2, H * 0.78);
+        ctx.lineTo(W * 0.4, H * 0.82);
+        ctx.lineTo(W * 0.6, H * 0.76);
+        ctx.lineTo(W * 0.8, H * 0.82);
+        ctx.lineTo(W, H * 0.8);
+        ctx.lineTo(W, H);
+        ctx.lineTo(0, H);
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      function drawField() {
+        ctx.fillStyle = 'rgba(15,12,20,0.7)';
+        ctx.fillRect(FX - 2, FY - 2, FW + 4, FH + 4);
+        ctx.strokeStyle = 'rgba(240,216,120,0.3)';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(FX - 2, FY - 2, FW + 4, FH + 4);
+        ctx.strokeStyle = 'rgba(240,216,120,0.05)';
+        ctx.lineWidth = 1;
+        for (var r = 1; r < ROWS; r++) {
+          ctx.beginPath();
+          ctx.moveTo(FX, FY + r * CELL);
+          ctx.lineTo(FX + FW, FY + r * CELL);
+          ctx.stroke();
+        }
+        for (var c = 1; c < COLS; c++) {
+          ctx.beginPath();
+          ctx.moveTo(FX + c * CELL, FY);
+          ctx.lineTo(FX + c * CELL, FY + FH);
+          ctx.stroke();
+        }
+        for (var r = 0; r < ROWS; r++) {
+          for (var c = 0; c < COLS; c++) {
+            if (grid[r][c]) {
+              var flash = lineFlash.indexOf(r) >= 0 && lineFlashTimer > 0;
+              drawBlock(
+                FX + c * CELL,
+                FY + r * CELL,
+                PIECES[grid[r][c]].color,
+                flash ? 1 + lineFlashTimer : 1,
+              );
+            }
+          }
+        }
+      }
+
+      function drawBlock(x, y, color, alpha) {
+        if (alpha === undefined) alpha = 1;
+        ctx.globalAlpha = Math.min(1, alpha);
+        ctx.fillStyle = color;
+        ctx.fillRect(x + 1, y + 1, CELL - 2, CELL - 2);
+        ctx.fillStyle = shadeColor(color, 0.25);
+        ctx.fillRect(x + 1, y + 1, CELL - 2, 3);
+        ctx.fillRect(x + 1, y + 1, 3, CELL - 2);
+        ctx.fillStyle = shadeColor(color, -0.3);
+        ctx.fillRect(x + 1, y + CELL - 4, CELL - 2, 3);
+        ctx.fillRect(x + CELL - 4, y + 1, 3, CELL - 2);
+        ctx.strokeStyle = shadeColor(color, -0.4);
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x + 1.5, y + 1.5, CELL - 3, CELL - 3);
+        ctx.strokeStyle = shadeColor(color, -0.15);
+        ctx.beginPath();
+        ctx.moveTo(x + 3, y + CELL / 2);
+        ctx.lineTo(x + CELL - 3, y + CELL / 2);
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+      }
+
+      function drawPiece(piece, ox, oy, alpha) {
+        if (!piece) return;
+        for (var r = 0; r < piece.shape.length; r++) {
+          for (var c = 0; c < piece.shape[r].length; c++) {
+            if (piece.shape[r][c]) {
+              var x = ox + (piece.x + c) * CELL,
+                y = oy + (piece.y + r) * CELL;
+              if (y + CELL > FY && y < FY + FH)
+                drawBlock(x, y, piece.color, alpha);
+            }
+          }
+        }
+      }
+
+      function drawGhost() {
+        if (!currentPiece) return;
+        var gy = getGhostY(currentPiece);
+        for (var r = 0; r < currentPiece.shape.length; r++) {
+          for (var c = 0; c < currentPiece.shape[r].length; c++) {
+            if (currentPiece.shape[r][c]) {
+              var x = FX + (currentPiece.x + c) * CELL,
+                y = FY + (gy + r) * CELL;
+              if (y + CELL > FY && y < FY + FH) {
+                ctx.strokeStyle = currentPiece.color;
+                ctx.lineWidth = 1;
+                ctx.globalAlpha = 0.25;
+                ctx.strokeRect(x + 2, y + 2, CELL - 4, CELL - 4);
+                ctx.globalAlpha = 1;
+              }
+            }
+          }
+        }
+      }
+
+      function drawScaffolding() {
+        ctx.strokeStyle = '#5a3818';
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(35, FY - 5);
+        ctx.lineTo(35, FY + FH + 5);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(135, FY - 5);
+        ctx.lineTo(135, FY + FH + 5);
+        ctx.stroke();
+        ctx.strokeStyle = '#8b5e3c';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(35, FY - 5);
+        ctx.lineTo(35, FY + FH + 5);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(135, FY - 5);
+        ctx.lineTo(135, FY + FH + 5);
+        ctx.stroke();
+        for (var i = 0; i < personRows.length; i++) {
+          var py = FY + personRows[i] * CELL + CELL / 2;
+          ctx.fillStyle = '#6b4423';
+          ctx.fillRect(25, py - 2, 120, 5);
+          ctx.fillStyle = '#8b5e3c';
+          ctx.fillRect(25, py - 2, 120, 2);
+          ctx.strokeStyle = '#5a3818';
+          ctx.lineWidth = 3;
+          if (i < personRows.length - 1) {
+            var ny = FY + personRows[i + 1] * CELL + CELL / 2;
+            ctx.beginPath();
+            ctx.moveTo(35, py + 3);
+            ctx.lineTo(135, ny - 3);
+            ctx.stroke();
+          }
+          drawPerson(
+            SCAFFOLD_CX,
+            personRobes[i],
+            py,
+            triggered[i] && speechBubbles.length > 0,
+          );
+          ctx.fillStyle = shadeColor(personColors[i], -0.3);
+          ctx.font = 'bold 9px Georgia';
+          ctx.textAlign = 'center';
+          ctx.fillText(personNames[i], SCAFFOLD_CX, py + 22);
+        }
+      }
+
+      function drawPerson(cx, robeColor, centerY, isCalling) {
+        var y = centerY - 14;
+        ctx.fillStyle = shadeColor(robeColor, -0.3);
+        ctx.fillRect(cx - 9, y + 8, 18, 5);
+        ctx.fillStyle = robeColor;
+        ctx.fillRect(cx - 8, y + 6, 16, 8);
+        ctx.fillStyle = shadeColor(robeColor, 0.15);
+        ctx.fillRect(cx - 8, y + 6, 3, 8);
+        ctx.fillStyle = shadeColor(robeColor, -0.2);
+        ctx.fillRect(cx + 5, y + 6, 3, 8);
+        ctx.fillStyle = '#d4a574';
+        ctx.fillRect(cx - 5, y - 2, 10, 8);
+        ctx.fillStyle = shadeColor('#d4a574', -0.15);
+        ctx.fillRect(cx - 5, y + 4, 10, 2);
+        ctx.fillStyle = '#222';
+        if (isCalling) {
+          ctx.fillRect(cx - 3, y + 1, 1, 1);
+          ctx.fillRect(cx + 2, y + 1, 1, 1);
+          ctx.fillRect(cx - 1, y + 4, 2, 2);
+          ctx.fillStyle = robeColor;
+          ctx.fillRect(cx - 14, y + 2, 5, 3);
+          ctx.fillRect(cx + 9, y + 2, 5, 3);
+        } else {
+          ctx.fillRect(cx - 3, y + 1, 1, 1);
+          ctx.fillRect(cx + 2, y + 1, 1, 1);
+        }
+        ctx.fillStyle = shadeColor(robeColor, -0.2);
+        ctx.fillRect(cx - 3, y + 14, 2, 4);
+        ctx.fillRect(cx + 1, y + 14, 2, 4);
+      }
+
+      function drawSpeechBubbles() {
+        for (var i = 0; i < speechBubbles.length; i++) {
+          var b = speechBubbles[i];
+          var py = FY + personRows[b.personIndex] * CELL + CELL / 2;
+          var bx = 145,
+            by = py - 12;
+          ctx.globalAlpha = b.fade;
+          ctx.font = 'bold 11px Georgia';
+          var textW = ctx.measureText(b.text).width;
+          var bw = textW + 16,
+            bh = 24;
+          ctx.fillStyle = b.isTransform
+            ? 'rgba(200,60,40,0.9)'
+            : 'rgba(245,230,200,0.9)';
+          roundRect(bx, by, bw, bh, 5);
+          ctx.fill();
+          ctx.strokeStyle = b.isTransform ? '#e74c3c' : '#8b5e3c';
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+          ctx.fillStyle = b.isTransform ? '#fff' : '#3d2817';
+          ctx.textAlign = 'left';
+          ctx.fillText(b.text, bx + 8, by + 16);
+          ctx.fillStyle = b.isTransform
+            ? 'rgba(200,60,40,0.9)'
+            : 'rgba(245,230,200,0.9)';
+          ctx.beginPath();
+          ctx.moveTo(bx, by + bh / 2 - 3);
+          ctx.lineTo(bx - 6, by + bh / 2);
+          ctx.lineTo(bx, by + bh / 2 + 3);
+          ctx.closePath();
+          ctx.fill();
+          ctx.globalAlpha = 1;
+        }
+      }
+
+      function drawTransformFlash() {
+        if (transformFlash > 0 && currentPiece) {
+          ctx.globalAlpha = transformFlash * 0.5;
+          ctx.fillStyle = '#f0d878';
+          for (var r = 0; r < currentPiece.shape.length; r++) {
+            for (var c = 0; c < currentPiece.shape[r].length; c++) {
+              if (currentPiece.shape[r][c]) {
+                ctx.fillRect(
+                  FX + (currentPiece.x + c) * CELL,
+                  FY + (currentPiece.y + r) * CELL,
+                  CELL,
+                  CELL,
+                );
+              }
+            }
+          }
+          ctx.globalAlpha = 1;
+        }
+      }
+
+      function drawParticles() {
+        for (var i = 0; i < particles.length; i++) {
+          var p = particles[i];
+          ctx.globalAlpha = Math.max(0, p.life);
+          ctx.fillStyle = p.color;
+          ctx.fillRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size);
+        }
+        ctx.globalAlpha = 1;
+      }
+
+      function drawInfo() {
+        ctx.fillStyle = 'rgba(245,230,200,0.8)';
+        ctx.font = 'bold 12px Georgia';
+        ctx.textAlign = 'center';
+        ctx.fillText('NEXT', INFO_X + 85, FY + 15);
+        if (nextPiece) {
+          var np = nextPiece;
+          var pw = np.shape[0].length * 16,
+            ph = np.shape.length * 16;
+          var npx = INFO_X + 85 - pw / 2,
+            npy = FY + 30;
+          for (var r = 0; r < np.shape.length; r++) {
+            for (var c = 0; c < np.shape[r].length; c++) {
+              if (np.shape[r][c]) {
+                var bx = npx + c * 16,
+                  by = npy + r * 16;
+                ctx.fillStyle = np.color;
+                ctx.fillRect(bx + 1, by + 1, 14, 14);
+                ctx.fillStyle = shadeColor(np.color, 0.25);
+                ctx.fillRect(bx + 1, by + 1, 14, 3);
+                ctx.fillRect(bx + 1, by + 1, 3, 14);
+                ctx.fillStyle = shadeColor(np.color, -0.3);
+                ctx.fillRect(bx + 1, by + 13, 14, 3);
+                ctx.fillRect(bx + 13, by + 1, 3, 14);
+              }
+            }
+          }
+        }
+        ctx.strokeStyle = 'rgba(240,216,120,0.2)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(INFO_X + 10, FY + 100);
+        ctx.lineTo(INFO_X + 160, FY + 100);
+        ctx.stroke();
+        ctx.fillStyle = 'rgba(245,230,200,0.7)';
+        ctx.font = '11px Georgia';
+        ctx.textAlign = 'left';
+        var cy = FY + 120;
+        ctx.fillText('Controls:', INFO_X + 15, cy);
+        cy += 18;
+        ctx.fillText('← → Move', INFO_X + 15, cy);
+        cy += 15;
+        ctx.fillText('↑ / W Rotate', INFO_X + 15, cy);
+        cy += 15;
+        ctx.fillText('↓ Soft Drop', INFO_X + 15, cy);
+        cy += 15;
+
+        ctx.fillText('P Pause', INFO_X + 15, cy);
+        cy += 20;
+        ctx.strokeStyle = 'rgba(240,216,120,0.2)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(INFO_X + 10, cy);
+        ctx.lineTo(INFO_X + 160, cy);
+        ctx.stroke();
+        cy += 15;
+        ctx.fillStyle = 'rgba(240,216,120,0.8)';
+        ctx.font = 'bold 11px Georgia';
+        ctx.fillText('Confusion:', INFO_X + 15, cy);
+        cy += 16;
+        var chance = getTransformChance();
+        ctx.fillStyle = 'rgba(245,230,200,0.7)';
+        ctx.font = '11px Georgia';
+        ctx.fillText(Math.round(chance * 100) + '% transform', INFO_X + 15, cy);
+        cy += 18;
+        ctx.fillStyle = 'rgba(180,180,180,0.5)';
+        ctx.font = '10px Georgia';
+        if (chance < 0.01) {
+          ctx.fillText('The builders speak', INFO_X + 15, cy);
+          cy += 13;
+          ctx.fillText('with one language.', INFO_X + 15, cy);
+        } else if (chance < 0.3) {
+          ctx.fillText('Tongues begin to', INFO_X + 15, cy);
+          cy += 13;
+          ctx.fillText('confuse.', INFO_X + 15, cy);
+        } else if (chance < 0.5) {
+          ctx.fillText('Languages scatter', INFO_X + 15, cy);
+          cy += 13;
+          ctx.fillText('across the land.', INFO_X + 15, cy);
+        } else {
+          ctx.fillText('Total confusion!', INFO_X + 15, cy);
+          cy += 13;
+          ctx.fillText('Nothing is as it seems.', INFO_X + 15, cy);
+        }
+      }
+
+      function drawPauseOverlay() {
+        ctx.fillStyle = 'rgba(20,15,30,0.7)';
+        ctx.fillRect(0, 0, W, H);
+        ctx.fillStyle = '#f0d878';
+        ctx.font = 'bold 36px Georgia';
+        ctx.textAlign = 'center';
+        ctx.fillText('PAUSED', W / 2, H / 2);
+      }
+
+      function roundRect(x, y, w, h, r) {
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.lineTo(x + w - r, y);
+        ctx.arcTo(x + w, y, x + w, y + r, r);
+        ctx.lineTo(x + w, y + h - r);
+        ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+        ctx.lineTo(x + r, y + h);
+        ctx.arcTo(x, y + h, x, y + h - r, r);
+        ctx.lineTo(x, y + r);
+        ctx.arcTo(x, y, x + r, y, r);
+        ctx.closePath();
+      }
+
+      function renderMenu() {
+        var sky = ctx.createLinearGradient(0, 0, 0, H);
+        sky.addColorStop(0, '#0d0a18');
+        sky.addColorStop(0.35, '#2d1f45');
+        sky.addColorStop(0.6, '#5a4a3a');
+        sky.addColorStop(1, '#8a6840');
+        ctx.fillStyle = sky;
+        ctx.fillRect(0, 0, W, H);
+        for (var i = 0; i < 40; i++) {
+          var sx = (i * 137) % W,
+            sy = (i * 71) % (H * 0.4),
+            sz = 0.5 + (i % 3) * 0.5;
+          ctx.globalAlpha = 0.3 + Math.abs(Math.sin(animTime * 2 + i)) * 0.5;
+          ctx.fillStyle = '#fff8d0';
+          ctx.fillRect(sx, sy, sz, sz);
+        }
+        ctx.globalAlpha = 1;
+        var mx = W * 0.5,
+          my = H * 0.26,
+          mr = 28;
+        ctx.fillStyle = 'rgba(240,216,120,0.15)';
+        ctx.beginPath();
+        ctx.arc(mx, my, mr + 20, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = 'rgba(240,216,120,0.25)';
+        ctx.beginPath();
+        ctx.arc(mx - 8, my - 8, mr * 0.6, 0, Math.PI * 2);
+        ctx.fill();
+        // Desert ground
+        ctx.fillStyle = '#3a2818';
+        ctx.beginPath();
+        ctx.moveTo(0, H * 0.85);
+        for (var tx = 0; tx <= W; tx += 20) {
+          var ty =
+            H * 0.85 -
+            Math.abs(Math.sin(tx * 0.02)) * 20 -
+            Math.sin(tx * 0.05) * 8;
+          ctx.lineTo(tx, ty);
+        }
+        ctx.lineTo(W, H);
+        ctx.lineTo(0, H);
+        ctx.closePath();
+        ctx.fill();
+        var gnd = ctx.createLinearGradient(0, H * 0.82, 0, H);
+        gnd.addColorStop(0, '#8a6840');
+        gnd.addColorStop(1, '#6a4830');
+        ctx.fillStyle = gnd;
+        ctx.fillRect(0, H * 0.82, W, H * 0.18);
+        // === Spiral tower (background, left side, doesn't overlap text) ===
+        var towerCX = W * 0.2,
+          towerBaseY = H * 0.82,
+          towerBS = 18;
+        var towerColors = [
+          '#c0504a',
+          '#4a70c4',
+          '#5cb85c',
+          '#d4853a',
+          '#9a5cc4',
+          '#4a9ad4',
+          '#e0c850',
+        ];
+        // Each layer: [spiralOffset, numBlocks] - offset twists, numBlocks narrows toward top
+        var towerLayers = [
+          [-2, 5],
+          [-1, 5],
+          [0, 4],
+          [1, 4],
+          [-1, 4],
+          [0, 4],
+          [1, 3],
+          [-1, 3],
+          [0, 3],
+          [1, 2],
+          [-1, 2],
+          [0, 2],
+          [1, 2],
+          [-1, 1],
+          [0, 1],
+          [-1, 1],
+          [0, 1],
+        ];
+        var layerH = towerBS;
+        for (var li = 0; li < towerLayers.length; li++) {
+          var layer = towerLayers[li];
+          var lx =
+            towerCX + layer[0] * towerBS * 0.5 - (layer[1] * towerBS) / 2;
+          var ly = towerBaseY - (li + 1) * layerH;
+          for (var bi = 0; bi < layer[1]; bi++) {
+            var bx = lx + bi * towerBS;
+            var bc = towerColors[(li + bi) % towerColors.length];
+            drawMenuBlock(bx, ly, bc, towerBS);
+          }
+        }
+        var topY = towerBaseY - towerLayers.length * layerH;
+        // Unfinished top - a few floating blocks above the tower
+        drawMenuBlock(
+          towerCX - towerBS * 0.5,
+          topY - towerBS,
+          '#d4853a',
+          towerBS,
+        );
+        drawMenuBlock(
+          towerCX + towerBS * 0.5,
+          topY - towerBS * 1.5,
+          '#4a70c4',
+          Math.round(towerBS * 0.8),
+        );
+        drawMenuBlock(
+          towerCX - towerBS * 1.2,
+          topY - towerBS * 1.8,
+          '#5cb85c',
+          Math.round(towerBS * 0.7),
+        );
+        // Scaffolding poles next to tower
+        ctx.strokeStyle = '#5a3818';
+        ctx.lineWidth = 3;
+        var scaffoldX = towerCX + towerBS * 2.8;
+        ctx.beginPath();
+        ctx.moveTo(scaffoldX, towerBaseY);
+        ctx.lineTo(scaffoldX, topY);
+        ctx.stroke();
+        ctx.strokeStyle = '#8b5e3c';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(scaffoldX, towerBaseY);
+        ctx.lineTo(scaffoldX, topY);
+        ctx.stroke();
+        // Scaffold platforms every few layers
+        for (var si = 0; si < towerLayers.length; si += 4) {
+          var spy = towerBaseY - (si + 1) * layerH;
+          ctx.fillStyle = '#6b4423';
+          ctx.fillRect(towerCX + towerBS * 1.8, spy, towerBS * 1.5, 4);
+        }
+        // Tiny person on scaffolding
+        var personY = topY + layerH * 3;
+        drawMenuPerson(scaffoldX, personY, '#a04040');
+        // === Text (right portion, clear of tower) ===
+        var textX = W * 0.6;
+        ctx.textAlign = 'center';
+        var titleY = H * 0.26;
+        ctx.shadowColor = 'rgba(240,216,120,0.5)';
+        ctx.shadowBlur = 30;
+        ctx.fillStyle = '#f0d878';
+        ctx.font = 'bold 44px Georgia';
+        ctx.fillText('BABEL BUILDER', textX, titleY);
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = 'rgba(245,230,200,0.6)';
+        ctx.font = 'italic 14px Georgia';
+        ctx.fillText(
+          'Build the tower \u00B7 Beware the confusion of tongues',
+          textX,
+          titleY + 30,
+        );
+        var cy = H * 0.44;
+        ctx.fillStyle = 'rgba(0,0,0,0.35)';
+        roundRect(textX - 160, cy - 5, 320, 100, 8);
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(240,216,120,0.4)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.fillStyle = 'rgba(240,216,120,0.85)';
+        ctx.font = 'bold 13px Georgia';
+        ctx.fillText('CONTROLS', textX, cy + 12);
+        ctx.fillStyle = 'rgba(245,230,200,0.75)';
+        ctx.font = '13px Georgia';
+        ctx.fillText(
+          'Arrow Keys / WASD / on-screen buttons',
+          textX,
+          cy + 34,
+        );
+        ctx.fillText(
+          'Down \u2014 Soft Drop \u00B7 P \u2014 Pause',
+          textX,
+          cy + 54,
+        );
+        ctx.fillStyle = 'rgba(240,216,120,0.6)';
+        ctx.font = 'italic 11px Georgia';
+        ctx.fillText(
+          'People on the scaffolding call out each block.',
+          textX,
+          cy + 78,
+        );
+        ctx.fillText(
+          'As you build higher, tongues confuse and blocks transform!',
+          textX,
+          cy + 92,
+        );
+        if (Math.sin(animTime * 3) > -0.3) {
+          ctx.fillStyle = '#f0d878';
+          ctx.shadowColor = 'rgba(240,216,120,0.5)';
+          ctx.shadowBlur = 15;
+          ctx.font = 'bold 20px Georgia';
+          ctx.fillText('PRESS SPACE TO BEGIN', W / 2, H * 0.92);
+          ctx.shadowBlur = 0;
+        }
+        var vig = ctx.createRadialGradient(
+          W / 2,
+          H / 2,
+          W * 0.3,
+          W / 2,
+          H / 2,
+          W * 0.75,
+        );
+        vig.addColorStop(0, 'rgba(0,0,0,0)');
+        vig.addColorStop(1, 'rgba(0,0,0,0.3)');
+        ctx.fillStyle = vig;
+        ctx.fillRect(0, 0, W, H);
+      }
+
+      function drawMenuBlock(x, y, color, size) {
+        ctx.fillStyle = color;
+        ctx.fillRect(x, y, size, size);
+        ctx.fillStyle = shadeColor(color, 0.25);
+        ctx.fillRect(x, y, size, 4);
+        ctx.fillRect(x, y, 4, size);
+        ctx.fillStyle = shadeColor(color, -0.3);
+        ctx.fillRect(x, y + size - 4, size, 4);
+        ctx.fillRect(x + size - 4, y, 4, size);
+        ctx.strokeStyle = shadeColor(color, -0.4);
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x + 1.5, y + 1.5, size - 3, size - 3);
+      }
+
+      function drawMenuPerson(cx, cy, robeColor) {
+        var y = cy - 14;
+        ctx.fillStyle = shadeColor(robeColor, -0.3);
+        ctx.fillRect(cx - 9, y + 8, 18, 5);
+        ctx.fillStyle = robeColor;
+        ctx.fillRect(cx - 8, y + 6, 16, 8);
+        ctx.fillStyle = shadeColor(robeColor, 0.15);
+        ctx.fillRect(cx - 8, y + 6, 3, 8);
+        ctx.fillStyle = '#d4a574';
+        ctx.fillRect(cx - 5, y - 2, 10, 8);
+        ctx.fillStyle = '#222';
+        ctx.fillRect(cx - 3, y + 1, 1, 1);
+        ctx.fillRect(cx + 2, y + 1, 1, 1);
+        ctx.fillStyle = shadeColor(robeColor, -0.2);
+        ctx.fillRect(cx - 3, y + 14, 2, 4);
+        ctx.fillRect(cx + 1, y + 14, 2, 4);
+      }
+
+      function loop(ts) {
+        if (!lastTime) lastTime = ts;
+        var dt = Math.min((ts - lastTime) / 1000, 0.05);
+        lastTime = ts;
+        update(dt);
+        render();
+        requestAnimationFrame(loop);
+      }
+
+      state = 'menu';
+      updateHUD();
+      requestAnimationFrame(loop);
+    </script>
+  </body>
+</html>
