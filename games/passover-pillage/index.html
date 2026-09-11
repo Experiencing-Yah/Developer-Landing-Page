@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="Passover Pillage — plunder Egypt, gather gold, and gain freedom. A Scripture-inspired browser game from Experiencing Yah."
+      content="Passover Pillage — freedom is near. Gather your riches before leaving town. A Scripture-inspired browser game from Experiencing Yah."
     />
     <title>Passover Pillage | Experiencing Yah</title>
     <link rel="icon" type="image/svg+xml" href="../../FlameMaterial.svg" />
@@ -1191,15 +1191,20 @@
         ctx.font = '12px Georgia';
         ctx.fillText('Arrow Keys, WASD, or on-screen pad', W / 2, cy + 36);
         ctx.fillText('P \u2014 Pause', W / 2, cy + 54);
-        // Description
-        ctx.fillStyle = 'rgba(240,216,120,0.55)';
-        ctx.font = 'italic 11px Georgia';
+        var tipY = H * 0.87;
+        var tipGrad = ctx.createLinearGradient(0, tipY - 40, 0, H);
+        tipGrad.addColorStop(0, 'rgba(0,0,0,0)');
+        tipGrad.addColorStop(0.35, 'rgba(0,0,0,0.55)');
+        tipGrad.addColorStop(1, 'rgba(0,0,0,0.7)');
+        ctx.fillStyle = tipGrad;
+        ctx.fillRect(0, tipY - 40, W, H - (tipY - 40));
+        ctx.fillStyle = 'rgba(245,230,200,0.9)';
+        ctx.font = 'italic 12px Georgia';
         ctx.fillText(
           'Touch an Egyptian to plunder their gold jewelry.',
           W / 2,
-          H * 0.87,
+          tipY,
         );
-        // PRESS SPACE
         if (Math.sin(animTime * 3) > -0.3) {
           ctx.fillStyle = '#f0d878';
           ctx.shadowColor = 'rgba(240,216,120,0.5)';

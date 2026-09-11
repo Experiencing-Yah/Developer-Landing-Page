@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="Babel Builder — stack the blocks and raise the tower before confusion takes hold. A Scripture-inspired browser game from Experiencing Yah."
+      content="Babel Builder — try to build the tower, but beware when confusion sets in. A Scripture-inspired browser game from Experiencing Yah."
     />
     <title>Babel Builder | Experiencing Yah</title>
     <link rel="icon" type="image/svg+xml" href="../../FlameMaterial.svg" />
@@ -1488,46 +1488,53 @@
           textX,
           titleY + 30,
         );
-        var cy = H * 0.44;
-        ctx.fillStyle = 'rgba(0,0,0,0.35)';
-        roundRect(textX - 160, cy - 5, 320, 100, 8);
+        var cy = H * 0.43;
+        ctx.fillStyle = 'rgba(0,0,0,0.45)';
+        roundRect(textX - 160, cy, 320, 72, 8);
         ctx.fill();
         ctx.strokeStyle = 'rgba(240,216,120,0.4)';
         ctx.lineWidth = 1;
         ctx.stroke();
         ctx.fillStyle = 'rgba(240,216,120,0.85)';
-        ctx.font = 'bold 13px Georgia';
-        ctx.fillText('CONTROLS', textX, cy + 12);
+        ctx.font = 'bold 12px Georgia';
+        ctx.fillText('CONTROLS', textX, cy + 16);
         ctx.fillStyle = 'rgba(245,230,200,0.75)';
-        ctx.font = '13px Georgia';
+        ctx.font = '12px Georgia';
         ctx.fillText(
           'Arrow Keys / WASD / on-screen buttons',
           textX,
-          cy + 34,
+          cy + 36,
         );
         ctx.fillText(
           'Down \u2014 Soft Drop \u00B7 P \u2014 Pause',
           textX,
           cy + 54,
         );
-        ctx.fillStyle = 'rgba(240,216,120,0.6)';
-        ctx.font = 'italic 11px Georgia';
+        var tipY = H * 0.86;
+        var tipGrad = ctx.createLinearGradient(0, tipY - 40, 0, H);
+        tipGrad.addColorStop(0, 'rgba(0,0,0,0)');
+        tipGrad.addColorStop(0.35, 'rgba(0,0,0,0.55)');
+        tipGrad.addColorStop(1, 'rgba(0,0,0,0.7)');
+        ctx.fillStyle = tipGrad;
+        ctx.fillRect(0, tipY - 40, W, H - (tipY - 40));
+        ctx.fillStyle = 'rgba(245,230,200,0.9)';
+        ctx.font = 'italic 12px Georgia';
         ctx.fillText(
           'People on the scaffolding call out each block.',
-          textX,
-          cy + 78,
+          W / 2,
+          tipY,
         );
         ctx.fillText(
           'As you build higher, tongues confuse and blocks transform!',
-          textX,
-          cy + 92,
+          W / 2,
+          tipY + 18,
         );
         if (Math.sin(animTime * 3) > -0.3) {
           ctx.fillStyle = '#f0d878';
           ctx.shadowColor = 'rgba(240,216,120,0.5)';
           ctx.shadowBlur = 15;
           ctx.font = 'bold 20px Georgia';
-          ctx.fillText('PRESS SPACE TO BEGIN', W / 2, H * 0.92);
+          ctx.fillText('PRESS SPACE TO BEGIN', W / 2, H * 0.95);
           ctx.shadowBlur = 0;
         }
         var vig = ctx.createRadialGradient(
