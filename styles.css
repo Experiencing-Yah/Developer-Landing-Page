@@ -1023,15 +1023,102 @@ body.modal-open {
   pointer-events: none;
 }
 
+a.game-card.game-card--soon {
+  cursor: pointer;
+  pointer-events: auto;
+}
+
 .game-card--soon:hover {
   transform: none;
   box-shadow: var(--shadow-1);
+}
+
+a.game-card.game-card--soon:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-3);
 }
 
 .game-card--soon .game-card__title {
   font-size: 1.15rem;
   color: #4a5568;
   font-weight: 500;
+}
+
+.game-card--soon .game-card__subtitle {
+  color: #718096;
+}
+
+/* Game BGM mute toggle (HUD) */
+.music-toggle {
+  appearance: none;
+  flex-shrink: 0;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  border: 2px solid var(--gold, #f0d878);
+  border-radius: 8px;
+  background: linear-gradient(180deg, #2d2640, #221d33);
+  color: var(--gold, #f0d878);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.35);
+  line-height: 1;
+}
+
+.music-toggle:hover {
+  background: linear-gradient(180deg, #3a3252, #2d2640);
+}
+
+.music-toggle:active {
+  transform: translateY(1px);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.35);
+}
+
+.music-toggle__icon {
+  display: none;
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+.music-toggle:not(.is-muted) .music-toggle__icon--on,
+.music-toggle.is-muted .music-toggle__icon--off {
+  display: block;
+}
+
+.game-coming-soon {
+  max-width: 28rem;
+  margin: 0 auto;
+  text-align: center;
+  color: var(--parchment, #f5e6c8);
+  font-family: Georgia, 'Palatino Linotype', serif;
+}
+
+.game-coming-soon__panel {
+  background: linear-gradient(180deg, #2d2640, #221d33);
+  border: 2px solid var(--gold, #f0d878);
+  border-radius: 12px;
+  padding: 2.5rem 1.75rem;
+}
+
+.game-coming-soon__title {
+  margin: 0 0 0.75rem;
+  color: var(--gold, #f0d878);
+  font-size: 1.75rem;
+}
+
+.game-coming-soon__text {
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.55;
+  color: var(--parchment, #f5e6c8);
+}
+
+.game-coming-soon__hud {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0.75rem;
 }
 
 .game-back {
