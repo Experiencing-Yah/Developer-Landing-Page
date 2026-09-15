@@ -10,7 +10,20 @@
     });
   };
 
-  if (!/^G-[A-Z0-9]+$/.test(MEASUREMENT_ID)) {
+  function isLocalHost() {
+    var host = String(window.location.hostname || "").toLowerCase();
+    return (
+      window.location.protocol === "file:" ||
+      host === "localhost" ||
+      host === "127.0.0.1" ||
+      host === "0.0.0.0" ||
+      host === "[::1]" ||
+      host === "::1" ||
+      host.slice(-10) === ".localhost"
+    );
+  }
+
+  if (isLocalHost() || !/^G-[A-Z0-9]+$/.test(MEASUREMENT_ID)) {
     return;
   }
 

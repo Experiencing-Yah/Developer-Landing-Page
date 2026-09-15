@@ -483,7 +483,10 @@
       }
 
       function startGame() {
-        if (typeof window.trackGamePlay === 'function') {
+        if (
+          typeof window.trackGamePlay === 'function' &&
+          (state === 'menu' || state === 'gameOver')
+        ) {
           window.trackGamePlay(
             'Passover Pillage',
             state === 'gameOver' ? 'restart' : 'start',

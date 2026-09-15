@@ -774,7 +774,10 @@
       }
 
       function startGame() {
-        if (typeof window.trackGamePlay === 'function') {
+        if (
+          typeof window.trackGamePlay === 'function' &&
+          (state === 'menu' || state === 'gameOver')
+        ) {
           window.trackGamePlay(
             'Babel Builder',
             state === 'gameOver' ? 'restart' : 'start',

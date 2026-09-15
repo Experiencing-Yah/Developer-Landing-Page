@@ -19,10 +19,13 @@ Load `analytics.js` in `<head>` after the stylesheet. Match the path depth of th
 
 ## New games
 
-Also fire a play event at the top of `startGame()`, before `state` changes:
+Fire a play event at the top of `startGame()` only from the menu or game-over screen, before `state` changes. Do not fire on day/level transitions.
 
 ```js
-if (typeof window.trackGamePlay === 'function') {
+if (
+  typeof window.trackGamePlay === 'function' &&
+  (state === 'menu' || state === 'gameOver')
+) {
   window.trackGamePlay(
     'Game Display Name',
     state === 'gameOver' ? 'restart' : 'start',
@@ -30,6 +33,6 @@ if (typeof window.trackGamePlay === 'function') {
 }
 ```
 
-Use the public game title. `start` is the menu play; `restart` is play-again after game over.
+Use the public game title. `start` is the first play from the menu; `restart` is play-again after game over.
 
-Do not change `MEASUREMENT_ID` or add new event names unless asked. New event parameters must also be registered in GA4 as custom dimensions.
+Do not change `MEASUREMENT_ID` or add new event names unless asked. New event parameters must also be registered in GA4 as custom dimensions. Never send Analytics from localhost; `analytics.js` skips `localhost`, `127.0.0.1`, and `file:`.
