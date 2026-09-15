@@ -1,0 +1,35 @@
+---
+description: Include Google Analytics on every new HTML page and track game starts/restarts
+alwaysApply: true
+---
+
+# Google Analytics
+
+This is a static site. Tracking lives in `/analytics.js` (GA4 ID `G-2X3VN4X5ST`). Do not paste a second gtag snippet into pages.
+
+## New HTML pages
+
+Load `analytics.js` in `<head>` after the stylesheet. Match the path depth of that page’s other root assets:
+
+```html
+<script src="/analytics.js"></script>          <!-- site root, e.g. index.html -->
+<script src="../analytics.js"></script>        <!-- one level, e.g. books/index.html -->
+<script src="../../analytics.js"></script>     <!-- two levels, e.g. games/manna-mover/index.html -->
+```
+
+## New games
+
+Also fire a play event at the top of `startGame()`, before `state` changes:
+
+```js
+if (typeof window.trackGamePlay === 'function') {
+  window.trackGamePlay(
+    'Game Display Name',
+    state === 'gameOver' ? 'restart' : 'start',
+  );
+}
+```
+
+Use the public game title. `start` is the menu play; `restart` is play-again after game over.
+
+Do not change `MEASUREMENT_ID` or add new event names unless asked. New event parameters must also be registered in GA4 as custom dimensions.

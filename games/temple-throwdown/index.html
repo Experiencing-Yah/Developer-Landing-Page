@@ -11,6 +11,7 @@
     <link rel="icon" type="image/svg+xml" href="../../FlameMaterial.svg" />
     <link rel="alternate icon" href="../../FlameMaterial.svg" />
     <link rel="stylesheet" href="../../styles.css" />
+    <script src="../../analytics.js"></script>
     <style>
       :root {
         --gold: #f0d878;
@@ -584,6 +585,12 @@
       }
 
       function startGame() {
+        if (typeof window.trackGamePlay === 'function') {
+          window.trackGamePlay(
+            'Temple Throwdown',
+            state === 'gameOver' ? 'restart' : 'start',
+          );
+        }
         level = 1;
         startLevel();
       }

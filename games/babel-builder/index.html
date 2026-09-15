@@ -11,6 +11,7 @@
     <link rel="icon" type="image/svg+xml" href="../../FlameMaterial.svg" />
     <link rel="alternate icon" href="../../FlameMaterial.svg" />
     <link rel="stylesheet" href="../../styles.css" />
+    <script src="../../analytics.js"></script>
     <style>
       :root {
         --gold: #f0d878;
@@ -773,6 +774,12 @@
       }
 
       function startGame() {
+        if (typeof window.trackGamePlay === 'function') {
+          window.trackGamePlay(
+            'Babel Builder',
+            state === 'gameOver' ? 'restart' : 'start',
+          );
+        }
         grid = [];
         for (var r = 0; r < ROWS; r++) grid.push(new Array(COLS).fill(0));
         score = 0;

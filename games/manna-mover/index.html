@@ -11,6 +11,7 @@
     <link rel="icon" type="image/svg+xml" href="../../FlameMaterial.svg" />
     <link rel="alternate icon" href="../../FlameMaterial.svg" />
     <link rel="stylesheet" href="../../styles.css" />
+    <script src="../../analytics.js"></script>
     <style>
       :root {
         --sand: #d4a96a;
@@ -585,6 +586,12 @@
       }
 
       function startGame() {
+        if (typeof window.trackGamePlay === 'function') {
+          window.trackGamePlay(
+            'Manna Mover',
+            state === 'gameOver' ? 'restart' : 'start',
+          );
+        }
         week = 1;
         day = 1;
         totalScore = 0;
