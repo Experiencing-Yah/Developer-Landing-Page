@@ -1,0 +1,749 @@
+/* Full-screen play inside the Harvester overlay. embed.js sets html.hh-embed only when
+   the page is framed, so a game opened on its own keeps its web layout.
+   The parent passes the device safe areas in as --hh-inset-*. */
+html.hh-embed {
+  --hh-top: max(env(safe-area-inset-top), var(--hh-inset-top, 0px));
+  --hh-right: max(env(safe-area-inset-right), var(--hh-inset-right, 0px));
+  --hh-bottom: max(env(safe-area-inset-bottom), var(--hh-inset-bottom, 0px));
+  --hh-left: max(env(safe-area-inset-left), var(--hh-inset-left, 0px));
+  --hh-bar: 44px;
+  /* The parent's round Return home button sits in the top-left corner of the bar. */
+  --hh-home: 52px;
+  height: 100%;
+  overflow: hidden;
+  background: #1a1525;
+  overscroll-behavior: none;
+}
+
+html.hh-embed,
+html.hh-embed body {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: none;
+}
+
+html.hh-embed body.game-page {
+  position: fixed;
+  inset: 0;
+  margin: 0;
+  overflow: hidden;
+  background: radial-gradient(ellipse at 50% 40%, #241d33 0%, #140f1d 75%);
+}
+
+html.hh-embed body.game-page .game-main {
+  position: absolute;
+  inset: 0;
+  display: block;
+  padding: 0;
+  width: auto;
+  height: auto;
+}
+
+html.hh-embed body.game-page .game-main > #game-container {
+  position: absolute;
+  inset: 0;
+  width: auto;
+  max-width: none;
+  height: auto;
+  margin: 0;
+}
+
+/* ---------- slim HUD bar ---------- */
+
+html.hh-embed #hud {
+  position: absolute;
+  z-index: 30;
+  top: 0;
+  left: 0;
+  right: 0;
+  box-sizing: border-box;
+  height: calc(var(--hh-bar) + var(--hh-top));
+  padding: var(--hh-top) calc(8px + var(--hh-right)) 0 calc(var(--hh-home) + var(--hh-left));
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: space-around;
+  gap: 6px;
+  border: 0;
+  border-radius: 0;
+  background: linear-gradient(180deg, rgba(20, 15, 30, 0.92), rgba(20, 15, 30, 0.72));
+  box-shadow: 0 1px 0 rgba(240, 216, 120, 0.18);
+  font-size: 12px;
+  overflow: hidden;
+  /* Read-only numbers: touches fall through to the stick layer. */
+  pointer-events: none;
+}
+
+html.hh-embed #hud button {
+  pointer-events: auto;
+}
+
+html.hh-embed #hud .hud-section {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  gap: 0;
+  line-height: 1.1;
+}
+
+html.hh-embed #hud .hud-label {
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  opacity: 0.85;
+  white-space: nowrap;
+}
+
+html.hh-embed #hud .hud-label:empty {
+  display: none;
+}
+
+html.hh-embed #hud .hud-value {
+  max-width: 100%;
+  font-size: 15px;
+  min-height: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+html.hh-embed #day-display {
+  font-size: 12px;
+}
+
+html.hh-embed .x2-badge {
+  font-size: 10px;
+  padding: 2px 6px;
+}
+
+html.hh-embed #progress-bar-bg,
+html.hh-embed #hud .bar-bg {
+  width: 56px;
+  height: 6px;
+}
+
+html.hh-embed #hud .music-toggle,
+.hh-pause-btn {
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  min-height: 32px;
+  border-width: 1px;
+  border-color: rgba(240, 216, 120, 0.55);
+  border-radius: 50%;
+  background: rgba(26, 21, 37, 0.7);
+  box-shadow: none;
+}
+
+/* ---------- pause ---------- */
+
+.hh-pause-btn {
+  -webkit-appearance: none;
+  appearance: none;
+  position: relative;
+  margin: 0;
+  padding: 0;
+  display: inline-grid;
+  place-items: center;
+  border-style: solid;
+  color: #f0d878;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* A 32px button with a 44px touch target. */
+.hh-pause-btn::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+}
+
+.hh-pause-btn svg {
+  grid-area: 1 / 1;
+  width: 18px;
+  height: 18px;
+}
+
+.hh-pause-btn:active {
+  transform: scale(0.94);
+}
+
+.hh-icon-play,
+html.hh-paused .hh-icon-pause {
+  display: none;
+}
+
+html.hh-paused .hh-icon-play {
+  display: block;
+}
+
+html:not(.hh-in-play) .hh-pause-btn {
+  display: none;
+}
+
+.hh-pause-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(14, 10, 22, 0.74);
+  touch-action: none;
+}
+
+html.hh-paused .hh-pause-screen {
+  display: flex;
+}
+
+/* The game's own "Paused" card would show through ours. */
+html.hh-paused #overlay {
+  visibility: hidden;
+}
+
+.hh-pause-card {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+  min-width: 200px;
+  padding: 22px 26px 24px;
+  border: 1px solid rgba(240, 216, 120, 0.35);
+  border-radius: 18px;
+  background: radial-gradient(ellipse at 50% 30%, #2d2640, #1a1525);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.55);
+  text-align: center;
+}
+
+.hh-pause-title {
+  margin-bottom: 4px;
+  color: #f0d878;
+  font-family: Georgia, 'Palatino Linotype', serif;
+  font-size: 28px;
+  letter-spacing: 0.04em;
+}
+
+.hh-pause-resume,
+.hh-pause-home {
+  -webkit-appearance: none;
+  appearance: none;
+  min-height: 46px;
+  padding: 0 26px;
+  border-radius: 999px;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-weight: 800;
+  font-size: 16px;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.hh-pause-resume {
+  border: 2px solid #c9a040;
+  background: radial-gradient(circle at 35% 30%, #fbe7a8, #e0b44a);
+  color: #4a3510;
+}
+
+.hh-pause-home {
+  border: 1px solid rgba(240, 216, 120, 0.55);
+  background: transparent;
+  color: #f5e6c8;
+}
+
+.hh-pause-resume:active,
+.hh-pause-home:active {
+  transform: scale(0.97);
+}
+
+/* Narrow portrait: the best score is on the title card, the bar keeps the live numbers. */
+@media (max-width: 480px) {
+  html.hh-embed.hh-game-manna-mover #hud .hud-section:has(#best-display),
+  html.hh-embed.hh-game-manna-mover #hud .hud-section:has(#delivered-display),
+  html.hh-embed.hh-game-babel-builder #hud .hud-section:has(#best-display),
+  html.hh-embed.hh-game-temple-throwdown #hud .hud-section:has(#best-display) {
+    display: none;
+  }
+}
+
+/* Hints like "Charging… lift to throw!" give way before the mode and stone count. */
+html.hh-embed.hh-game-davids-defenders #hud .hud-section:has(#hud-info) {
+  flex-shrink: 6;
+}
+
+@media (max-width: 400px) {
+  html.hh-embed.hh-game-davids-defenders #hud {
+    gap: 4px;
+  }
+
+  html.hh-embed.hh-game-davids-defenders #hud .hud-value {
+    font-size: 13px;
+  }
+
+  html.hh-embed.hh-game-davids-defenders #hud .bar-bg {
+    width: 44px;
+  }
+
+  /* In the sling fight that bar only repeats the stone count. */
+  html.hh-embed.hh-game-davids-defenders.hh-state-david_fight #hud .hud-section:has(#hud-val3) {
+    display: none;
+  }
+}
+
+@media (max-width: 380px) {
+  html.hh-embed.hh-game-manna-mover #hud .hud-section:has(#total-display),
+  html.hh-embed.hh-game-babel-builder #hud .hud-section:has(#confusion-display) {
+    display: none;
+  }
+}
+
+html.hh-embed #timer-bar {
+  position: absolute;
+  z-index: 30;
+  top: calc(var(--hh-bar) + var(--hh-top));
+  left: 0;
+  right: 0;
+  height: 3px;
+  border: 0;
+}
+
+/* ---------- play field ---------- */
+
+html.hh-embed #canvas-wrap {
+  position: absolute;
+  top: calc(var(--hh-bar) + var(--hh-top) + 4px);
+  right: calc(4px + var(--hh-right));
+  bottom: calc(4px + var(--hh-bottom));
+  left: calc(4px + var(--hh-left));
+  container-type: size;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 0;
+  overflow: visible;
+  background: transparent;
+}
+
+html.hh-embed #canvas-wrap canvas {
+  width: min(100cqw, 100cqh);
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+  aspect-ratio: 1;
+  border-radius: 6px;
+  box-shadow: 0 0 0 1px rgba(240, 216, 120, 0.12), 0 10px 40px rgba(0, 0, 0, 0.55);
+}
+
+/* Tall phones: keep the field high and leave the lower screen to the thumbs. */
+@media (orientation: portrait) {
+  html.hh-embed #canvas-wrap {
+    align-items: flex-start;
+    padding-top: 2vh;
+  }
+}
+
+/* Start, pause and game-over cards read as part of the game rather than a web dialog. */
+html.hh-embed #overlay {
+  inset: 0;
+  padding: 24px 20px;
+  background: radial-gradient(ellipse at 50% 45%, rgba(36, 29, 51, 0.9), rgba(16, 12, 24, 0.94));
+  font-family: Georgia, 'Palatino Linotype', serif;
+}
+
+html.hh-embed .overlay-title {
+  font-size: clamp(22px, 7vmin, 34px);
+}
+
+html.hh-embed .overlay-message {
+  font-size: clamp(14px, 4.2vmin, 19px);
+}
+
+html.hh-embed .overlay-sub,
+html.hh-embed .overlay-stat {
+  font-size: clamp(12px, 3.4vmin, 15px);
+}
+
+html.hh-embed .btn-prompt {
+  margin-top: 6px;
+  padding: 12px 28px;
+  border: 2px solid #c9a040;
+  border-radius: 999px;
+  background: radial-gradient(circle at 35% 30%, #fbe7a8, #e0b44a);
+  color: #4a3510;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-weight: 800;
+  font-size: 15px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+}
+
+/* One control scheme: the page's own d-pads and button rows give way to ours. */
+html.hh-embed .touch-controls,
+html.hh-embed .touch-controls--babel,
+html.hh-embed .touch-controls--temple {
+  display: none !important;
+}
+
+/* ---------- touch layer (built by embed.js) ---------- */
+
+.hh-pad {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  touch-action: none;
+}
+
+.hh-stick {
+  position: fixed;
+  z-index: 21;
+  width: 112px;
+  height: 112px;
+  margin: -56px 0 0 -56px;
+  border-radius: 50%;
+  border: 2px solid rgba(251, 243, 223, 0.55);
+  background: rgba(42, 31, 24, 0.22);
+  pointer-events: none;
+  display: none;
+}
+
+.hh-stick.is-on {
+  display: block;
+}
+
+.hh-stick-knob {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fbe7a8, #e0b44a);
+  border: 2px solid #c9a040;
+  box-shadow: 0 6px 24px rgba(30, 20, 10, 0.28);
+  transform: translate(-50%, -50%);
+}
+
+/* Where the thumb naturally rests: a faint ring that says "drag here". */
+.hh-stick-hint {
+  position: fixed;
+  z-index: 21;
+  left: calc(var(--hh-left, 0px) + 26%);
+  top: calc(100% - var(--hh-bottom, 0px) - 120px);
+  width: 104px;
+  height: 104px;
+  margin: -52px 0 0 -52px;
+  border-radius: 50%;
+  border: 2px dashed rgba(251, 243, 223, 0.2);
+  pointer-events: none;
+  display: none;
+}
+
+.hh-stick-hint::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 40px;
+  height: 40px;
+  margin: -20px 0 0 -20px;
+  border-radius: 50%;
+  background: rgba(240, 216, 120, 0.12);
+}
+
+html.hh-touch.hh-in-play:not(.hh-steering):not(.hh-paused) .hh-stick-hint {
+  display: block;
+}
+
+html.hh-swipe .hh-stick-hint {
+  display: none !important;
+}
+
+/* David's sling band: from where the finger landed to where it is now. */
+.hh-pull {
+  position: fixed;
+  z-index: 22;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  display: none;
+}
+
+.hh-pull.is-on {
+  display: block;
+}
+
+.hh-pull-anchor {
+  position: absolute;
+  left: -9px;
+  top: -9px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid rgba(251, 243, 223, 0.7);
+  background: rgba(42, 31, 24, 0.35);
+}
+
+.hh-pull-strap {
+  position: absolute;
+  left: 0;
+  top: -2px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(251, 243, 223, 0.4);
+  transform-origin: 0 50%;
+}
+
+.hh-pull-strap::after {
+  content: '';
+  position: absolute;
+  right: -11px;
+  top: -9px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #b8a888, #6a5a4a);
+  border: 2px solid rgba(251, 243, 223, 0.5);
+}
+
+.hh-pull.is-armed .hh-pull-strap {
+  background: linear-gradient(90deg, rgba(240, 216, 120, 0.5), #e0b44a);
+}
+
+/* Squarer screens have no free thumb area beside or below the board to mark. */
+@media (orientation: portrait) and (min-aspect-ratio: 751/1000),
+  (orientation: landscape) and (max-aspect-ratio: 1499/1000) {
+  .hh-stick-hint {
+    visibility: hidden;
+  }
+}
+
+/* Tap-to-move destination. */
+.hh-target {
+  position: fixed;
+  z-index: 22;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  display: none;
+}
+
+.hh-target.is-on {
+  display: block;
+}
+
+.hh-target::before,
+.hh-target::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+}
+
+.hh-target::before {
+  left: -15px;
+  top: -15px;
+  width: 30px;
+  height: 30px;
+  box-sizing: border-box;
+  border: 3px solid #f0d878;
+  box-shadow: 0 0 10px rgba(240, 216, 120, 0.6);
+  animation: hh-target-pulse 0.9s ease-out infinite;
+}
+
+.hh-target::after {
+  left: -3px;
+  top: -3px;
+  width: 6px;
+  height: 6px;
+  background: #fbe7a8;
+}
+
+@keyframes hh-target-pulse {
+  from {
+    transform: scale(0.55);
+    opacity: 1;
+  }
+  to {
+    transform: scale(1.25);
+    opacity: 0.3;
+  }
+}
+
+.hh-buttons {
+  position: fixed;
+  z-index: 40;
+  right: calc(16px + var(--hh-right, 0px));
+  bottom: calc(16px + var(--hh-bottom, 0px));
+  display: none;
+  align-items: flex-end;
+  gap: 12px;
+  pointer-events: none;
+}
+
+html.hh-touch .hh-buttons {
+  display: flex;
+}
+
+html.hh-paused .hh-buttons {
+  display: none;
+}
+
+.hh-act {
+  pointer-events: auto;
+  touch-action: none;
+  width: 76px;
+  height: 76px;
+  padding: 0;
+  border-radius: 50%;
+  border: 2px solid #c9a040;
+  background: radial-gradient(circle at 35% 30%, #fbe7a8, #e0b44a);
+  color: #4a3510;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-weight: 800;
+  font-size: 17px;
+  box-shadow: 0 6px 24px rgba(30, 20, 10, 0.28);
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+  transition: opacity 0.15s;
+}
+
+.hh-act.is-down {
+  transform: scale(0.95);
+  filter: brightness(0.94);
+}
+
+.hh-act.is-idle {
+  display: none;
+}
+
+.hh-alt {
+  width: 58px;
+  height: 58px;
+  margin-bottom: 44px;
+  font-size: 13px;
+  opacity: 0.92;
+}
+
+.hh-alt:first-child {
+  margin-bottom: 0;
+}
+
+/* ---------- wide landscape: stick | board | buttons ----------
+   embed.js uses the same query to keep the right column for the buttons. */
+@media (orientation: landscape) and (min-aspect-ratio: 3/2) {
+  html.hh-embed {
+    --hh-gutter: 176px;
+    --hh-board: min(
+      calc(100vh - var(--hh-top) - var(--hh-bottom) - 8px),
+      calc(100vw - var(--hh-left) - var(--hh-right) - 8px - 2 * var(--hh-gutter))
+    );
+    /* Width of each side column, from the safe edge to the board. */
+    --hh-col: calc((100vw - var(--hh-left) - var(--hh-right) - var(--hh-board)) / 2);
+  }
+
+  html.hh-embed #canvas-wrap {
+    top: calc(var(--hh-top) + 4px);
+    padding-top: 0;
+    align-items: center;
+  }
+
+  html.hh-embed #canvas-wrap canvas {
+    width: var(--hh-board);
+    height: var(--hh-board);
+    max-width: none;
+    max-height: none;
+  }
+
+  /* The score bar folds into a panel at the top of the left column, under the home button. */
+  html.hh-embed #hud {
+    top: calc(var(--hh-top) + 52px);
+    left: calc(var(--hh-left) + 8px);
+    right: auto;
+    width: calc(var(--hh-col) - 16px);
+    height: auto;
+    max-height: calc(100vh - var(--hh-top) - var(--hh-bottom) - 200px);
+    padding: 8px 6px;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    align-content: flex-start;
+    gap: 8px 4px;
+    border-radius: 12px;
+    background: rgba(20, 15, 30, 0.72);
+    box-shadow: 0 0 0 1px rgba(240, 216, 120, 0.16);
+  }
+
+  html.hh-embed #hud .hud-section {
+    flex: 1 1 40%;
+    align-items: center;
+    text-align: center;
+  }
+
+  html.hh-embed #hud .hud-value {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  /* Sound and pause sit in the top of the right column. */
+  html.hh-embed #hud .music-toggle,
+  html.hh-embed .hh-pause-btn {
+    position: fixed;
+    top: calc(var(--hh-top) + 6px);
+    right: calc(var(--hh-right) + 10px);
+  }
+
+  html.hh-embed .hh-pause-btn {
+    right: calc(var(--hh-right) + 56px);
+  }
+
+  html.hh-embed #timer-bar {
+    top: calc(var(--hh-top) + 44px);
+    left: calc(var(--hh-left) + 8px);
+    right: auto;
+    width: calc(var(--hh-col) - 16px);
+    height: 4px;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .hh-stick-hint {
+    left: calc(var(--hh-left, 0px) + var(--hh-col) / 2);
+    top: calc(100% - var(--hh-bottom, 0px) - 84px);
+  }
+
+  /* Act low and to the right, the extra moves above and inside it, all centred in the column. */
+  html.hh-touch .hh-buttons {
+    display: block;
+    top: calc(50% - 70px);
+    bottom: auto;
+    right: calc(var(--hh-right, 0px) + max(10px, (var(--hh-col) - 150px) / 2));
+    width: 150px;
+    height: 170px;
+  }
+
+  html.hh-paused .hh-buttons {
+    display: none;
+  }
+
+  .hh-buttons .hh-act {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    margin: 0;
+  }
+
+  .hh-buttons .hh-alt:nth-child(2) {
+    right: 86px;
+    bottom: 40px;
+  }
+
+  .hh-buttons .hh-alt:nth-child(1) {
+    right: 9px;
+    bottom: 94px;
+  }
+}

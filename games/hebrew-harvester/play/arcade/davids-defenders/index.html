@@ -1,0 +1,4225 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="David's Defenders — the many adventures of David's Mighty Men. A Scripture-inspired browser game from Experiencing Yah."
+    />
+    <title>David's Defenders | Experiencing Yah</title>
+    <link rel="stylesheet" href="../site.css" />
+    <style>
+      :root {
+        --gold: #f0d878;
+        --parchment: #f5e6c8;
+        --night: #1a1525;
+        --stone: #8a7860;
+        --blood: #8a2820;
+        --blue: #3a5a8a;
+      }
+      #game-container {
+        position: relative;
+        width: 660px;
+        max-width: 100%;
+        font-family: Georgia, 'Palatino Linotype', serif;
+        color: var(--parchment);
+      }
+      #hud {
+        background: linear-gradient(180deg, #2d2640, #221d33);
+        border: 2px solid var(--gold);
+        border-bottom: none;
+        border-radius: 10px 10px 0 0;
+        padding: 10px 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        font-size: 14px;
+      }
+      .music-toggle {
+        -webkit-appearance: none;
+        appearance: none;
+        flex-shrink: 0;
+        position: relative;
+        width: 2.25rem;
+        height: 2.25rem;
+        min-width: 2.25rem;
+        min-height: 2.25rem;
+        padding: 0;
+        margin: 0;
+        border: 2px solid var(--gold);
+        border-radius: 8px;
+        background: linear-gradient(180deg, #2d2640, #221d33);
+        background-color: #221d33;
+        color: var(--gold);
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 0 rgba(0, 0, 0, 0.35);
+        line-height: 0;
+        overflow: hidden;
+      }
+      .music-toggle__icon {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        margin: auto;
+        width: 1.1rem;
+        height: 1.1rem;
+        display: block;
+        opacity: 0;
+        pointer-events: none;
+        fill: currentColor;
+      }
+      .music-toggle:not(.is-muted) .music-toggle__icon--on,
+      .music-toggle.is-muted .music-toggle__icon--off {
+        opacity: 1;
+      }
+      .touch-controls--temple {
+        display: none;
+        justify-content: space-between;
+        align-items: flex-end;
+        gap: 0.75rem;
+      }
+      .touch-actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 0.45rem;
+      }
+      @media (max-width: 820px), (pointer: coarse) {
+        .touch-controls--temple {
+          display: flex;
+        }
+      }
+      .hud-section {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
+      }
+      .hud-label {
+        color: var(--gold);
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+      .hud-value {
+        font-size: 18px;
+        font-weight: bold;
+        color: var(--parchment);
+        min-height: 1.2em;
+      }
+      #canvas-wrap {
+        position: relative;
+        border: 2px solid var(--gold);
+        border-top: none;
+        border-radius: 0 0 10px 10px;
+        overflow: hidden;
+      }
+      canvas {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+      .bar-bg {
+        width: 100px;
+        height: 8px;
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid var(--gold);
+        border-radius: 4px;
+        overflow: hidden;
+      }
+      .bar-fill {
+        height: 100%;
+        background: var(--gold);
+        transition: width 0.3s;
+        border-radius: 3px;
+      }
+      .bar-bg.is-hidden {
+        display: none;
+      }
+    </style>
+      <link rel="stylesheet" href="../embed.css" />
+  </head>
+  <body class="game-page">
+    <main class="game-main">
+      <div id="game-container">
+      <div id="hud">
+        <div class="hud-section">
+          <div class="hud-label" id="hud-label-mode">Mode</div>
+          <div class="hud-value" id="hud-mode">—</div>
+        </div>
+        <div class="hud-section">
+          <div class="hud-label" id="hud-label-stat">Stat</div>
+          <div class="hud-value" id="hud-stat">—</div>
+        </div>
+        <div class="hud-section">
+          <div class="hud-label" id="hud-label-health">Health</div>
+          <div class="bar-bg is-hidden">
+            <div class="bar-fill" id="hud-bar" style="width: 100%"></div>
+          </div>
+          <div class="hud-value" id="hud-val3">—</div>
+        </div>
+        <div class="hud-section">
+          <div class="hud-label" id="hud-label-info">Info</div>
+          <div class="hud-value" id="hud-info">—</div>
+        </div>
+          <button
+            type="button"
+            id="music-toggle"
+            class="music-toggle"
+            aria-label="Mute music"
+            aria-pressed="false"
+          >
+            <svg
+              class="music-toggle__icon music-toggle__icon--on"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path
+                fill="currentColor"
+                d="M3 10v4h4l5 5V5L7 10H3zm13.5 2c0-1.77-1-3.29-2.5-4.03v8.05c1.5-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"
+              />
+            </svg>
+            <svg
+              class="music-toggle__icon music-toggle__icon--off"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path
+                fill="currentColor"
+                d="M16.5 12c0-1.77-1-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3 3 4.27 7.73 9H3v4h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4 9.91 6.09 12 8.18V4z"
+              />
+            </svg>
+          </button>
+      </div>
+      <div id="canvas-wrap">
+        <canvas id="game" width="640" height="640"></canvas>
+      </div>
+        <div
+          class="touch-controls touch-controls--temple"
+          aria-label="Touch controls"
+        >
+          <div class="touch-dpad">
+            <button
+              type="button"
+              class="touch-btn"
+              data-key="arrowup"
+              aria-label="Up"
+            >
+              ▲
+            </button>
+            <button
+              type="button"
+              class="touch-btn"
+              data-key="arrowleft"
+              aria-label="Left"
+            >
+              ◀
+            </button>
+            <button
+              type="button"
+              class="touch-btn"
+              data-key="arrowdown"
+              aria-label="Down"
+            >
+              ▼
+            </button>
+            <button
+              type="button"
+              class="touch-btn"
+              data-key="arrowright"
+              aria-label="Right"
+            >
+              ▶
+            </button>
+          </div>
+          <div class="touch-actions">
+            <button
+              type="button"
+              class="touch-btn touch-btn--action"
+              id="touch-attack"
+              aria-label="Attack"
+            >
+              Atk
+            </button>
+            <button
+              type="button"
+              class="touch-btn touch-btn--action"
+              id="touch-spear"
+              aria-label="Spear"
+            >
+              Spear
+            </button>
+            <button
+              type="button"
+              class="touch-btn touch-btn--action"
+              id="touch-arrow"
+              aria-label="Bow"
+            >
+              Bow
+            </button>
+            <button
+              type="button"
+              class="touch-btn touch-btn--action"
+              id="touch-action"
+              aria-label="Start or continue"
+            >
+              Go
+            </button>
+          </div>
+        </div>
+      </div>
+    </main>
+    <script src="../scores.js"></script>
+    <script src="../audio.js"></script>
+    <script>
+      var canvas = document.getElementById('game');
+      var ctx = canvas.getContext('2d');
+      var W = canvas.width,
+        H = canvas.height;
+      function el(id) {
+        return document.getElementById(id);
+      }
+      var hudMode = el('hud-mode'),
+        hudStat = el('hud-stat'),
+        hudBar = el('hud-bar'),
+        hudBarBg = hudBar ? hudBar.parentElement : null,
+        hudInfo = el('hud-info');
+      var hudLabelMode = el('hud-label-mode'),
+        hudLabelStat = el('hud-label-stat'),
+        hudLabelHealth = el('hud-label-health'),
+        hudLabelInfo = el('hud-label-info'),
+        hudVal3 = el('hud-val3');
+
+      function setHudBarVisible(visible) {
+        if (!hudBarBg) return;
+        hudBarBg.classList.toggle('is-hidden', !visible);
+      }
+
+      function setPlaceholderHud() {
+        hudLabelMode.textContent = 'Mode';
+        hudLabelStat.textContent = 'Stat';
+        hudLabelHealth.textContent = 'Health';
+        hudLabelInfo.textContent = 'Info';
+        hudMode.textContent = '\u2014';
+        hudStat.textContent = '\u2014';
+        hudVal3.textContent = '\u2014';
+        hudInfo.textContent = '\u2014';
+        setHudBarVisible(false);
+      }
+
+      // === STATE ===
+      var state = 'menu';
+      var playSource = 'menu';
+      var waterQuestUnlocked = false;
+      var selectedChar = null;
+      var completed = { josheb: false, eleazar: false, shammah: false };
+      var davidUnlocked = false;
+      var davidVictory = false;
+      var goliathSwordUnlocked = false;
+      var swordEnabled = true; // Goliath's Sword toggle (default on when unlocked)
+      var swordCheckbox = null; // canvas hitbox of the char-select checkbox
+      function swordActive() {
+        return goliathSwordUnlocked && swordEnabled;
+      }
+      // Water quest state
+      var wq = {
+        px: 50,
+        py: 320,
+        dir: { x: 1, y: 0 },
+        enemies: [],
+        kills: 0,
+        healths: [100, 100, 100],
+        spawnT: 0,
+        hasWater: false,
+        waterX: 590,
+        waterY: 320,
+        caveX: 30,
+        caveY: 320,
+        phase: 'fight',
+        msg: '',
+        msgT: 0,
+        swordCD: 0,
+        spearCD: 0,
+        arrowCD: 0,
+        swordT: 0,
+        spearT: 0,
+        charNames: ['Josheb', 'Eleazar', 'Shammah'],
+        arrows: [],
+      };
+      var keys = {};
+      var lastTime = 0,
+        animTime = 0;
+      var shake = 0;
+      var particles = [],
+        popups = [];
+
+      // Josheb state
+      var jb = {
+        px: 320,
+        py: 320,
+        dir: { x: 1, y: 0 },
+        atkT: 0,
+        atkCD: 0,
+        enemies: [],
+        kills: 0,
+        total: 800,
+        health: 100,
+        spawnT: 0,
+        spawnRate: 0.08,
+        wave: 0,
+      };
+
+      // Eleazar state
+      var el_state = {
+        px: 320,
+        py: 320,
+        dir: { x: 1, y: 0 },
+        swingT: 0,
+        health: 100,
+        wave: 0,
+        waveEnemies: [],
+        waveTarget: 0,
+        waveKills: 0,
+        resting: false,
+        restT: 0,
+        enemiesKilled: 0,
+        maxWaves: 8,
+      };
+
+      // Shammah state
+      var sh = {
+        px: 320,
+        py: 320,
+        dir: { x: 1, y: 0 },
+        atkT: 0,
+        atkCD: 0,
+        enemies: [],
+        plotX: 300,
+        plotY: 300,
+        plotW: 40,
+        plotH: 40,
+        breaches: 0,
+        maxBreaches: 5,
+        wave: 0,
+        spawnT: 0,
+        surviveTime: 60,
+        surviveT: 0,
+        kills: 0,
+      };
+
+      // David state
+      var dv = {
+        angle: 30,
+        power: 0,
+        charging: false,
+        stones: 5,
+        thrown: [],
+        goliathX: 520,
+        goliathY: 320,
+        goliathHeadR: 22,
+        phase: 'aim',
+        msg: '',
+        hitT: 0,
+      };
+
+      function trackPlayStart() {
+        if (
+          typeof window.trackGamePlay === 'function' &&
+          (playSource === 'menu' || playSource === 'gameover')
+        ) {
+          window.trackGamePlay(
+            "David's Defenders",
+            playSource === 'gameover' ? 'restart' : 'start',
+          );
+        }
+        playSource = 'playing';
+      }
+
+      function goGameOver() {
+        playSource = 'gameover';
+        state = 'gameover';
+      }
+
+      window.addEventListener('keydown', function (e) {
+        var k = e.key.toLowerCase();
+        if (
+          [
+            'arrowup',
+            'arrowdown',
+            'arrowleft',
+            'arrowright',
+            ' ',
+            'j',
+            'k',
+            'l',
+            'w',
+            'a',
+            's',
+            'd',
+            'p',
+          ].indexOf(k) >= 0
+        )
+          e.preventDefault();
+        if (!keys[k]) {
+          keys[k] = true;
+          handleKeyPress(k);
+        }
+      });
+      canvas.addEventListener('click', function () {
+        if (
+          state === 'menu' ||
+          state === 'charselect' ||
+          state === 'levelcomplete' ||
+          state === 'gameover' ||
+          state === 'davidvictory' ||
+          state === 'water_cutscene' ||
+          state === 'paused'
+        ) {
+          handleKeyPress(' ');
+        }
+      });
+      window.addEventListener('keyup', function (e) {
+        var k = e.key.toLowerCase();
+        keys[k] = false;
+        if (
+          (k === 'j' || k === 'k') &&
+          state === 'david_fight' &&
+          dv.charging
+        ) {
+          throwStone();
+          dv.charging = false;
+        }
+      });
+
+      var pausedFrom = '';
+      function handleKeyPress(k) {
+        if (k === 'p') {
+          if (
+            state === 'playing' ||
+            state === 'david_fight' ||
+            state === 'water_quest'
+          ) {
+            pausedFrom = state;
+            state = 'paused';
+          } else if (state === 'paused') {
+            state = pausedFrom;
+          }
+          return;
+        }
+        if (k === ' ') {
+          if (state === 'menu') state = 'charselect';
+          else if (state === 'paused') {
+            state = pausedFrom;
+            return;
+          } else if (state === 'charselect') selectCurrent();
+          else if (state === 'levelcomplete') {
+            state = 'charselect';
+          } else if (state === 'water_cutscene') unlockDavidAndReturn();
+          else if (state === 'davidvictory') {
+            playSource = 'menu';
+            state = 'menu';
+          }
+          else if (state === 'gameover') state = 'charselect';
+        }
+        if (state === 'paused') {
+          if (k === 'escape' || k === 'backspace') {
+            state = 'charselect';
+          }
+        }
+        if (k === 'j') {
+          if (state === 'playing' && selectedChar === 'shammah') {
+            if (swordActive()) shammahSwordSwing();
+            else shootShammahArrow();
+          }
+          if (state === 'playing' && selectedChar === 'eleazar') {
+            var ea =
+              (Math.atan2(el_state.dir.y, el_state.dir.x) * 180) / Math.PI;
+            eleazarSwingDir((ea + 360) % 360);
+          }
+          if (state === 'water_quest') wqAttack('sword');
+          if (state === 'david_fight' && dv.phase === 'aim' && dv.stones > 0)
+            dv.charging = true;
+          // Sword fight mode: J is read via keys['j'] in updateDavid
+        }
+          if (k === 'k') {
+            if (state === 'playing' && selectedChar === 'eleazar') {
+              var ka =
+                (Math.atan2(el_state.dir.y, el_state.dir.x) * 180) / Math.PI;
+              eleazarSwingDir((ka + 360) % 360);
+            }
+            if (state === 'playing' && selectedChar === 'shammah') {
+              if (swordActive()) shammahSwordSwing();
+              else shootShammahArrow();
+            }
+            if (state === 'water_quest') wqAttack('spear');
+            if (state === 'david_fight' && dv.phase === 'aim' && dv.stones > 0)
+              dv.charging = true;
+          }
+        // Eleazar: W/A/S/D directional swipes
+        if (state === 'playing' && selectedChar === 'eleazar') {
+          if (k === 'w' || k === 'arrowup') eleazarSwingDir(270); // up
+          if (k === 's' || k === 'arrowdown') eleazarSwingDir(90); // down
+          if (k === 'a' || k === 'arrowleft') eleazarSwingDir(180); // left
+          if (k === 'd' || k === 'arrowright') eleazarSwingDir(0); // right
+        }
+        if (k === 'l') {
+          if (state === 'water_quest') wqShootArrow();
+        }
+        if (state === 'charselect') {
+          if (k === 'arrowleft' || k === 'a') {
+            if (charSelIdx <= 2) {
+              charSelTopIdx = charSelIdx;
+              charSelIdx = (charSelIdx + 2) % 3;
+            } else if (charSelIdx === 3 && waterQuestUnlocked) charSelIdx = 4;
+            else if (charSelIdx === 4)
+              charSelIdx = goliathSwordUnlocked
+                ? 5
+                : waterQuestUnlocked
+                  ? 3
+                  : charSelTopIdx;
+            else if (charSelIdx === 5) charSelIdx = 4;
+          }
+          if (k === 'arrowright' || k === 'd') {
+            if (charSelIdx <= 2) {
+              charSelTopIdx = charSelIdx;
+              charSelIdx = (charSelIdx + 1) % 3;
+            } else if (charSelIdx === 3 && waterQuestUnlocked) charSelIdx = 4;
+            else if (charSelIdx === 4)
+              charSelIdx = goliathSwordUnlocked
+                ? 5
+                : waterQuestUnlocked
+                  ? 3
+                  : charSelTopIdx;
+            else if (charSelIdx === 5) charSelIdx = 4;
+          }
+          if (k === 'arrowdown' || k === 's') {
+            if (charSelIdx <= 2) {
+              charSelTopIdx = charSelIdx;
+              charSelIdx = waterQuestUnlocked ? 3 : 4;
+            } else if (charSelIdx === 3) charSelIdx = 4;
+            else if (charSelIdx === 4 && goliathSwordUnlocked) charSelIdx = 5;
+          }
+          if (k === 'arrowup' || k === 'w') {
+            if (charSelIdx === 3) charSelIdx = charSelTopIdx;
+            else if (charSelIdx === 4)
+              charSelIdx = waterQuestUnlocked ? 3 : charSelTopIdx;
+            else if (charSelIdx === 5) charSelIdx = 4;
+          }
+        }
+      }
+
+      // === CHARACTER SELECT ===
+      // 5 selectable items: 0-2 = the three warriors, 3 = Water Quest bar,
+      // 4 = David. charSelIdx 0-3 map directly to charData indices.
+      var charSelIdx = 0;
+      var charSelTopIdx = 0;
+      var charData = [
+        {
+          id: 'josheb',
+          name: 'Josheb-Basshebeth',
+          desc: 'Spear against 800 men',
+          color: '#8a6840',
+          sub: '"He raised his spear against 800 men"',
+        },
+        {
+          id: 'eleazar',
+          name: 'Eleazar',
+          desc: 'Endure the waves',
+          color: '#4a6a8a',
+          sub: '"His hand clung to the sword"',
+        },
+        {
+          id: 'shammah',
+          name: 'Shammah',
+          desc: 'Defend the plot',
+          color: '#5a7a4a',
+          sub: '"He defended the field of lentils"',
+        },
+        {
+          id: 'david',
+          name: '???',
+          desc: 'Locked',
+          color: '#444',
+          sub: 'Complete the Water Quest to unlock',
+          locked: true,
+        },
+      ];
+
+      function selectCurrent() {
+        // Goliath's Sword toggle (index 5)
+        if (charSelIdx === 5) {
+          if (!goliathSwordUnlocked) return;
+          swordEnabled = !swordEnabled;
+          saveProgress();
+          return;
+        }
+        // Water Quest bar (index 3)
+        if (charSelIdx === 3) {
+          if (!waterQuestUnlocked) return;
+          trackPlayStart();
+          selectedChar = 'water';
+          initWaterQuest();
+          state = 'water_quest';
+          return;
+        }
+        // David (index 4)
+        if (charSelIdx === 4) {
+          if (!davidUnlocked) return;
+          trackPlayStart();
+          selectedChar = 'david';
+          initDavid();
+          state = 'david_fight';
+          updateHUD();
+          return;
+        }
+        var c = charData[charSelIdx];
+        if (c.locked && !davidUnlocked) return;
+        selectedChar = c.id;
+        startMode();
+      }
+
+      function startMode() {
+        trackPlayStart();
+        if (selectedChar === 'josheb') initJosheb();
+        else if (selectedChar === 'eleazar') initEleazar();
+        else if (selectedChar === 'shammah') initShammah();
+        else if (selectedChar === 'david') initDavid();
+        state = 'playing';
+        if (selectedChar === 'david') state = 'david_fight';
+        updateHUD();
+      }
+
+      (function setupTouchControls() {
+        var root = document.querySelector('.touch-controls');
+        if (!root) return;
+        function holdKey(key, down) {
+          keys[key] = !!down;
+        }
+        function bindHold(btn, key, onStart, onEnd) {
+          if (!btn) return;
+          function start(e) {
+            e.preventDefault();
+            btn.classList.add('is-active');
+            holdKey(key, true);
+            if (onStart) onStart();
+            else handleKeyPress(key);
+          }
+          function end(e) {
+            e.preventDefault();
+            btn.classList.remove('is-active');
+            holdKey(key, false);
+            if (onEnd) onEnd();
+          }
+          btn.addEventListener('touchstart', start, { passive: false });
+          btn.addEventListener('touchend', end, { passive: false });
+          btn.addEventListener('touchcancel', end, { passive: false });
+          btn.addEventListener('mousedown', start);
+          btn.addEventListener('mouseup', end);
+          btn.addEventListener('mouseleave', end);
+        }
+        root.querySelectorAll('.touch-btn[data-key]').forEach(function (btn) {
+          bindHold(btn, btn.getAttribute('data-key'));
+        });
+        function bindTap(btn, fn) {
+          if (!btn) return;
+          function fire(e) {
+            e.preventDefault();
+            btn.classList.add('is-active');
+            fn();
+            setTimeout(function () {
+              btn.classList.remove('is-active');
+            }, 120);
+          }
+          btn.addEventListener('touchstart', fire, { passive: false });
+          btn.addEventListener('click', fire);
+        }
+        bindHold(
+          document.getElementById('touch-attack'),
+          'j',
+          function () {
+            handleKeyPress('j');
+          },
+          function () {
+            if (state === 'david_fight' && dv.charging) {
+              throwStone();
+              dv.charging = false;
+            }
+          },
+        );
+        bindTap(document.getElementById('touch-spear'), function () {
+          handleKeyPress('k');
+        });
+        bindTap(document.getElementById('touch-arrow'), function () {
+          handleKeyPress('l');
+        });
+        bindTap(document.getElementById('touch-action'), function () {
+          if (
+            state === 'playing' ||
+            state === 'david_fight' ||
+            state === 'water_quest'
+          ) {
+            handleKeyPress('p');
+          } else {
+            handleKeyPress(' ');
+          }
+        });
+      })();
+
+      // === JOSHEB-BASSHEBETH ===
+      function initJosheb() {
+        jb = {
+          px: 320,
+          py: 320,
+          dir: { x: 1, y: 0 },
+          atkT: 0,
+          atkCD: 0,
+          atkStabAngle: 0,
+          enemies: [],
+          kills: 0,
+          total: 800,
+          health: 100,
+          wave: 0,
+          spawnToggle: 0,
+        };
+        // Start with 5 enemies
+        for (var i = 0; i < 5; i++) spawnJoshebEnemy();
+      }
+
+      function updateJosheb(dt) {
+        // Movement
+        var dx = 0,
+          dy = 0;
+        if (keys['arrowleft'] || keys['a']) dx = -1;
+        if (keys['arrowright'] || keys['d']) dx = 1;
+        if (keys['arrowup'] || keys['w']) dy = -1;
+        if (keys['arrowdown'] || keys['s']) dy = 1;
+        if (dx && dy) {
+          dx *= 0.707;
+          dy *= 0.707;
+        }
+        var spd = 120;
+        if (dx || dy) {
+          jb.px += dx * spd * dt;
+          jb.py += dy * spd * dt;
+          jb.px = Math.max(20, Math.min(W - 20, jb.px));
+          jb.py = Math.max(20, Math.min(H - 20, jb.py));
+          if (Math.abs(dx) > Math.abs(dy)) {
+            jb.dir = { x: dx > 0 ? 1 : -1, y: 0 };
+          } else {
+            jb.dir = { x: 0, y: dy > 0 ? 1 : -1 };
+          }
+        }
+        // Spear attack
+        if (jb.atkT > 0) jb.atkT -= dt;
+        if (jb.atkCD > 0) jb.atkCD -= dt;
+        if ((keys['j'] || keys['k'] || keys[' ']) && jb.atkCD <= 0) {
+          jb.atkT = 0.3;
+          jb.atkCD = 0.4;
+          // Random stab angle: 0=straight, about -0.25 to +0.25 radians (+-14 degrees)
+          jb.atkStabAngle = (Math.random() - 0.5) * 0.5;
+        }
+        // Enemies only spawn on kill (no passive trickle)
+        // Update enemies
+        for (var i = 0; i < jb.enemies.length; i++) {
+          var e = jb.enemies[i];
+          var ex = e.x - jb.px,
+            ey = e.y - jb.py;
+          var d = Math.sqrt(ex * ex + ey * ey);
+          if (d > 1) {
+            e.x -= (ex / d) * 40 * dt;
+            e.y -= (ey / d) * 40 * dt;
+          }
+          e.atkCD -= dt;
+          if (d < 30 && e.atkCD <= 0) {
+            e.atkCD = 1.0;
+            jb.health -= 2;
+            shake = 3;
+            spawnParticles(jb.px, jb.py, '#c43030', 5);
+          }
+        }
+        // Attack hit detection: Goliath's Sword = wide 90-degree swing arc with
+        // one-hit kills and long reach; otherwise the angled spear stab.
+        if (jb.atkT > 0) {
+          for (var i = jb.enemies.length - 1; i >= 0; i--) {
+            var e = jb.enemies[i];
+            var hit = false;
+            if (swordActive()) {
+              var dxs = e.x - jb.px,
+                dys = e.y - jb.py;
+              var ds = Math.sqrt(dxs * dxs + dys * dys);
+              if (ds <= 110 && ds > 0.1) {
+                var dotS = (dxs * jb.dir.x + dys * jb.dir.y) / ds;
+                if (Math.acos(Math.max(-1, Math.min(1, dotS))) <= Math.PI / 2)
+                  hit = true;
+              }
+            } else {
+              var sa = jb.atkStabAngle || 0;
+              // Perpendicular direction for side-swing
+              var perpX = -jb.dir.y,
+                perpY = jb.dir.x;
+              // Check along the stab line (which varies by angle)
+              var spearLen = 75;
+              for (var s2 = 0; s2 < spearLen; s2 += 8) {
+                var sx = jb.px + jb.dir.x * s2 + perpX * s2 * sa;
+                var sy = jb.py + jb.dir.y * s2 + perpY * s2 * sa;
+                // Tapered blast: 20px near the character, 30px at the spear tip
+                var hitRadius = 20 + (s2 / spearLen) * 10;
+                if (
+                  Math.abs(e.x - sx) < hitRadius &&
+                  Math.abs(e.y - sy) < hitRadius
+                ) {
+                  hit = true;
+                  break;
+                }
+              }
+            }
+            if (hit) {
+              spawnParticles(e.x, e.y, '#c43030', 8);
+              jb.enemies.splice(i, 1);
+              jb.kills++;
+              shake = 2;
+              // Alternate: 1 then 2 then 1 then 2...
+              var spawnCount = 1 + jb.spawnToggle;
+              jb.spawnToggle = 1 - jb.spawnToggle;
+              for (
+                var ns = 0;
+                ns < spawnCount && jb.kills + jb.enemies.length < jb.total;
+                ns++
+              ) {
+                spawnJoshebEnemy();
+              }
+            }
+          }
+        }
+        // Wave progression
+        if (jb.kills >= (jb.wave + 1) * 100 && jb.kills < 800) {
+          jb.wave++;
+        }
+        // Win check
+        if (jb.kills >= jb.total) {
+          completed.josheb = true;
+          saveProgress();
+          checkDavidUnlock();
+          state = 'levelcomplete';
+          keys = {};
+        }
+        if (jb.health <= 0) {
+          goGameOver();
+          keys = {};
+        }
+      }
+
+      function spawnJoshebEnemy() {
+        var side = Math.floor(Math.random() * 4);
+        var x, y;
+        if (side === 0) {
+          x = Math.random() * W;
+          y = -15;
+        } else if (side === 1) {
+          x = W + 15;
+          y = Math.random() * H;
+        } else if (side === 2) {
+          x = Math.random() * W;
+          y = H + 15;
+        } else {
+          x = -15;
+          y = Math.random() * H;
+        }
+        jb.enemies.push({ x: x, y: y, atkCD: 1.0, hue: Math.random() * 30 });
+      }
+
+      function renderJosheb() {
+        // Battlefield - rolling field with depth
+        var bg = ctx.createLinearGradient(0, 0, 0, H);
+        bg.addColorStop(0, '#6a8a4a');
+        bg.addColorStop(0.3, '#5a7a3a');
+        bg.addColorStop(0.7, '#4a6a2a');
+        bg.addColorStop(1, '#3a5a1a');
+        ctx.fillStyle = bg;
+        ctx.fillRect(0, 0, W, H);
+        // Grass tufts
+        for (var i = 0; i < 120; i++) {
+          var gx = (i * 37) % W,
+            gy = (i * 53) % H;
+          ctx.fillStyle = 'rgba(50,70,20,0.4)';
+          ctx.fillRect(gx, gy, 1, 4);
+          ctx.fillRect(gx + 2, gy + 1, 1, 3);
+          ctx.fillStyle = 'rgba(80,110,40,0.3)';
+          ctx.fillRect(gx + 1, gy - 1, 1, 2);
+        }
+        // Scattered rocks
+        for (var i = 0; i < 15; i++) {
+          var rx = (i * 97) % W,
+            ry = (i * 61) % H;
+          ctx.fillStyle = '#7a7060';
+          ctx.beginPath();
+          ctx.arc(rx, ry, 3, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#9a9080';
+          ctx.beginPath();
+          ctx.arc(rx - 1, ry - 1, 2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        // Distant hills
+        ctx.fillStyle = 'rgba(60,80,40,0.4)';
+        ctx.beginPath();
+        ctx.moveTo(0, H * 0.15);
+        for (var x = 0; x <= W; x += 30)
+          ctx.lineTo(x, H * 0.15 - Math.sin(x * 0.02) * 20);
+        ctx.lineTo(W, 0);
+        ctx.lineTo(0, 0);
+        ctx.fill();
+        // Enemies
+        for (var i = 0; i < jb.enemies.length; i++) {
+          var e = jb.enemies[i];
+          ctx.fillStyle = '#7a5a3a';
+          ctx.beginPath();
+          ctx.arc(e.x, e.y, 7, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#5a3a2a';
+          ctx.beginPath();
+          ctx.arc(e.x, e.y - 4, 4, 0, Math.PI * 2);
+          ctx.fill();
+          // Spear
+          ctx.strokeStyle = '#3a2a1a';
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.moveTo(e.x + 4, e.y);
+          ctx.lineTo(e.x + 12, e.y + 2);
+          ctx.stroke();
+        }
+        // Player (Josheb)
+        drawWarrior(jb.px, jb.py, jb.dir, '#d4a574', '#3a2818');
+        if (swordActive()) {
+          // Goliath's Sword: wide 90-degree swing arc animation
+          var baseA = Math.atan2(jb.dir.y, jb.dir.x);
+          if (jb.atkT > 0) {
+            var progJ = 1 - jb.atkT / 0.3;
+            var sweepJ = Math.PI / 2;
+            var startJ = baseA - sweepJ / 2;
+            ctx.strokeStyle =
+              'rgba(240,216,120,' + (0.7 * (1 - progJ)).toFixed(3) + ')';
+            ctx.lineWidth = 8;
+            ctx.beginPath();
+            ctx.arc(jb.px, jb.py, 55, startJ, startJ + sweepJ * progJ);
+            ctx.stroke();
+            ctx.strokeStyle =
+              'rgba(255,255,255,' + (0.9 * (1 - progJ)).toFixed(3) + ')';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(jb.px, jb.py, 62, startJ, startJ + sweepJ * progJ);
+            ctx.stroke();
+            var blJ = startJ + sweepJ * progJ;
+            ctx.strokeStyle = '#c0c0d0';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(jb.px + Math.cos(blJ) * 12, jb.py + Math.sin(blJ) * 12);
+            ctx.lineTo(jb.px + Math.cos(blJ) * 65, jb.py + Math.sin(blJ) * 65);
+            ctx.stroke();
+          } else {
+            // Held sword at rest
+            ctx.strokeStyle = '#5a3a2a';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(
+              jb.px + Math.cos(baseA) * 6,
+              jb.py + Math.sin(baseA) * 6,
+            );
+            ctx.lineTo(
+              jb.px + Math.cos(baseA) * 14,
+              jb.py + Math.sin(baseA) * 14,
+            );
+            ctx.stroke();
+            ctx.strokeStyle = '#c0c0d0';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(
+              jb.px + Math.cos(baseA) * 14,
+              jb.py + Math.sin(baseA) * 14,
+            );
+            ctx.lineTo(
+              jb.px + Math.cos(baseA) * 50,
+              jb.py + Math.sin(baseA) * 50,
+            );
+            ctx.stroke();
+          }
+        } else {
+          // Spear - with random stab angle
+          var sa = jb.atkStabAngle || 0;
+          var perpX = -jb.dir.y,
+            perpY = jb.dir.x;
+          var sx = jb.px + jb.dir.x * 15,
+            sy = jb.py + jb.dir.y * 15;
+          ctx.strokeStyle = '#6a4a2a';
+          ctx.lineWidth = 3;
+          var sLen = jb.atkT > 0 ? 60 : 35;
+          var tipX = jb.px + jb.dir.x * sLen + perpX * sLen * sa;
+          var tipY = jb.py + jb.dir.y * sLen + perpY * sLen * sa;
+          ctx.beginPath();
+          ctx.moveTo(sx, sy);
+          ctx.lineTo(tipX, tipY);
+          ctx.stroke();
+          ctx.strokeStyle = '#c0c0c0';
+          ctx.lineWidth = 2;
+          var tip2X = tipX + (jb.dir.x + perpX * sa) * 8;
+          var tip2Y = tipY + (jb.dir.y + perpY * sa) * 8;
+          ctx.beginPath();
+          ctx.moveTo(tipX, tipY);
+          ctx.lineTo(tip2X, tip2Y);
+          ctx.stroke();
+        }
+      }
+
+      // === ELEAZAR ===
+      function initEleazar() {
+        el_state = {
+          px: 320,
+          py: 320,
+          dir: { x: 1, y: 0 },
+          swingT: 0,
+          health: 100,
+          wave: 0,
+          waveEnemies: [],
+          waveTarget: 0,
+          waveKills: 0,
+          resting: false,
+          restT: 0,
+          enemiesKilled: 0,
+          maxWaves: 8,
+        };
+        el_state.waveTarget = 15;
+      }
+
+      // W=up, A=left, S=down, D=right. Each swipe is in that fixed direction.
+      // Enemies come from all 4 sides and you must swipe the direction they approach from.
+      function eleazarSwingDir(angleDeg) {
+        if (el_state.resting) return;
+        if (el_state.swingT > 0.2) return;
+        var ang = (angleDeg * Math.PI) / 180;
+        var dirX = Math.cos(ang),
+          dirY = Math.sin(ang);
+        el_state.arcAngle = angleDeg;
+        el_state.swingT = 0.22;
+        el_state.dir = { x: dirX, y: dirY };
+        // Hit enemies within ~70px in a 60 degree arc toward that direction
+        for (var i = el_state.waveEnemies.length - 1; i >= 0; i--) {
+          var e = el_state.waveEnemies[i];
+          if (e.dead) continue;
+          var dx = e.x - el_state.px,
+            dy = e.y - el_state.py;
+          var d = Math.sqrt(dx * dx + dy * dy);
+          var reach = swordActive() ? 280 : 75;
+          if (d > reach || d < 1) continue;
+          var dot = (dx * dirX + dy * dirY) / d;
+          var angDiff = Math.acos(Math.max(-1, Math.min(1, dot)));
+          if (angDiff <= (swordActive() ? Math.PI / 2 : Math.PI / 3)) {
+            // 60 degree arc (90 with Goliath's sword)
+            var kbx = (dx / d) * 25,
+              kby = (dy / d) * 25;
+            e.x += kbx;
+            e.y += kby;
+            e.hitT = 0.2;
+            spawnParticles(e.x, e.y, '#c43030', 8);
+            e.dead = true;
+            el_state.waveKills++;
+            el_state.enemiesKilled++;
+            popups.push({
+              x: e.x,
+              y: e.y,
+              text: 'SLAIN!',
+              life: 0.8,
+              color: '#f0d878',
+            });
+            spawnParticles(e.x, e.y, '#f0d878', 6);
+          }
+        }
+      }
+
+      function updateEleazar(dt) {
+        if (el_state.swingT > 0) el_state.swingT -= dt;
+        // Resting between waves
+        if (el_state.resting) {
+          el_state.restT -= dt;
+          if (el_state.restT <= 0) {
+            el_state.resting = false;
+            el_state.wave++;
+            if (el_state.wave > el_state.maxWaves) {
+              completed.eleazar = true;
+              saveProgress();
+              checkDavidUnlock();
+              state = 'levelcomplete';
+              keys = {};
+              return;
+            }
+            startEleazarWave();
+          }
+          return;
+        }
+        // Spawn wave enemies - faster spawn rate
+        var alive = 0;
+        for (var i = 0; i < el_state.waveEnemies.length; i++)
+          if (!el_state.waveEnemies[i].dead) alive++;
+        if (alive === 0 && el_state.waveKills >= el_state.waveTarget) {
+          el_state.resting = true;
+          el_state.restT = 2;
+          return;
+        }
+        var totalSpawned = el_state.waveEnemies.length;
+        if (totalSpawned < el_state.waveTarget) {
+          if (Math.random() < dt * 4) {
+            // faster spawn
+            spawnEleazarEnemy();
+          }
+        }
+        // Update enemies - faster approach, more aggressive attacks
+        var enemySpeed = 35 + el_state.wave * 3; // speeds up each wave
+        for (var i = 0; i < el_state.waveEnemies.length; i++) {
+          var e = el_state.waveEnemies[i];
+          if (e.dead) continue;
+          if (e.hitT > 0) e.hitT -= dt;
+          var dx = e.x - el_state.px,
+            dy = e.y - el_state.py;
+          var d = Math.sqrt(dx * dx + dy * dy);
+          if (d > 32) {
+            e.x -= (dx / d) * enemySpeed * dt;
+            e.y -= (dy / d) * enemySpeed * dt;
+          } else {
+            // In melee range - faster attacks
+            e.atkCD -= dt;
+            e.swingT = e.atkCD > 0.2 ? 0.25 : 0;
+            if (e.atkCD <= 0) {
+              e.atkCD = 0.7; // faster attacks (was 1.0)
+              el_state.health -= 10; // more damage (was 8)
+              shake = 3;
+              spawnParticles(el_state.px, el_state.py, '#c43030', 5);
+            }
+          }
+        }
+        if (el_state.health <= 0) {
+          goGameOver();
+          keys = {};
+        }
+      }
+
+      function spawnEleazarEnemy() {
+        var side = Math.floor(Math.random() * 4);
+        var x, y;
+        if (side === 0) {
+          x = Math.random() * W;
+          y = -15;
+        } else if (side === 1) {
+          x = W + 15;
+          y = Math.random() * H;
+        } else if (side === 2) {
+          x = Math.random() * W;
+          y = H + 15;
+        } else {
+          x = -15;
+          y = Math.random() * H;
+        }
+        el_state.waveEnemies.push({
+          x: x,
+          y: y,
+          hp: 3,
+          dead: false,
+          atkCD: 0.3,
+        });
+      }
+
+      function startEleazarWave() {
+        el_state.waveEnemies = [];
+        el_state.waveKills = 0;
+        // Wave sizes: 15,20,25,30,35,40,45,50,55 (total ~315)
+        el_state.waveTarget = Math.min(55, 15 + el_state.wave * 5);
+      }
+
+      function renderEleazar() {
+        var bg = ctx.createLinearGradient(0, 0, 0, H);
+        bg.addColorStop(0, '#5a6a4a');
+        bg.addColorStop(0.5, '#4a5a3a');
+        bg.addColorStop(1, '#3a4a2a');
+        ctx.fillStyle = bg;
+        ctx.fillRect(0, 0, W, H);
+        // Field texture
+        for (var i = 0; i < 100; i++) {
+          var gx = (i * 41) % W,
+            gy = (i * 59) % H;
+          ctx.fillStyle = 'rgba(50,70,20,0.3)';
+          ctx.fillRect(gx, gy, 1, 3);
+        }
+        // Dirt patches
+        for (var i = 0; i < 20; i++) {
+          var dx2 = (i * 73) % W,
+            dy2 = (i * 47) % H;
+          ctx.fillStyle = 'rgba(120,90,50,0.25)';
+          ctx.beginPath();
+          ctx.ellipse(dx2, dy2, 15, 10, 0, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        // Worn battle circle
+        ctx.strokeStyle = 'rgba(100,80,40,0.2)';
+        ctx.lineWidth = 20;
+        ctx.beginPath();
+        ctx.arc(el_state.px, el_state.py, 80, 0, Math.PI * 2);
+        ctx.stroke();
+        // Directional indicators (faint arrows showing W/A/S/D)
+        if (el_state.swingT <= 0) {
+          var dirs = [
+            [0, -1, 'W'],
+            [0, 1, 'S'],
+            [-1, 0, 'A'],
+            [1, 0, 'D'],
+          ];
+          for (var di = 0; di < 4; di++) {
+            var da = dirs[di];
+            ctx.fillStyle = 'rgba(240,216,120,0.15)';
+            ctx.font = 'bold 14px Georgia';
+            ctx.textAlign = 'center';
+            ctx.fillText(
+              da[2],
+              el_state.px + da[0] * 50,
+              el_state.py + da[1] * 50 + 4,
+            );
+          }
+        }
+        // Enemies
+        for (var i = 0; i < el_state.waveEnemies.length; i++) {
+          var e = el_state.waveEnemies[i];
+          if (e.dead) continue;
+          var hitFlash = e.hitT > 0;
+          ctx.fillStyle = hitFlash ? '#e08060' : '#6a4a3a';
+          ctx.beginPath();
+          ctx.arc(e.x, e.y, 8, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = hitFlash ? '#d06040' : '#5a3a2a';
+          ctx.beginPath();
+          ctx.arc(e.x, e.y - 4, 5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = '#aaa';
+          ctx.lineWidth = 1.5;
+          var a = Math.atan2(el_state.py - e.y, el_state.px - e.x);
+          if (e.swingT > 0) {
+            var sw = e.swingT / 0.25;
+            ctx.beginPath();
+            ctx.moveTo(e.x, e.y);
+            ctx.lineTo(
+              e.x + Math.cos(a + 0.3 * sw) * 12,
+              e.y + Math.sin(a + 0.3 * sw) * 12,
+            );
+            ctx.stroke();
+          } else {
+            ctx.beginPath();
+            ctx.moveTo(e.x, e.y);
+            ctx.lineTo(e.x + Math.cos(a) * 10, e.y + Math.sin(a) * 10);
+            ctx.stroke();
+          }
+        }
+        // Player
+        drawWarrior(
+          el_state.px,
+          el_state.py,
+          el_state.dir,
+          '#d4a574',
+          '#3a2818',
+        );
+        // Sword swing - directional (not rotating)
+        if (el_state.swingT > 0) {
+          var prog = 1 - el_state.swingT / 0.22;
+          var baseAng = (el_state.arcAngle * Math.PI) / 180;
+          var sweep = swordActive() ? Math.PI / 2 : Math.PI / 3; // 60 degree sweep (90 with Goliath's sword)
+          var arcR = swordActive() ? 140 : 55;
+          var bladeR = swordActive() ? 150 : 62;
+          var bladeW = swordActive() ? 10 : 3;
+          var startA = baseAng - sweep / 2;
+          var endA = baseAng - sweep / 2 + sweep * prog;
+          ctx.strokeStyle =
+            'rgba(240,216,120,' + (0.7 * (1 - prog)).toFixed(3) + ')';
+          ctx.lineWidth = swordActive() ? 20 : 8;
+          ctx.beginPath();
+          ctx.arc(el_state.px, el_state.py, arcR, startA, endA);
+          ctx.stroke();
+          ctx.strokeStyle =
+            'rgba(255,255,255,' + (0.9 * (1 - prog)).toFixed(3) + ')';
+          ctx.lineWidth = swordActive() ? 6 : 2;
+          ctx.beginPath();
+          ctx.arc(el_state.px, el_state.py, arcR + 8, startA, endA);
+          ctx.stroke();
+          // Blade at current position
+          var bladeAng = startA + sweep * prog;
+          ctx.strokeStyle = '#c0c0d0';
+          ctx.lineWidth = bladeW;
+          ctx.beginPath();
+          ctx.moveTo(
+            el_state.px + Math.cos(bladeAng) * 12,
+            el_state.py + Math.sin(bladeAng) * 12,
+          );
+          ctx.lineTo(
+            el_state.px + Math.cos(bladeAng) * bladeR,
+            el_state.py + Math.sin(bladeAng) * bladeR,
+          );
+          ctx.stroke();
+          // Goliath's sword: add a wide guard/hilt
+          if (swordActive()) {
+            ctx.strokeStyle = '#8a6020';
+            ctx.lineWidth = 6;
+            var ga = bladeAng + Math.PI / 2;
+            ctx.beginPath();
+            ctx.moveTo(
+              el_state.px + Math.cos(bladeAng) * 8 - Math.cos(ga) * 20,
+              el_state.py + Math.sin(bladeAng) * 8 - Math.sin(ga) * 20,
+            );
+            ctx.lineTo(
+              el_state.px + Math.cos(bladeAng) * 8 + Math.cos(ga) * 20,
+              el_state.py + Math.sin(bladeAng) * 8 + Math.sin(ga) * 20,
+            );
+            ctx.stroke();
+          }
+        }
+        // Wave info
+        if (el_state.resting) {
+          ctx.fillStyle = 'rgba(0,0,0,0.5)';
+          ctx.fillRect(0, H / 2 - 40, W, 80);
+          ctx.fillStyle = '#f0d878';
+          ctx.font = 'bold 24px Georgia';
+          ctx.textAlign = 'center';
+          ctx.fillText(
+            'Wave ' + (el_state.wave + 1) + ' Complete!',
+            W / 2,
+            H / 2 - 5,
+          );
+          ctx.fillStyle = 'rgba(245,230,200,0.8)';
+          ctx.font = '14px Georgia';
+          ctx.fillText(
+            'Next wave: ' + Math.ceil(el_state.restT) + 's',
+            W / 2,
+            H / 2 + 20,
+          );
+        }
+      }
+
+      // === SHAMMAH ===
+      // Stone walls radiate outward from the center plot toward the field. Each of
+      // the 4 walls is ~2 cells (40px) thick and has a ~2-cell-wide passageway gap
+      // in its middle. Enemies are funneled through these 4 gaps into lanes.
+      var SH_WALLS = [
+        { x: 140, y: 140, w: 160, h: 40 },
+        { x: 340, y: 140, w: 160, h: 40 },
+        { x: 140, y: 460, w: 160, h: 40 },
+        { x: 340, y: 460, w: 160, h: 40 },
+        { x: 140, y: 180, w: 40, h: 120 },
+        { x: 140, y: 340, w: 40, h: 120 },
+        { x: 460, y: 180, w: 40, h: 120 },
+        { x: 460, y: 340, w: 40, h: 120 },
+      ];
+      var SH_GAPS = [
+        { x: 320, y: 160 },
+        { x: 320, y: 480 },
+        { x: 160, y: 320 },
+        { x: 480, y: 320 },
+      ];
+
+      function shHitsWall(x, y, r) {
+        for (var i = 0; i < SH_WALLS.length; i++) {
+          var wl = SH_WALLS[i];
+          if (
+            x + r > wl.x &&
+            x - r < wl.x + wl.w &&
+            y + r > wl.y &&
+            y - r < wl.y + wl.h
+          )
+            return true;
+        }
+        return false;
+      }
+
+      function initShammah() {
+        // Player starts at the center of the field
+        sh = {
+          px: 320,
+          py: 320,
+          dir: { x: 0, y: -1 },
+          atkT: 0,
+          atkCD: 0,
+          enemies: [],
+          arrows: [],
+          plotX: 300,
+          plotY: 300,
+          plotW: 40,
+          plotH: 40,
+          breaches: 0,
+          maxBreaches: 5,
+          wave: 0,
+          spawnT: 0,
+          surviveTime: 45,
+          surviveT: 0,
+          kills: 0,
+        };
+      }
+
+      // Goliath's Sword: J swings a wide 90-degree sword arc (one-hit kills)
+      function shammahSwordSwing() {
+        if (sh.atkCD > 0) return;
+        sh.atkCD = 0.4;
+        sh.atkT = 0.3;
+        for (var i = sh.enemies.length - 1; i >= 0; i--) {
+          var e = sh.enemies[i];
+          var dx = e.x - sh.px,
+            dy = e.y - sh.py;
+          var d = Math.sqrt(dx * dx + dy * dy);
+          if (d <= 110 && d > 0.1) {
+            var dot = (dx * sh.dir.x + dy * sh.dir.y) / d;
+            if (Math.acos(Math.max(-1, Math.min(1, dot))) <= Math.PI / 2) {
+              spawnParticles(e.x, e.y, '#c43030', 8);
+              sh.enemies.splice(i, 1);
+              sh.kills++;
+              shake = 2;
+            }
+          }
+        }
+      }
+
+      // J shoots an arrow in the facing direction
+      function shootShammahArrow() {
+        if (sh.atkCD > 0) return;
+        sh.atkCD = 0.35;
+        sh.atkT = 0.15;
+        sh.arrows.push({
+          x: sh.px + sh.dir.x * 14,
+          y: sh.py + sh.dir.y * 14,
+          vx: sh.dir.x * 420,
+          vy: sh.dir.y * 420,
+          life: 2,
+        });
+      }
+
+      function updateShammah(dt) {
+        // Movement (starts at center, can move through the passageways)
+        var dx = 0,
+          dy = 0;
+        if (keys['arrowleft'] || keys['a']) dx = -1;
+        if (keys['arrowright'] || keys['d']) dx = 1;
+        if (keys['arrowup'] || keys['w']) dy = -1;
+        if (keys['arrowdown'] || keys['s']) dy = 1;
+        if (dx && dy) {
+          dx *= 0.707;
+          dy *= 0.707;
+        }
+        var spd = 130;
+        if (dx || dy) {
+          var nx = sh.px + dx * spd * dt,
+            ny = sh.py + dy * spd * dt;
+          if (!shHitsWall(nx, sh.py, 10))
+            sh.px = Math.max(10, Math.min(W - 10, nx));
+          if (!shHitsWall(sh.px, ny, 10))
+            sh.py = Math.max(10, Math.min(H - 10, ny));
+          if (Math.abs(dx) > Math.abs(dy))
+            sh.dir = { x: dx > 0 ? 1 : -1, y: 0 };
+          else sh.dir = { x: 0, y: dy > 0 ? 1 : -1 };
+        }
+        if (sh.atkT > 0) sh.atkT -= dt;
+        if (sh.atkCD > 0) sh.atkCD -= dt;
+        // Spawn enemies
+        sh.spawnT += dt;
+        var maxOnField = Math.min(40, 12 + sh.wave * 4);
+        if (
+          sh.spawnT > Math.max(0.15, 0.5 - sh.wave * 0.05) &&
+          sh.enemies.length < maxOnField
+        ) {
+          sh.spawnT = 0;
+          spawnShammahEnemy();
+        }
+        // Update enemies - they head for the center plot but must navigate through
+        // the wall passageways
+        for (var i = 0; i < sh.enemies.length; i++) {
+          var e = sh.enemies[i];
+          var inside = e.x > 180 && e.x < 460 && e.y > 180 && e.y < 460;
+          var tx, ty;
+          if (inside) {
+            tx = sh.plotX + sh.plotW / 2;
+            ty = sh.plotY + sh.plotH / 2;
+          } else {
+            var best = null,
+              bd = 1e9;
+            for (var g = 0; g < SH_GAPS.length; g++) {
+              var gdx = e.x - SH_GAPS[g].x,
+                gdy = e.y - SH_GAPS[g].y;
+              var gd = Math.sqrt(gdx * gdx + gdy * gdy);
+              if (gd < bd) {
+                bd = gd;
+                best = SH_GAPS[g];
+              }
+            }
+            if (bd < 25) {
+              tx = sh.plotX + sh.plotW / 2;
+              ty = sh.plotY + sh.plotH / 2;
+            } else {
+              tx = best.x;
+              ty = best.y;
+            }
+          }
+          var ex = tx - e.x,
+            ey = ty - e.y;
+          var d = Math.sqrt(ex * ex + ey * ey);
+          if (d > 2) {
+            var mx = e.x + (ex / d) * 35 * dt,
+              my = e.y + (ey / d) * 35 * dt;
+            if (!shHitsWall(mx, my, 7)) {
+              e.x = mx;
+              e.y = my;
+            } else if (!shHitsWall(mx, e.y, 7)) {
+              e.x = mx;
+            } else if (!shHitsWall(e.x, my, 7)) {
+              e.y = my;
+            }
+          }
+          // Check if reached plot
+          if (
+            e.x > sh.plotX &&
+            e.x < sh.plotX + sh.plotW &&
+            e.y > sh.plotY &&
+            e.y < sh.plotY + sh.plotH
+          ) {
+            sh.breaches++;
+            spawnParticles(e.x, e.y, '#c43030', 8);
+            sh.enemies.splice(i, 1);
+            shake = 4;
+            i--;
+            continue;
+          }
+        }
+        // Update arrows - straight line, hit the first enemy in their path
+        for (var i = sh.arrows.length - 1; i >= 0; i--) {
+          var ar = sh.arrows[i];
+          ar.x += ar.vx * dt;
+          ar.y += ar.vy * dt;
+          ar.life -= dt;
+          var dead =
+            ar.life <= 0 ||
+            ar.x < -20 ||
+            ar.x > W + 20 ||
+            ar.y < -20 ||
+            ar.y > H + 20 ||
+            shHitsWall(ar.x, ar.y, 2);
+          if (!dead) {
+            var arr = goliathSwordUnlocked ? 14 : 10; // bigger arrows with Goliath's sword
+            for (var j = 0; j < sh.enemies.length; j++) {
+              var e2 = sh.enemies[j];
+              var ddx = e2.x - ar.x,
+                ddy = e2.y - ar.y;
+              if (ddx * ddx + ddy * ddy < arr * arr) {
+                spawnParticles(e2.x, e2.y, '#c43030', 6);
+                sh.enemies.splice(j, 1);
+                sh.kills++;
+                shake = 2;
+                // With Goliath's sword the arrow pierces through multiple enemies
+                if (!goliathSwordUnlocked) {
+                  dead = true;
+                  break;
+                }
+              }
+            }
+          }
+          if (dead) sh.arrows.splice(i, 1);
+        }
+        // Timer
+        sh.surviveT += dt;
+        sh.wave = Math.floor(sh.surviveT / 15);
+        if (sh.surviveT >= sh.surviveTime) {
+          completed.shammah = true;
+          saveProgress();
+          checkDavidUnlock();
+          state = 'levelcomplete';
+          keys = {};
+        }
+        if (sh.breaches >= sh.maxBreaches) {
+          goGameOver();
+          keys = {};
+        }
+      }
+
+      function spawnShammahEnemy() {
+        var side = Math.floor(Math.random() * 4);
+        var x, y;
+        if (side === 0) {
+          x = Math.random() * W;
+          y = -15;
+        } else if (side === 1) {
+          x = W + 15;
+          y = Math.random() * H;
+        } else if (side === 2) {
+          x = Math.random() * W;
+          y = H + 15;
+        } else {
+          x = -15;
+          y = Math.random() * H;
+        }
+        sh.enemies.push({ x: x, y: y, atkCD: 1.0 });
+      }
+
+      function renderShammah() {
+        var bg = ctx.createLinearGradient(0, 0, 0, H);
+        bg.addColorStop(0, '#6a8a4a');
+        bg.addColorStop(0.5, '#5a7a3a');
+        bg.addColorStop(1, '#4a6a2a');
+        ctx.fillStyle = bg;
+        ctx.fillRect(0, 0, W, H);
+        // Field texture - lentil rows
+        for (var i = 0; i < 200; i++) {
+          var gx = (i * 31) % W,
+            gy = (i * 47) % H;
+          ctx.fillStyle = 'rgba(50,80,20,0.35)';
+          ctx.fillRect(gx, gy, 2, 2);
+        }
+        // Grass tufts
+        for (var i = 0; i < 80; i++) {
+          var gx = (i * 67) % W,
+            gy = (i * 43) % H;
+          ctx.fillStyle = 'rgba(60,90,30,0.3)';
+          ctx.fillRect(gx, gy, 1, 3);
+          ctx.fillRect(gx + 2, gy + 1, 1, 2);
+        }
+        // Lentil plants scattered
+        for (var i = 0; i < 30; i++) {
+          var lx = (i * 83) % W,
+            ly = (i * 51) % H;
+          ctx.fillStyle = 'rgba(80,120,40,0.4)';
+          ctx.beginPath();
+          ctx.arc(lx, ly, 2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        // Stone walls with passageway gaps
+        for (var wIdx = 0; wIdx < SH_WALLS.length; wIdx++) {
+          var wl = SH_WALLS[wIdx];
+          ctx.fillStyle = '#8a7860';
+          ctx.fillRect(wl.x, wl.y, wl.w, wl.h);
+          ctx.fillStyle = 'rgba(0,0,0,0.15)';
+          for (var lx = wl.x; lx < wl.x + wl.w; lx += 20)
+            ctx.fillRect(lx, wl.y, 1, wl.h);
+          for (var ly = wl.y; ly < wl.y + wl.h; ly += 20)
+            ctx.fillRect(wl.x, ly, wl.w, 1);
+          ctx.strokeStyle = '#6a5a44';
+          ctx.lineWidth = 2;
+          ctx.strokeRect(wl.x, wl.y, wl.w, wl.h);
+        }
+        // Passageway floor markers
+        ctx.fillStyle = 'rgba(240,216,120,0.18)';
+        ctx.fillRect(300, 140, 40, 40);
+        ctx.fillRect(300, 460, 40, 40);
+        ctx.fillRect(140, 300, 40, 40);
+        ctx.fillRect(460, 300, 40, 40);
+        // Plot in center
+        ctx.fillStyle = '#7a5a2a';
+        ctx.fillRect(sh.plotX, sh.plotY, sh.plotW, sh.plotH);
+        ctx.strokeStyle = '#5a3a1a';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(sh.plotX, sh.plotY, sh.plotW, sh.plotH);
+        // Lentil plants
+        ctx.fillStyle = 'rgba(60,100,30,0.6)';
+        for (var i2 = 0; i2 < 8; i2++) {
+          var lx2 = sh.plotX + 5 + (i2 % 4) * 10,
+            ly2 = sh.plotY + 5 + Math.floor(i2 / 4) * 15;
+          ctx.beginPath();
+          ctx.arc(lx2, ly2, 3, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        // Breach indicators
+        for (var i3 = 0; i3 < sh.maxBreaches; i3++) {
+          var bx = 10 + i3 * 18,
+            by = 10;
+          ctx.fillStyle =
+            i3 < sh.breaches ? '#c43030' : 'rgba(100,100,100,0.3)';
+          ctx.beginPath();
+          ctx.arc(bx, by, 6, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        // Enemies
+        for (var i4 = 0; i4 < sh.enemies.length; i4++) {
+          var e = sh.enemies[i4];
+          ctx.fillStyle = '#6a4a3a';
+          ctx.beginPath();
+          ctx.arc(e.x, e.y, 7, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#5a3a2a';
+          ctx.beginPath();
+          ctx.arc(e.x, e.y - 3, 4, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        // Arrows in flight: small line with arrowhead
+        for (var i5 = 0; i5 < sh.arrows.length; i5++) {
+          var ar = sh.arrows[i5];
+          var an = Math.atan2(ar.vy, ar.vx);
+          ctx.strokeStyle = '#8b6a3a';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(ar.x - Math.cos(an) * 10, ar.y - Math.sin(an) * 10);
+          ctx.lineTo(ar.x, ar.y);
+          ctx.stroke();
+          ctx.fillStyle = '#c0c0c0';
+          ctx.beginPath();
+          ctx.moveTo(ar.x + Math.cos(an) * 5, ar.y + Math.sin(an) * 5);
+          ctx.lineTo(
+            ar.x + Math.cos(an + 2.5) * 4,
+            ar.y + Math.sin(an + 2.5) * 4,
+          );
+          ctx.lineTo(
+            ar.x + Math.cos(an - 2.5) * 4,
+            ar.y + Math.sin(an - 2.5) * 4,
+          );
+          ctx.closePath();
+          ctx.fill();
+        }
+        // Player (Shammah) with sword (Goliath's Sword) or bow
+        drawWarrior(sh.px, sh.py, sh.dir, '#d4a574', '#3a2818');
+        if (swordActive()) {
+          var baS = Math.atan2(sh.dir.y, sh.dir.x);
+          if (sh.atkT > 0) {
+            var progS = 1 - sh.atkT / 0.3;
+            var sweepS = Math.PI / 2;
+            var startS = baS - sweepS / 2;
+            ctx.strokeStyle =
+              'rgba(240,216,120,' + (0.7 * (1 - progS)).toFixed(3) + ')';
+            ctx.lineWidth = 8;
+            ctx.beginPath();
+            ctx.arc(sh.px, sh.py, 55, startS, startS + sweepS * progS);
+            ctx.stroke();
+            var blS = startS + sweepS * progS;
+            ctx.strokeStyle = '#c0c0d0';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(sh.px + Math.cos(blS) * 12, sh.py + Math.sin(blS) * 12);
+            ctx.lineTo(sh.px + Math.cos(blS) * 65, sh.py + Math.sin(blS) * 65);
+            ctx.stroke();
+          } else {
+            ctx.strokeStyle = '#5a3a2a';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(sh.px + Math.cos(baS) * 6, sh.py + Math.sin(baS) * 6);
+            ctx.lineTo(sh.px + Math.cos(baS) * 14, sh.py + Math.sin(baS) * 14);
+            ctx.stroke();
+            ctx.strokeStyle = '#c0c0d0';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(sh.px + Math.cos(baS) * 14, sh.py + Math.sin(baS) * 14);
+            ctx.lineTo(sh.px + Math.cos(baS) * 50, sh.py + Math.sin(baS) * 50);
+            ctx.stroke();
+          }
+          return;
+        }
+        var ba = Math.atan2(sh.dir.y, sh.dir.x);
+        var bx2 = sh.px + sh.dir.x * 10,
+          by2 = sh.py + sh.dir.y * 10;
+        ctx.strokeStyle = '#5a3a2a';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(bx2, by2, 9, ba - Math.PI / 2.2, ba + Math.PI / 2.2);
+        ctx.stroke();
+        ctx.strokeStyle = '#d8d0c0';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(
+          bx2 + Math.cos(ba - Math.PI / 2.2) * 9,
+          by2 + Math.sin(ba - Math.PI / 2.2) * 9,
+        );
+        ctx.lineTo(
+          bx2 + Math.cos(ba + Math.PI / 2.2) * 9,
+          by2 + Math.sin(ba + Math.PI / 2.2) * 9,
+        );
+        ctx.stroke();
+        // Nocked arrow
+        ctx.strokeStyle = '#8b6a3a';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(bx2 - Math.cos(ba) * 6, by2 - Math.sin(ba) * 6);
+        ctx.lineTo(
+          bx2 + Math.cos(ba) * (sh.atkT > 0 ? 16 : 10),
+          by2 + Math.sin(ba) * (sh.atkT > 0 ? 16 : 10),
+        );
+        ctx.stroke();
+      }
+
+      // === DAVID vs GOLIATH ===
+      // Hold J to spin the sling (power 0-100), release J to throw.
+      // W/S adjust the angle, A/D move David along the ground.
+      // SPACE is menu navigation only. Goliath's shield moves across his face;
+      // time the throw for when the target is exposed.
+      function initDavid() {
+        if (goliathSwordUnlocked && swordEnabled) {
+          dv = {
+            angle: 0,
+            power: 0,
+            charging: false,
+            stones: 5,
+            thrown: [],
+            px: 100,
+            py: 500,
+            goliathX: 400,
+            goliathY: 480,
+            goliathHeadR: 28,
+            phase: 'sword_fight',
+            msg: '',
+            hitT: 0,
+            shieldT: 0,
+            shieldMode: 'open',
+            swordT: 0,
+            swordSwingT: 0,
+            swordSwingCD: 0,
+            goliathHP: 1,
+            goliathDown: true,
+          };
+        } else {
+          dv = {
+            angle: 35,
+            power: 0,
+            charging: false,
+            stones: 5,
+            thrown: [],
+            px: 100,
+            py: 500,
+            goliathX: 520,
+            goliathY: 340,
+            goliathHeadR: 24,
+            phase: 'aim',
+            msg: '',
+            hitT: 0,
+            shieldT: 0,
+            shieldMode: 'open',
+            swordT: 0,
+          };
+        }
+      }
+
+      function throwStone() {
+        if (dv.phase !== 'aim' || dv.stones <= 0) return;
+        var rad = (dv.angle * Math.PI) / 180;
+        var v = 300 + dv.power * 3; // power scales the stone's velocity
+        dv.thrown.push({
+          x: dv.px + 18,
+          y: dv.py - 10,
+          vx: Math.cos(rad) * v,
+          vy: -Math.sin(rad) * v,
+          life: 4,
+          trail: [],
+        });
+        dv.stones--;
+        dv.power = 0;
+        dv.phase = 'flying';
+      }
+
+      // The shield only blocks the part of the face it is covering
+      function shieldBlocksHead(stone) {
+        if (dv.shieldMode === 'open') return false;
+        if (dv.shieldMode === 'left') return stone.x <= dv.goliathX;
+        return stone.x > dv.goliathX;
+      }
+
+      function updateDavid(dt) {
+        // Sword fight mode
+        if (dv.phase === 'sword_fight') {
+          if (keys['arrowleft'] || keys['a']) dv.px -= 100 * dt;
+          if (keys['arrowright'] || keys['d']) dv.px += 100 * dt;
+          if (keys['arrowup'] || keys['w']) dv.py -= 100 * dt;
+          if (keys['arrowdown'] || keys['s']) dv.py += 100 * dt;
+          dv.px = Math.max(20, Math.min(W - 20, dv.px));
+          dv.py = Math.max(H * 0.4, Math.min(H - 20, dv.py));
+          // Goliath is laying on the ground, doesn't move
+          if (dv.swordSwingT > 0) dv.swordSwingT -= dt;
+          if (dv.swordSwingCD > 0) dv.swordSwingCD -= dt;
+          if ((keys['j'] || keys['k']) && dv.swordSwingCD <= 0) {
+            dv.swordSwingT = 0.35;
+            dv.swordSwingCD = 0.5;
+            var headX = dv.goliathX + 40,
+              headY = dv.goliathY - 20;
+            var dist = Math.sqrt((dv.px - headX) ** 2 + (dv.py - headY) ** 2);
+            if (dist < 70) {
+              dv.goliathHP--;
+              shake = 6;
+              spawnParticles(dv.goliathX, dv.goliathY - 40, '#f0d878', 15);
+              if (dv.goliathHP <= 0) {
+                dv.phase = 'hit';
+                dv.msg = 'ONE STRIKE!';
+                dv.hitT = 2;
+                shake = 10;
+                spawnParticles(dv.goliathX, dv.goliathY, '#f0d878', 30);
+              }
+            }
+          }
+          if (dv.phase === 'hit') {
+            dv.hitT -= dt;
+            if (dv.hitT <= 0) {
+              davidVictory = true;
+              goliathSwordUnlocked = true;
+              if (!swordEnabled) swordEnabled = true;
+              saveProgress();
+              state = 'davidvictory';
+            }
+          }
+          return;
+        }
+        // Power builds while J is held
+        if (dv.charging && dv.phase === 'aim' && dv.stones > 0) {
+          dv.power = Math.min(100, dv.power + dt * 60);
+        }
+        // Aim angle + movement along the ground (left portion of the screen)
+        if (dv.phase === 'aim') {
+          if (keys['arrowup'] || keys['w'])
+            dv.angle = Math.min(80, dv.angle + 30 * dt);
+          if (keys['arrowdown'] || keys['s'])
+            dv.angle = Math.max(10, dv.angle - 30 * dt);
+          var mvx = 0;
+          if (keys['arrowleft'] || keys['a']) mvx = -1;
+          if (keys['arrowright'] || keys['d']) mvx = 1;
+          if (mvx) dv.px = Math.max(40, Math.min(300, dv.px + mvx * 90 * dt));
+        }
+        // Goliath's shield pattern: cover left, cover right, then open (repeat)
+        dv.shieldT += dt;
+        var cyc = dv.shieldT % 3.2;
+        if (cyc < 1.2) dv.shieldMode = 'left';
+        else if (cyc < 2.4) dv.shieldMode = 'right';
+        else dv.shieldMode = 'open';
+        // Decorative (but threatening) sword swing
+        dv.swordT += dt;
+
+        if (dv.phase === 'flying') {
+          for (var i = 0; i < dv.thrown.length; i++) {
+            var s = dv.thrown[i];
+            s.trail.push({ x: s.x, y: s.y });
+            if (s.trail.length > 15) s.trail.shift();
+            s.life -= dt;
+            // Sub-steps so fast stones cannot tunnel through the head
+            var steps = 4;
+            for (var st = 0; st < steps && s.life > 0; st++) {
+              s.x += (s.vx * dt) / steps;
+              s.y += (s.vy * dt) / steps;
+              s.vy += (600 * dt) / steps; // gravity
+              // Head hit check (only counts if the shield is not blocking)
+              var hx = dv.goliathX,
+                hy = dv.goliathY - 60;
+              var dxh = s.x - hx,
+                dyh = s.y - hy;
+              if (Math.sqrt(dxh * dxh + dyh * dyh) < dv.goliathHeadR) {
+                if (!shieldBlocksHead(s)) {
+                  dv.phase = 'hit';
+                  dv.msg = 'DIRECT HIT!';
+                  dv.hitT = 2;
+                  dv.charging = false;
+                  shake = 8;
+                  spawnParticles(hx, hy, '#f0d878', 20);
+                  return;
+                } else {
+                  dv.msg = 'Blocked by the shield!';
+                  spawnParticles(s.x, s.y, '#c0c0c0', 8);
+                  s.life = 0;
+                }
+              }
+              // Body hit (not a win)
+              if (
+                s.life > 0 &&
+                Math.abs(s.x - dv.goliathX) < 28 &&
+                s.y > dv.goliathY - 32 &&
+                s.y < dv.goliathY + 80
+              ) {
+                dv.msg = 'Body hit - need a head shot!';
+                spawnParticles(s.x, s.y, '#aaa', 6);
+                s.life = 0;
+              }
+              // Off screen
+              if (s.y > H + 50 || s.x > W + 50 || s.x < -50) s.life = 0;
+            }
+          }
+          dv.thrown = dv.thrown.filter(function (s2) {
+            return s2.life > 0;
+          });
+          if (dv.thrown.length === 0) {
+            if (dv.stones > 0) {
+              dv.phase = 'aim';
+              dv.msg = '';
+            } else dv.phase = 'missed';
+          }
+        }
+        if (dv.phase === 'hit') {
+          dv.hitT -= dt;
+          if (dv.hitT <= 0) {
+            davidVictory = true;
+            goliathSwordUnlocked = true; // the mighty men take up Goliath's sword
+            if (!swordEnabled) swordEnabled = true;
+            saveProgress();
+            state = 'davidvictory';
+          }
+        }
+        if (dv.phase === 'missed') {
+          goGameOver();
+        }
+      }
+
+      function drawGoliathShield(sx, sy) {
+        ctx.fillStyle = '#8a7848';
+        ctx.beginPath();
+        ctx.ellipse(sx, sy, 14, 24, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#5a4a3a';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.fillStyle = '#6a5a38';
+        ctx.beginPath();
+        ctx.ellipse(sx, sy, 6, 10, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      function renderDavid() {
+        if (
+          dv.phase === 'sword_fight' ||
+          (dv.phase === 'hit' && dv.goliathHP !== undefined)
+        ) {
+          var bg = ctx.createLinearGradient(0, 0, 0, H);
+          bg.addColorStop(0, '#6a8aaa');
+          bg.addColorStop(0.5, '#8a9a7a');
+          bg.addColorStop(1, '#5a6a4a');
+          ctx.fillStyle = bg;
+          ctx.fillRect(0, 0, W, H);
+          ctx.fillStyle = '#7a8a5a';
+          ctx.fillRect(0, H * 0.65, W, H * 0.35);
+          var gx = dv.goliathX,
+            gy = dv.goliathY;
+          var headX = gx + 40,
+            headY = gy - 20;
+          // Body laying down (drawn under the blade)
+          ctx.fillStyle = '#6a5a4a';
+          ctx.fillRect(gx, gy - 15, 100, 30);
+          ctx.fillStyle = '#5a4a3a';
+          ctx.fillRect(gx, gy - 15, 100, 6);
+          ctx.fillStyle = '#4a3a2a';
+          ctx.fillRect(gx + 20, gy - 12, 50, 24);
+          ctx.fillStyle = '#6a5a4a';
+          ctx.fillRect(gx + 95, gy - 10, 60, 15);
+          drawWarrior(dv.px, dv.py, { x: 1, y: 0 }, '#d4a574', '#2a1808');
+          var neckY = headY + 8;
+          var slashA = Math.atan2((neckY - dv.py) * 0.2, headX - dv.px);
+          function drawBlade(ang, len) {
+            var hx2 = dv.px + Math.cos(ang) * 14;
+            var hy2 = dv.py + Math.sin(ang) * 14;
+            var tx = dv.px + Math.cos(ang) * len;
+            var ty = dv.py + Math.sin(ang) * len;
+            ctx.strokeStyle = '#6a4a2a';
+            ctx.lineWidth = 6;
+            ctx.beginPath();
+            ctx.moveTo(
+              dv.px - Math.cos(ang) * 8,
+              dv.py - Math.sin(ang) * 8,
+            );
+            ctx.lineTo(hx2, hy2);
+            ctx.stroke();
+            ctx.strokeStyle = '#c0c0d0';
+            ctx.lineWidth = 8;
+            ctx.beginPath();
+            ctx.moveTo(hx2, hy2);
+            ctx.lineTo(tx, ty);
+            ctx.stroke();
+          }
+          if (dv.swordSwingT > 0) {
+            var prog = 1 - dv.swordSwingT / 0.35;
+            var startA = slashA - 0.35;
+            var sweep = 0.7;
+            var bladeAng = startA + sweep * prog;
+            ctx.strokeStyle =
+              'rgba(240,216,120,' + (0.7 * (1 - prog)).toFixed(3) + ')';
+            ctx.lineWidth = 16;
+            ctx.beginPath();
+            ctx.arc(dv.px, dv.py, 110, startA, startA + sweep * Math.max(prog, 0.08));
+            ctx.stroke();
+            drawBlade(bladeAng, 128);
+          } else {
+            drawBlade(slashA, 108);
+          }
+          // Head on top so the blade tucks behind it
+          ctx.fillStyle = '#c4a074';
+          ctx.beginPath();
+          ctx.arc(headX, headY, dv.goliathHeadR, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#5a4a3a';
+          ctx.beginPath();
+          ctx.arc(headX, headY - 3, dv.goliathHeadR - 3, Math.PI, 0);
+          ctx.fill();
+          ctx.fillStyle = '#333';
+          ctx.fillRect(headX - 8, headY - 5, 3, 3);
+          ctx.fillRect(headX + 5, headY - 5, 3, 3);
+          ctx.strokeStyle = 'rgba(240,80,80,0.5)';
+          ctx.lineWidth = 2;
+          ctx.setLineDash([4, 4]);
+          ctx.beginPath();
+          ctx.arc(headX, headY, dv.goliathHeadR + 8, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.setLineDash([]);
+          ctx.fillStyle = 'rgba(245,230,200,0.7)';
+          ctx.font = 'bold 14px Georgia';
+          ctx.textAlign = 'center';
+          ctx.fillText(
+            'Walk to Goliath\u2019s head and strike! (J to swing, WASD to move)',
+            W / 2,
+            30,
+          );
+          if (dv.msg) {
+            ctx.fillStyle = 'rgba(0,0,0,0.6)';
+            ctx.fillRect(0, H / 2 - 30, W, 60);
+            ctx.fillStyle = '#5cb85c';
+            ctx.font = 'bold 28px Georgia';
+            ctx.fillText(dv.msg, W / 2, H / 2 + 8);
+          }
+          return;
+        }
+        // Valley background
+        var bg = ctx.createLinearGradient(0, 0, 0, H);
+        bg.addColorStop(0, '#6a8aaa');
+        bg.addColorStop(0.5, '#8a9a7a');
+        bg.addColorStop(1, '#5a6a4a');
+        ctx.fillStyle = bg;
+        ctx.fillRect(0, 0, W, H);
+        // Ground
+        ctx.fillStyle = '#7a8a5a';
+        ctx.fillRect(0, H * 0.65, W, H * 0.35);
+        // Distant hills
+        ctx.fillStyle = '#5a6a4a';
+        ctx.beginPath();
+        ctx.moveTo(0, H * 0.5);
+        for (var i = 0; i <= W; i += 40) {
+          ctx.lineTo(i, H * 0.5 - Math.sin(i * 0.02) * 30);
+        }
+        ctx.lineTo(W, H * 0.65);
+        ctx.lineTo(0, H * 0.65);
+        ctx.closePath();
+        ctx.fill();
+
+        // Goliath (large figure on right)
+        var gx = dv.goliathX,
+          gy = dv.goliathY;
+        // Body
+        ctx.fillStyle = '#6a5a4a';
+        ctx.fillRect(gx - 25, gy - 30, 50, 80);
+        // Armor
+        ctx.fillStyle = '#5a4a3a';
+        ctx.fillRect(gx - 25, gy - 30, 50, 35);
+        ctx.fillStyle = '#4a3a2a';
+        ctx.fillRect(gx - 25, gy - 30, 50, 5);
+        // Legs
+        ctx.fillStyle = '#6a5a4a';
+        ctx.fillRect(gx - 20, gy + 50, 16, 35);
+        ctx.fillRect(gx + 4, gy + 50, 16, 35);
+        // Head
+        var hy2 = gy - 60;
+        ctx.fillStyle = '#c4a074';
+        ctx.beginPath();
+        ctx.arc(gx, hy2, dv.goliathHeadR, 0, Math.PI * 2);
+        ctx.fill();
+        // Helmet
+        ctx.fillStyle = '#5a4a3a';
+        ctx.beginPath();
+        ctx.arc(gx, hy2 - 5, dv.goliathHeadR - 2, Math.PI, 0);
+        ctx.fill();
+        ctx.fillStyle = '#3a2a1a';
+        ctx.fillRect(gx - dv.goliathHeadR, hy2 - 7, dv.goliathHeadR * 2, 4);
+        // Face
+        ctx.fillStyle = '#333';
+        ctx.fillRect(gx - 8, gy - 62, 3, 3);
+        ctx.fillRect(gx + 5, gy - 62, 3, 3);
+        ctx.strokeStyle = '#5a3a2a';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(gx - 5, gy - 52);
+        ctx.lineTo(gx + 5, gy - 52);
+        ctx.stroke();
+        // Sword (decorative but threatening) - swings slowly
+        var swA = -0.6 + Math.sin(dv.swordT * 2) * 0.5;
+        var shx = gx + 28,
+          shy = gy - 25;
+        ctx.strokeStyle = '#5a3a2a';
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(shx, shy);
+        ctx.lineTo(shx + Math.cos(swA) * 55, shy + Math.sin(swA) * 55);
+        ctx.stroke();
+        ctx.strokeStyle = '#c0c0c0';
+        ctx.lineWidth = 5;
+        ctx.beginPath();
+        ctx.moveTo(shx + Math.cos(swA) * 15, shy + Math.sin(swA) * 15);
+        ctx.lineTo(shx + Math.cos(swA) * 70, shy + Math.sin(swA) * 70);
+        ctx.stroke();
+        // Shield: moves to protect parts of the face; lowered when open
+        if (dv.shieldMode === 'left') {
+          drawGoliathShield(gx - dv.goliathHeadR * 0.8, hy2);
+        } else if (dv.shieldMode === 'right') {
+          drawGoliathShield(gx + dv.goliathHeadR * 0.8, hy2);
+        } else {
+          drawGoliathShield(gx - 38, gy + 5);
+        }
+        // Highlight head target + exposed side (visible while aiming)
+        if (dv.phase === 'aim') {
+          ctx.strokeStyle = 'rgba(240,80,80,0.5)';
+          ctx.lineWidth = 2;
+          ctx.setLineDash([4, 4]);
+          ctx.beginPath();
+          ctx.arc(gx, hy2, dv.goliathHeadR + 5, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
+
+        // David (small figure on the left, can move along the ground)
+        var dx = dv.px,
+          dy = dv.py;
+        ctx.fillStyle = '#d4a574';
+        ctx.beginPath();
+        ctx.arc(dx, dy - 15, 8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#3a2818';
+        ctx.beginPath();
+        ctx.arc(dx, dy - 19, 8, Math.PI, 0);
+        ctx.fill();
+        ctx.fillStyle = '#e8e0d0';
+        ctx.fillRect(dx - 10, dy - 8, 20, 25);
+        ctx.fillStyle = '#8b6a3a';
+        ctx.fillRect(dx - 9, dy + 3, 18, 3);
+        ctx.fillStyle = '#d4a574';
+        ctx.fillRect(dx - 12, dy - 5, 4, 12);
+        ctx.fillRect(dx + 8, dy - 5, 4, 12);
+        // Sling
+        ctx.strokeStyle = '#5a3a2a';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(dx + 12, dy - 2);
+        ctx.lineTo(dx + 22, dy - 8);
+        ctx.stroke();
+        if (dv.phase === 'aim') {
+          ctx.fillStyle = '#8a7a5a';
+          ctx.beginPath();
+          ctx.arc(dx + 22, dy - 8, 3, 0, Math.PI * 2);
+          ctx.fill();
+          if (dv.charging) {
+            // Spinning sling while charging
+            ctx.strokeStyle = '#8a7a5a';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.arc(
+              dx + 22,
+              dy - 8,
+              6 + Math.sin(animTime * 15) * 2,
+              0,
+              Math.PI * 2,
+            );
+            ctx.stroke();
+          }
+        }
+        // Power meter: vertical bar next to David
+        if (dv.charging || dv.power > 0) {
+          var pbx = dx - 42,
+            pby = dy - 48,
+            pbw = 10,
+            pbh = 66;
+          ctx.fillStyle = 'rgba(0,0,0,0.5)';
+          ctx.fillRect(pbx, pby, pbw, pbh);
+          var ph = (pbh * dv.power) / 100;
+          ctx.fillStyle = dv.power > 70 ? '#e08030' : '#f0d878';
+          ctx.fillRect(
+            pbx + 1,
+            pby + pbh - Math.max(1, ph - 1),
+            pbw - 2,
+            Math.max(1, ph - 2),
+          );
+          ctx.strokeStyle = '#f0d878';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(pbx, pby, pbw, pbh);
+        }
+
+        // Stones in flight
+        for (var i2 = 0; i2 < dv.thrown.length; i2++) {
+          var st2 = dv.thrown[i2];
+          for (var t = 0; t < st2.trail.length; t++) {
+            ctx.globalAlpha = (t / st2.trail.length) * 0.5;
+            ctx.fillStyle = '#8a7a5a';
+            ctx.beginPath();
+            ctx.arc(st2.trail[t].x, st2.trail[t].y, 2, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          ctx.globalAlpha = 1;
+          ctx.fillStyle = '#6a5a4a';
+          ctx.beginPath();
+          ctx.arc(st2.x, st2.y, 5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = '#4a3a2a';
+          ctx.lineWidth = 0.5;
+          ctx.stroke();
+        }
+
+        // Aim indicator: dotted trajectory scaled with power
+        if (dv.phase === 'aim') {
+          var rad = (dv.angle * Math.PI) / 180;
+          var v = 300 + dv.power * 3;
+          ctx.strokeStyle = 'rgba(240,216,120,0.4)';
+          ctx.lineWidth = 2;
+          ctx.setLineDash([5, 5]);
+          ctx.beginPath();
+          var first = true;
+          for (var t2 = 0; t2 < 2.2; t2 += 0.05) {
+            var tx = dx + 18 + Math.cos(rad) * v * t2;
+            var ty = dy - 10 - Math.sin(rad) * v * t2 + 300 * t2 * t2;
+            if (ty > H) break;
+            if (first) {
+              ctx.moveTo(tx, ty);
+              first = false;
+            } else ctx.lineTo(tx, ty);
+          }
+          ctx.stroke();
+          ctx.setLineDash([]);
+          ctx.fillStyle = '#f0d878';
+          ctx.font = 'bold 14px Georgia';
+          ctx.textAlign = 'center';
+          ctx.fillText(
+            'Angle: ' +
+              Math.round(dv.angle) +
+              '\u00b0 \u2014 Hold J to charge, release to throw',
+            W / 2,
+            30,
+          );
+          ctx.fillText(
+            'Stones: ' +
+              dv.stones +
+              '/5 \u00b7 Power: ' +
+              Math.round(dv.power) +
+              '%',
+            W / 2,
+            50,
+          );
+          if (dv.shieldMode !== 'open') {
+            ctx.fillStyle = 'rgba(245,230,200,0.7)';
+            ctx.font = '12px Georgia';
+            ctx.fillText(
+              'Shield covering the ' +
+                (dv.shieldMode === 'left' ? 'left' : 'right') +
+                ' of Goliath\u2019s face',
+              W / 2,
+              70,
+            );
+          } else {
+            ctx.fillStyle = '#f0d878';
+            ctx.font = 'bold 12px Georgia';
+            ctx.fillText('Shield lowered \u2014 throw NOW!', W / 2, 70);
+          }
+        }
+
+        // Hit/miss messages
+        if (dv.msg) {
+          ctx.fillStyle = 'rgba(0,0,0,0.6)';
+          ctx.fillRect(0, H / 2 - 30, W, 60);
+          ctx.fillStyle = dv.phase === 'hit' ? '#5cb85c' : '#e74c3c';
+          ctx.font = 'bold 28px Georgia';
+          ctx.textAlign = 'center';
+          ctx.fillText(dv.msg, W / 2, H / 2 + 8);
+        }
+      }
+
+      // === SHARED DRAW HELPERS ===
+      function drawWarrior(x, y, dir, skin, hair) {
+        // Shadow
+        ctx.fillStyle = 'rgba(0,0,0,0.25)';
+        ctx.beginPath();
+        ctx.ellipse(x, y + 14, 12, 4, 0, 0, Math.PI * 2);
+        ctx.fill();
+        // Body (tunic)
+        ctx.fillStyle = '#e8e0d0';
+        ctx.fillRect(x - 8, y - 4, 16, 18);
+        // Belt
+        ctx.fillStyle = '#8b6a3a';
+        ctx.fillRect(x - 8, y + 4, 16, 3);
+        // Arms
+        ctx.fillStyle = skin;
+        ctx.fillRect(x - 11, y - 2, 4, 10);
+        ctx.fillRect(x + 7, y - 2, 4, 10);
+        // Head
+        ctx.fillStyle = skin;
+        ctx.beginPath();
+        ctx.arc(x, y - 10, 7, 0, Math.PI * 2);
+        ctx.fill();
+        // Hair
+        ctx.fillStyle = hair;
+        ctx.beginPath();
+        ctx.arc(x, y - 13, 7, Math.PI, 0);
+        ctx.fill();
+        // Eyes
+        ctx.fillStyle = '#333';
+        var ex = dir.x * 1.5,
+          ey = dir.y * 1;
+        ctx.fillRect(x - 3 + ex, y - 11 + ey, 2, 2);
+        ctx.fillRect(x + 1 + ex, y - 11 + ey, 2, 2);
+      }
+
+      function spawnParticles(x, y, color, count) {
+        for (var i = 0; i < count; i++) {
+          var a = Math.random() * Math.PI * 2,
+            s = 60 + Math.random() * 100;
+          particles.push({
+            x: x,
+            y: y,
+            vx: Math.cos(a) * s,
+            vy: Math.sin(a) * s - 50,
+            life: 0.6 + Math.random() * 0.4,
+            color: color,
+            size: 2 + Math.random() * 3,
+          });
+        }
+      }
+
+      function drawParticles() {
+        for (var i = 0; i < particles.length; i++) {
+          var p = particles[i];
+          ctx.globalAlpha = Math.max(0, p.life);
+          ctx.fillStyle = p.color;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+      }
+
+      function drawPopups() {
+        for (var i = 0; i < popups.length; i++) {
+          var p = popups[i];
+          ctx.globalAlpha = Math.min(1, p.life);
+          ctx.fillStyle = p.color || '#f0d878';
+          ctx.font = 'bold 12px Georgia';
+          ctx.textAlign = 'center';
+          ctx.fillText(p.text, p.x, p.y - (1 - p.life) * 20);
+        }
+        ctx.globalAlpha = 1;
+      }
+
+      // === HUD ===
+      function updateHUD() {
+        // Character select shows progress info instead of game stats
+        if (state === 'charselect') {
+          var doneCs =
+            (completed.josheb ? 1 : 0) +
+            (completed.eleazar ? 1 : 0) +
+            (completed.shammah ? 1 : 0);
+          hudLabelMode.textContent = 'Characters';
+          hudLabelStat.textContent = waterQuestUnlocked
+            ? 'Water Quest'
+            : '???';
+          hudLabelHealth.textContent = davidUnlocked ? 'David' : '???';
+          hudLabelInfo.textContent = goliathSwordUnlocked
+            ? "Goliath's Sword"
+            : '???';
+          hudMode.textContent = doneCs + '/3';
+          hudStat.textContent = davidVictory
+            ? 'Completed'
+            : waterQuestUnlocked
+              ? 'Available'
+              : '???';
+          hudVal3.textContent = davidVictory
+            ? 'Completed'
+            : davidUnlocked
+              ? 'Available'
+              : '???';
+          hudInfo.textContent = goliathSwordUnlocked ? 'Unlocked' : '???';
+          setHudBarVisible(false);
+          return;
+        }
+        // HUD only shows during active gameplay
+        if (
+          state !== 'playing' &&
+          state !== 'david_fight' &&
+          state !== 'water_quest'
+        ) {
+          setPlaceholderHud();
+          return;
+        }
+        hudLabelMode.textContent = 'Mode';
+        hudLabelStat.textContent = 'Stat';
+        hudLabelHealth.textContent = 'Health';
+        hudLabelInfo.textContent = 'Info';
+        hudVal3.textContent = '';
+        setHudBarVisible(true);
+        if (state === 'playing' && selectedChar === 'josheb') {
+          hudMode.textContent = 'Josheb';
+          hudStat.textContent = jb.kills + '/' + jb.total;
+          hudBar.style.width = jb.health + '%';
+          hudBar.style.background = '#c43030';
+          hudInfo.textContent = 'HP: ' + Math.round(jb.health);
+        } else if (state === 'playing' && selectedChar === 'eleazar') {
+          hudMode.textContent = 'Eleazar';
+          hudStat.textContent =
+            'Wave ' + (el_state.wave + 1) + '/' + (el_state.maxWaves + 1);
+          hudBar.style.width = el_state.health + '%';
+          hudBar.style.background = '#c43030';
+          hudInfo.textContent =
+            'HP: ' +
+            Math.round(el_state.health) +
+            ' Kills: ' +
+            el_state.enemiesKilled;
+        } else if (state === 'playing' && selectedChar === 'shammah') {
+          hudMode.textContent = 'Shammah';
+          hudStat.textContent =
+            Math.ceil(sh.surviveTime - sh.surviveT) + 's left';
+          hudBar.style.width =
+            ((sh.maxBreaches - sh.breaches) / sh.maxBreaches) * 100 + '%';
+          hudBar.style.background = '#5cb85c';
+          hudInfo.textContent =
+            'Breaches: ' + sh.breaches + '/' + sh.maxBreaches;
+        } else if (state === 'david_fight') {
+          hudMode.textContent = 'David';
+          hudLabelStat.textContent = 'Stat';
+          hudLabelHealth.textContent = 'Health';
+          hudLabelInfo.textContent = 'Info';
+          if (
+            dv.phase === 'sword_fight' ||
+            (dv.phase === 'hit' && dv.goliathHP !== undefined)
+          ) {
+            hudStat.textContent = 'Goliath';
+            hudVal3.textContent = 'Down';
+            setHudBarVisible(false);
+            hudInfo.textContent =
+              dv.phase === 'hit' ? 'Victory!' : 'Finish Him';
+          } else {
+            hudStat.textContent = 'Stones: ' + dv.stones + '/5';
+            hudBar.style.width = (dv.stones / 5) * 100 + '%';
+            hudBar.style.background = '#f0d878';
+            setHudBarVisible(true);
+            hudVal3.textContent = '';
+            hudInfo.textContent = dv.charging
+              ? 'Charging... release J to throw!'
+              : dv.phase === 'aim'
+                ? 'Hold J to charge'
+                : dv.phase === 'flying'
+                  ? 'Stone in flight'
+                  : dv.phase === 'hit'
+                    ? 'Direct hit!'
+                    : dv.phase === 'missed'
+                      ? 'Out of stones'
+                      : '';
+          }
+        } else if (state === 'water_quest') {
+          var avgHp = (wq.healths[0] + wq.healths[1] + wq.healths[2]) / 3;
+          hudMode.textContent = 'Water Quest';
+          hudStat.textContent = wq.hasWater ? 'Return!' : 'Get water';
+          hudBar.style.width = Math.max(0, avgHp) + '%';
+          hudBar.style.background = '#c43030';
+          hudInfo.textContent = 'Kills: ' + wq.kills;
+        } else {
+          hudMode.textContent = '';
+          hudStat.textContent = '';
+          hudBar.style.width = '100%';
+          hudInfo.textContent = '';
+        }
+      }
+
+      // === WATER QUEST (all 3 warriors) ===
+      // Winding path: stone walls form a zigzag corridor from the cave (left) to
+      // the water (right). Enemies pour in through openings in the path walls.
+      // J = sword (Eleazar), K = spear (Josheb), L = arrow (Shammah) - each weapon
+      // has its own cooldown (swordCD/spearCD/arrowCD) so all three can be used
+      // concurrently. Win if at least 1 warrior reaches the cave with water.
+      var WQ_WALLS = [
+        { x: 150, y: 0, w: 40, h: 430 }, // pass under (bottom gap)
+        { x: 310, y: 210, w: 40, h: 430 }, // pass over (top gap)
+        { x: 470, y: 0, w: 40, h: 430 }, // pass under (bottom gap)
+      ];
+      var WQ_OPENINGS = [
+        { x: 170, y: 540 },
+        { x: 330, y: 110 },
+        { x: 490, y: 540 },
+      ];
+
+      function wqHitsWall(x, y, r) {
+        for (var i = 0; i < WQ_WALLS.length; i++) {
+          var wl = WQ_WALLS[i];
+          if (
+            x + r > wl.x &&
+            x - r < wl.x + wl.w &&
+            y + r > wl.y &&
+            y - r < wl.y + wl.h
+          )
+            return true;
+        }
+        return false;
+      }
+
+      function initWaterQuest() {
+        wq = {
+          px: 50,
+          py: 320,
+          dir: { x: 1, y: 0 },
+          enemies: [],
+          kills: 0,
+          healths: [100, 100, 100],
+          spawnT: 0,
+          hasWater: false,
+          waterX: 590,
+          waterY: 320,
+          caveX: 30,
+          caveY: 320,
+          phase: 'fight',
+          msg: '',
+          msgT: 0,
+          swordCD: 0,
+          spearCD: 0,
+          arrowCD: 0,
+          swordT: 0,
+          spearT: 0,
+          charNames: ['Josheb', 'Eleazar', 'Shammah'],
+          arrows: [],
+        };
+        // Pre-populate the winding path with enemies
+        for (var i = 0; i < 60; i++) spawnWQEnemy(true);
+      }
+
+      function spawnWQEnemy(spread) {
+        var x, y, t;
+        if (spread) {
+          x = 80 + Math.random() * 480;
+          y = 30 + Math.random() * 580;
+          for (t = 0; t < 20 && wqHitsWall(x, y, 8); t++) {
+            x = 80 + Math.random() * 480;
+            y = 30 + Math.random() * 580;
+          }
+        } else {
+          // Spawn from openings along the path walls (not the screen edges)
+          var o = WQ_OPENINGS[Math.floor(Math.random() * WQ_OPENINGS.length)];
+          x = o.x + (Math.random() - 0.5) * 50;
+          y = o.y + (Math.random() - 0.5) * 50;
+          for (t = 0; t < 20 && wqHitsWall(x, y, 8); t++) {
+            y = o.y + (Math.random() - 0.5) * 50;
+          }
+        }
+        wq.enemies.push({ x: x, y: y, atkCD: 1.0 });
+      }
+
+      // K = spear (Josheb, index 0), J = sword (Eleazar, index 1)
+      function wqAttack(type) {
+        if (type === 'spear') {
+          if (wq.healths[0] <= 0) return; // downed warrior cannot attack
+          if (wq.spearCD > 0) return;
+          wq.spearCD = 0.35;
+          wq.spearT = 0.3;
+          var reach = goliathSwordUnlocked ? 180 : 95;
+          var width = goliathSwordUnlocked ? 20 : 14;
+          // Long straight stab in the facing direction
+          for (var i = wq.enemies.length - 1; i >= 0; i--) {
+            var e = wq.enemies[i];
+            var dx = e.x - wq.px,
+              dy = e.y - wq.py;
+            var along = dx * wq.dir.x + dy * wq.dir.y;
+            var perp = Math.abs(dx * wq.dir.y - dy * wq.dir.x);
+            if (along > 0 && along < reach && perp < width) {
+              spawnParticles(e.x, e.y, '#c43030', 8);
+              wq.enemies.splice(i, 1);
+              wq.kills++;
+              shake = 2;
+            }
+          }
+        } else {
+          if (wq.healths[1] <= 0) return; // downed warrior cannot attack
+          if (wq.swordCD > 0) return;
+          wq.swordCD = 0.35;
+          wq.swordT = 0.3;
+          var reach2 = swordActive() ? 165 : goliathSwordUnlocked ? 120 : 62;
+          var maxAng = swordActive()
+            ? Math.PI / 2
+            : goliathSwordUnlocked
+              ? Math.PI / 4
+              : Math.PI / 8;
+          // Medium arc in front
+          for (var j = wq.enemies.length - 1; j >= 0; j--) {
+            var e2 = wq.enemies[j];
+            var dx2 = e2.x - wq.px,
+              dy2 = e2.y - wq.py;
+            var d = Math.sqrt(dx2 * dx2 + dy2 * dy2);
+            if (d > reach2 || d < 1) continue;
+            var dot = (dx2 * wq.dir.x + dy2 * wq.dir.y) / d;
+            var angDiff = Math.acos(Math.max(-1, Math.min(1, dot)));
+            if (angDiff <= maxAng) {
+              spawnParticles(e2.x, e2.y, '#c43030', 8);
+              wq.enemies.splice(j, 1);
+              wq.kills++;
+              shake = 2;
+            }
+          }
+        }
+      }
+
+      // L = Shammah's arrow shot
+      function wqShootArrow() {
+        if (wq.healths[2] <= 0) return; // downed warrior cannot attack
+        if (wq.arrowCD > 0) return;
+        wq.arrowCD = 0.4;
+        wq.arrows.push({
+          x: wq.px + wq.dir.x * 14,
+          y: wq.py + wq.dir.y * 14,
+          vx: wq.dir.x * 400,
+          vy: wq.dir.y * 400,
+          life: 2,
+          pierce: goliathSwordUnlocked,
+          r: goliathSwordUnlocked ? 21 : 10,
+        });
+      }
+
+      function updateWaterQuest(dt) {
+        // Independent cooldowns per weapon
+        if (wq.swordCD > 0) wq.swordCD -= dt;
+        if (wq.spearCD > 0) wq.spearCD -= dt;
+        if (wq.arrowCD > 0) wq.arrowCD -= dt;
+        if (wq.swordT > 0) wq.swordT -= dt;
+        if (wq.spearT > 0) wq.spearT -= dt;
+        if (wq.msgT > 0) wq.msgT -= dt;
+        // Movement (all 3 warriors move together as a group; walls block movement)
+        var dx = 0,
+          dy = 0;
+        if (keys['arrowleft'] || keys['a']) dx = -1;
+        if (keys['arrowright'] || keys['d']) dx = 1;
+        if (keys['arrowup'] || keys['w']) dy = -1;
+        if (keys['arrowdown'] || keys['s']) dy = 1;
+        if (dx && dy) {
+          dx *= 0.707;
+          dy *= 0.707;
+        }
+        var spd = 120;
+        if (dx || dy) {
+          var nx = wq.px + dx * spd * dt,
+            ny = wq.py + dy * spd * dt;
+          if (!wqHitsWall(nx, wq.py, 10))
+            wq.px = Math.max(15, Math.min(W - 15, nx));
+          if (!wqHitsWall(wq.px, ny, 10))
+            wq.py = Math.max(15, Math.min(H - 15, ny));
+          if (Math.abs(dx) > Math.abs(dy))
+            wq.dir = { x: dx > 0 ? 1 : -1, y: 0 };
+          else wq.dir = { x: 0, y: dy > 0 ? 1 : -1 };
+        }
+        // Spawn enemies from the path openings
+        wq.spawnT += dt;
+        if (wq.spawnT > 0.12 && wq.enemies.length < 480) {
+          wq.spawnT = 0;
+          spawnWQEnemy(false);
+        }
+        // Update enemies - they attack the nearest living warrior
+        var offs = [
+          [-6, 6],
+          [6, 6],
+          [0, -6],
+        ];
+        for (var i = 0; i < wq.enemies.length; i++) {
+          var e = wq.enemies[i];
+          var ti = -1,
+            td = 1e9;
+          for (var c = 0; c < 3; c++) {
+            if (wq.healths[c] <= 0) continue;
+            var cdx = e.x - (wq.px + offs[c][0]),
+              cdy = e.y - (wq.py + offs[c][1]);
+            var cdd = cdx * cdx + cdy * cdy;
+            if (cdd < td) {
+              td = cdd;
+              ti = c;
+            }
+          }
+          if (ti < 0) break; // everyone is down
+          var wx = wq.px + offs[ti][0],
+            wy = wq.py + offs[ti][1];
+          var ex = wx - e.x,
+            ey = wy - e.y;
+          var d = Math.sqrt(ex * ex + ey * ey);
+          if (d > 1) {
+            var mx = e.x + (ex / d) * 35 * dt,
+              my = e.y + (ey / d) * 35 * dt;
+            if (!wqHitsWall(mx, my, 7)) {
+              e.x = mx;
+              e.y = my;
+            } else if (!wqHitsWall(mx, e.y, 7)) {
+              e.x = mx;
+            } else if (!wqHitsWall(e.x, my, 7)) {
+              e.y = my;
+            }
+          }
+          e.atkCD -= dt;
+          if (d < 26 && e.atkCD <= 0) {
+            e.atkCD = 1.0;
+            wq.healths[ti] -= 4;
+            shake = 2;
+            spawnParticles(wx, wy, '#c43030', 4);
+          }
+        }
+        // Update arrows (Shammah's shots) - pierce through enemies with Goliath's sword
+        for (var a = wq.arrows.length - 1; a >= 0; a--) {
+          var ar = wq.arrows[a];
+          ar.x += ar.vx * dt;
+          ar.y += ar.vy * dt;
+          ar.life -= dt;
+          var dead =
+            ar.life <= 0 ||
+            ar.x < -20 ||
+            ar.x > W + 20 ||
+            ar.y < -20 ||
+            ar.y > H + 20 ||
+            wqHitsWall(ar.x, ar.y, 2);
+          if (!dead) {
+            for (var j2 = 0; j2 < wq.enemies.length; j2++) {
+              var e3 = wq.enemies[j2];
+              var ddx = e3.x - ar.x,
+                ddy = e3.y - ar.y;
+              if (ddx * ddx + ddy * ddy < ar.r * ar.r) {
+                spawnParticles(e3.x, e3.y, '#c43030', 8);
+                wq.enemies.splice(j2, 1);
+                wq.kills++;
+                shake = 2;
+                if (!ar.pierce) {
+                  dead = true;
+                  break;
+                }
+              }
+            }
+          }
+          if (dead) wq.arrows.splice(a, 1);
+        }
+        // Death check: all 3 warriors down = game over
+        var anyAlive =
+          wq.healths[0] > 0 || wq.healths[1] > 0 || wq.healths[2] > 0;
+        if (!anyAlive) {
+          goGameOver();
+          return;
+        }
+        // Check water pickup
+        if (!wq.hasWater) {
+          var dx2 = wq.waterX - wq.px,
+            dy2 = wq.waterY - wq.py;
+          if (Math.sqrt(dx2 * dx2 + dy2 * dy2) < 25) {
+            wq.hasWater = true;
+            wq.msg = 'Water obtained! Return to the cave!';
+            wq.msgT = 3;
+            popups.push({
+              x: wq.px,
+              y: wq.py - 20,
+              text: 'WATER!',
+              life: 1.5,
+              color: '#5cb8e8',
+            });
+            spawnParticles(wq.waterX, wq.waterY, '#5cb8e8', 15);
+          }
+        }
+        // Check cave return - win if at least 1 warrior reaches the cave with water
+        if (wq.hasWater) {
+          var dx3 = wq.caveX - wq.px,
+            dy3 = wq.caveY - wq.py;
+          if (Math.sqrt(dx3 * dx3 + dy3 * dy3) < 30) {
+            state = 'water_cutscene';
+            wq.cutsceneT = 0;
+          }
+        }
+      }
+
+      function renderWaterQuest() {
+        // Battlefield - field with depth
+        var bg = ctx.createLinearGradient(0, 0, 0, H);
+        bg.addColorStop(0, '#6a8a4a');
+        bg.addColorStop(0.3, '#5a7a3a');
+        bg.addColorStop(1, '#4a6a2a');
+        ctx.fillStyle = bg;
+        ctx.fillRect(0, 0, W, H);
+        // Grass texture
+        for (var i = 0; i < 150; i++) {
+          var gx = (i * 37) % W,
+            gy = (i * 53) % H;
+          ctx.fillStyle = 'rgba(50,70,20,0.35)';
+          ctx.fillRect(gx, gy, 1, 3);
+        }
+        // Dirt path from cave to water
+        ctx.fillStyle = 'rgba(130,100,60,0.2)';
+        ctx.beginPath();
+        ctx.moveTo(20, 320);
+        ctx.quadraticCurveTo(W / 2, 340, 590, 320);
+        ctx.lineTo(590, 340);
+        ctx.quadraticCurveTo(W / 2, 360, 20, 340);
+        ctx.closePath();
+        ctx.fill();
+        // Rocks
+        for (var i = 0; i < 12; i++) {
+          var rx = (i * 97) % W,
+            ry = (i * 61) % H;
+          ctx.fillStyle = '#7a7060';
+          ctx.beginPath();
+          ctx.arc(rx, ry, 3, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        // Winding path walls
+        for (var wi = 0; wi < WQ_WALLS.length; wi++) {
+          var wl = WQ_WALLS[wi];
+          ctx.fillStyle = '#8a7860';
+          ctx.fillRect(wl.x, wl.y, wl.w, wl.h);
+          ctx.fillStyle = 'rgba(0,0,0,0.15)';
+          for (var lx = wl.x; lx < wl.x + wl.w; lx += 20)
+            ctx.fillRect(lx, wl.y, 1, wl.h);
+          for (var ly = wl.y; ly < wl.y + wl.h; ly += 20)
+            ctx.fillRect(wl.x, ly, wl.w, 1);
+          ctx.strokeStyle = '#6a5a44';
+          ctx.lineWidth = 2;
+          ctx.strokeRect(wl.x, wl.y, wl.w, wl.h);
+        }
+        // Cave on left
+        ctx.fillStyle = '#2a1a10';
+        ctx.beginPath();
+        ctx.ellipse(20, 320, 25, 40, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#1a0a00';
+        ctx.beginPath();
+        ctx.ellipse(20, 320, 18, 30, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = 'rgba(240,216,120,0.4)';
+        ctx.font = '10px Georgia';
+        ctx.textAlign = 'center';
+        ctx.fillText('CAVE', 20, 370);
+        // Water cup on right
+        if (!wq.hasWater) {
+          var bob = Math.sin(animTime * 3) * 3;
+          ctx.globalAlpha = 0.2;
+          ctx.fillStyle = '#5cb8e8';
+          ctx.beginPath();
+          ctx.arc(wq.waterX, wq.waterY + bob, 20, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.globalAlpha = 1;
+          ctx.fillStyle = '#c0c0d0';
+          ctx.beginPath();
+          ctx.moveTo(wq.waterX - 10, wq.waterY - 5 + bob);
+          ctx.lineTo(wq.waterX + 10, wq.waterY - 5 + bob);
+          ctx.lineTo(wq.waterX + 7, wq.waterY + 10 + bob);
+          ctx.lineTo(wq.waterX - 7, wq.waterY + 10 + bob);
+          ctx.closePath();
+          ctx.fill();
+          ctx.fillStyle = '#5cb8e8';
+          ctx.fillRect(wq.waterX - 8, wq.waterY - 3 + bob, 16, 8);
+          ctx.strokeStyle = '#a0a0b0';
+          ctx.lineWidth = 1;
+          ctx.stroke();
+          ctx.fillStyle = 'rgba(240,216,120,0.4)';
+          ctx.font = '10px Georgia';
+          ctx.textAlign = 'center';
+          ctx.fillText('WATER', wq.waterX, wq.waterY + 25 + bob);
+        }
+        // Enemies
+        for (var i2 = 0; i2 < wq.enemies.length; i2++) {
+          var e = wq.enemies[i2];
+          ctx.fillStyle = '#7a5a3a';
+          ctx.beginPath();
+          ctx.arc(e.x, e.y, 7, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#5a3a2a';
+          ctx.beginPath();
+          ctx.arc(e.x, e.y - 4, 4, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = '#3a2a1a';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(e.x + 4, e.y);
+          ctx.lineTo(e.x + 12, e.y + 2);
+          ctx.stroke();
+        }
+        // All 3 warriors move together; downed warriors lie on the ground.
+        var offs = [
+          [-6, 6],
+          [6, 6],
+          [0, -6],
+        ];
+        for (var c = 0; c < 3; c++) {
+          var wx2 = wq.px + offs[c][0],
+            wy2 = wq.py + offs[c][1];
+          if (wq.healths[c] <= 0) {
+            ctx.globalAlpha = 0.55;
+            ctx.fillStyle = '#9a8a7a';
+            ctx.beginPath();
+            ctx.ellipse(wx2, wy2, 10, 5, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#d4a574';
+            ctx.beginPath();
+            ctx.arc(wx2 + 8, wy2, 4, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.globalAlpha = 1;
+          } else {
+            drawWarrior(wx2, wy2, wq.dir, '#d4a574', '#3a2818');
+          }
+          var bw = 24,
+            bh = 4;
+          ctx.fillStyle = 'rgba(0,0,0,0.5)';
+          ctx.fillRect(wx2 - bw / 2, wy2 - 26, bw, bh);
+          var hp = Math.max(0, wq.healths[c]) / 100;
+          ctx.fillStyle =
+            hp > 0.5 ? '#5cb85c' : hp > 0.25 ? '#e0a030' : '#c43030';
+          ctx.fillRect(wx2 - bw / 2, wy2 - 26, bw * hp, bh);
+          ctx.strokeStyle = 'rgba(240,216,120,0.5)';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(wx2 - bw / 2, wy2 - 26, bw, bh);
+        }
+        // Attack animation: spear stab (K)
+        if (wq.spearT > 0) {
+          var sLen = wq.spearT > 0.15 ? 90 : 55;
+          ctx.strokeStyle = '#6a4a2a';
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.moveTo(wq.px + wq.dir.x * 10, wq.py + wq.dir.y * 10);
+          ctx.lineTo(wq.px + wq.dir.x * sLen, wq.py + wq.dir.y * sLen);
+          ctx.stroke();
+          ctx.strokeStyle = '#c0c0c0';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(wq.px + wq.dir.x * sLen, wq.py + wq.dir.y * sLen);
+          ctx.lineTo(
+            wq.px + wq.dir.x * (sLen + 8),
+            wq.py + wq.dir.y * (sLen + 8),
+          );
+          ctx.stroke();
+        } else if (wq.swordT > 0) {
+          // Sword arc (J) - wide 90-degree swing with Goliath's Sword
+          var prog = 1 - wq.swordT / 0.3;
+          var base = Math.atan2(wq.dir.y, wq.dir.x);
+          var sweepW = swordActive() ? Math.PI / 2 : Math.PI / 4;
+          var halfW = sweepW / 2;
+          var radW = swordActive() ? 58 : 45;
+          ctx.strokeStyle =
+            'rgba(240,216,120,' + (0.7 * (1 - prog)).toFixed(3) + ')';
+          ctx.lineWidth = swordActive() ? 8 : 6;
+          ctx.beginPath();
+          ctx.arc(
+            wq.px,
+            wq.py,
+            radW,
+            base - halfW,
+            base - halfW + sweepW * prog,
+          );
+          ctx.stroke();
+          ctx.strokeStyle = '#c0c0d0';
+          ctx.lineWidth = swordActive() ? 4 : 3;
+          var bl = base - halfW + sweepW * prog;
+          ctx.beginPath();
+          ctx.moveTo(wq.px + Math.cos(bl) * 10, wq.py + Math.sin(bl) * 10);
+          ctx.lineTo(
+            wq.px + Math.cos(bl) * (radW + 7),
+            wq.py + Math.sin(bl) * (radW + 7),
+          );
+          ctx.stroke();
+        }
+        // Arrows in flight (L)
+        for (var a2 = 0; a2 < wq.arrows.length; a2++) {
+          var ar2 = wq.arrows[a2];
+          var an2 = Math.atan2(ar2.vy, ar2.vx);
+          ctx.strokeStyle = '#8b6a3a';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(ar2.x - Math.cos(an2) * 10, ar2.y - Math.sin(an2) * 10);
+          ctx.lineTo(ar2.x, ar2.y);
+          ctx.stroke();
+          ctx.fillStyle = '#c0c0c0';
+          ctx.beginPath();
+          ctx.moveTo(ar2.x + Math.cos(an2) * 5, ar2.y + Math.sin(an2) * 5);
+          ctx.lineTo(
+            ar2.x + Math.cos(an2 + 2.5) * 4,
+            ar2.y + Math.sin(an2 + 2.5) * 4,
+          );
+          ctx.lineTo(
+            ar2.x + Math.cos(an2 - 2.5) * 4,
+            ar2.y + Math.sin(an2 - 2.5) * 4,
+          );
+          ctx.closePath();
+          ctx.fill();
+        }
+        // Water indicator if carrying
+        if (wq.hasWater) {
+          ctx.fillStyle = '#5cb8e8';
+          ctx.beginPath();
+          ctx.arc(wq.px + wq.dir.x * 5, wq.py - 15, 5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = '#3a98c8';
+          ctx.lineWidth = 1;
+          ctx.stroke();
+        }
+        // Attack key legend
+        ctx.fillStyle = 'rgba(0,0,0,0.5)';
+        ctx.fillRect(5, H - 72, 190, 66);
+        ctx.fillStyle = '#f0d878';
+        ctx.font = 'bold 12px Georgia';
+        ctx.textAlign = 'left';
+        ctx.fillText('J: Sword (Eleazar)', 10, H - 54);
+        ctx.fillText('K: Spear (Josheb)', 10, H - 38);
+        ctx.fillText('L: Arrow (Shammah)', 10, H - 22);
+        ctx.fillStyle = 'rgba(245,230,200,0.6)';
+        ctx.font = '10px Georgia';
+        ctx.fillText(
+          wq.hasWater ? 'Return to the cave!' : 'Reach the water!',
+          10,
+          H - 8,
+        );
+        // Message
+        if (wq.msg && wq.msgT > 0) {
+          ctx.fillStyle = 'rgba(0,0,0,0.6)';
+          ctx.fillRect(0, H / 2 - 25, W, 50);
+          ctx.fillStyle = '#5cb8e8';
+          ctx.font = 'bold 18px Georgia';
+          ctx.textAlign = 'center';
+          ctx.fillText(wq.msg, W / 2, H / 2 + 6);
+        }
+      }
+
+      // === WATER CUTSCENE ===
+      function updateWaterCutscene(dt) {
+        wq.cutsceneT += dt;
+      }
+      function renderWaterCutscene() {
+        // Dark cave interior
+        var bg = ctx.createRadialGradient(
+          W / 2,
+          H / 2,
+          50,
+          W / 2,
+          H / 2,
+          W * 0.7,
+        );
+        bg.addColorStop(0, '#3a2a20');
+        bg.addColorStop(1, '#1a1008');
+        ctx.fillStyle = bg;
+        ctx.fillRect(0, 0, W, H);
+        var t = wq.cutsceneT;
+        // Phase 1: David receives the water (0-2s)
+        if (t < 2) {
+          var p = t / 2;
+          // Warriors
+          drawWarrior(200, 400, { x: 1, y: 0 }, '#d4a574', '#3a2818');
+          drawWarrior(250, 400, { x: 1, y: 0 }, '#d4a574', '#3a2818');
+          drawWarrior(300, 400, { x: 1, y: 0 }, '#d4a574', '#3a2818');
+          // David
+          drawWarrior(420, 400, { x: -1, y: 0 }, '#d4a574', '#2a1808');
+          // Water cup being passed
+          var cupX = 200 + p * 220,
+            cupY = 400 - 20 * Math.sin(p * Math.PI);
+          ctx.fillStyle = '#c0c0d0';
+          ctx.beginPath();
+          ctx.moveTo(cupX - 8, cupY - 4);
+          ctx.lineTo(cupX + 8, cupY - 4);
+          ctx.lineTo(cupX + 6, cupY + 8);
+          ctx.lineTo(cupX - 6, cupY + 8);
+          ctx.closePath();
+          ctx.fill();
+          ctx.fillStyle = '#5cb8e8';
+          ctx.fillRect(cupX - 6, cupY - 2, 12, 6);
+          ctx.fillStyle = 'rgba(245,230,200,0.8)';
+          ctx.font = '14px Georgia';
+          ctx.textAlign = 'center';
+          ctx.fillText(
+            'The three mighty men brought water to David',
+            W / 2,
+            H * 0.2,
+          );
+        }
+        // Phase 2: David pours water on ground (2-5s)
+        else if (t < 5) {
+          var p = (t - 2) / 3;
+          // David holding cup
+          var dx = 420,
+            dy = 400;
+          drawWarrior(dx, dy, { x: 1, y: 0 }, '#d4a574', '#2a1808');
+          // Cup tilting
+          var tilt = p * 1.2;
+          ctx.save();
+          ctx.translate(dx + 15, dy - 10);
+          ctx.rotate(tilt);
+          ctx.fillStyle = '#c0c0d0';
+          ctx.beginPath();
+          ctx.moveTo(-8, -4);
+          ctx.lineTo(8, -4);
+          ctx.lineTo(6, 8);
+          ctx.lineTo(-6, 8);
+          ctx.closePath();
+          ctx.fill();
+          ctx.restore();
+          // Water pouring
+          if (p > 0.15) {
+            var pourX = dx + 15 + Math.sin(tilt) * 10,
+              pourY = dy - 10 + Math.cos(tilt) * 4;
+            ctx.fillStyle = '#5cb8e8';
+            for (var w = 0; w < 8; w++) {
+              var wy = pourY + w * 15;
+              if (wy < H - 20)
+                ctx.fillRect(pourX - 1 + Math.sin(w * 2) * 3, wy, 3, 8);
+            }
+            // Puddle on ground
+            var puddleR = p * 40;
+            ctx.globalAlpha = 0.4;
+            ctx.fillStyle = '#5cb8e8';
+            ctx.beginPath();
+            ctx.ellipse(
+              dx + 25,
+              H - 60,
+              puddleR,
+              puddleR * 0.3,
+              0,
+              0,
+              Math.PI * 2,
+            );
+            ctx.fill();
+            ctx.globalAlpha = 1;
+          }
+          ctx.fillStyle = 'rgba(245,230,200,0.8)';
+          ctx.font = '14px Georgia';
+          ctx.textAlign = 'center';
+          ctx.fillText(
+            '"Far be it from me, O Yehovah, that I should do this!"',
+            W / 2,
+            H * 0.15,
+          );
+          ctx.fillText(
+            'David poured the water out before Yehovah',
+            W / 2,
+            H * 0.15 + 22,
+          );
+        }
+        // Phase 3: Message (5s+)
+        else {
+          ctx.fillStyle = 'rgba(245,230,200,0.9)';
+          ctx.font = 'bold 16px Georgia';
+          ctx.textAlign = 'center';
+          ctx.fillText(
+            '"Shall I drink the blood of the men who went at the risk of their lives?"',
+            W / 2,
+            H * 0.3,
+          );
+          ctx.fillStyle = '#f0d878';
+          ctx.font = 'italic 14px Georgia';
+          ctx.fillText('- 2 Samuel 23:17', W / 2, H * 0.3 + 28);
+          ctx.fillStyle = '#5cb85c';
+          ctx.font = 'bold 20px Georgia';
+          ctx.fillText('David is now unlocked!', W / 2, H * 0.5);
+          if (Math.sin(animTime * 3) > -0.3) {
+            ctx.fillStyle = '#f0d878';
+            ctx.font = 'bold 18px Georgia';
+            ctx.fillText('PRESS SPACE TO CONTINUE', W / 2, H * 0.85);
+          }
+        }
+      }
+
+      function unlockDavidAndReturn() {
+        unlockDavid();
+        // Water Quest stays unlocked so it can be replayed
+        state = 'charselect';
+      }
+
+      function checkDavidUnlock() {
+        if (completed.josheb && completed.eleazar && completed.shammah) {
+          if (!waterQuestUnlocked) {
+            waterQuestUnlocked = true;
+            saveProgress();
+          }
+        }
+      }
+      function unlockDavid() {
+        davidUnlocked = true;
+        saveProgress();
+        charData[3].name = 'David';
+        charData[3].desc = 'Face Goliath';
+        charData[3].color = '#c0a050';
+        charData[3].sub =
+          '"You come with a sword, but I come in the name of Yehovah"';
+        charData[3].locked = false;
+      }
+
+      // === RENDER ===
+      function render() {
+        if (state === 'menu') {
+          renderMenu();
+          return;
+        }
+        if (state === 'charselect') {
+          renderCharSelect();
+          return;
+        }
+        if (state === 'levelcomplete') {
+          renderLevelComplete();
+          return;
+        }
+        if (state === 'gameover') {
+          renderGameOver();
+          return;
+        }
+        if (state === 'davidvictory') {
+          renderDavidVictory();
+          return;
+        }
+        if (state === 'water_quest') {
+          renderWaterQuest();
+          return;
+        }
+        if (state === 'water_cutscene') {
+          renderWaterCutscene();
+          return;
+        }
+        if (state === 'paused') {
+          renderPaused();
+          return;
+        }
+
+        var sx = shake > 0 ? (Math.random() - 0.5) * shake : 0;
+        var sy = shake > 0 ? (Math.random() - 0.5) * shake : 0;
+        ctx.save();
+        ctx.translate(sx, sy);
+
+        if (state === 'david_fight') {
+          renderDavid();
+        } else if (state === 'playing') {
+          if (selectedChar === 'josheb') renderJosheb();
+          else if (selectedChar === 'eleazar') renderEleazar();
+          else if (selectedChar === 'shammah') renderShammah();
+        }
+
+        drawParticles();
+        drawPopups();
+        ctx.restore();
+
+        if (
+          state === 'david_fight' &&
+          dv.phase !== 'aim' &&
+          dv.phase !== 'flying'
+        ) {
+          // Overlay for hit/miss
+        }
+      }
+
+      // === PAUSED ===
+      function renderPaused() {
+        ctx.fillStyle = 'rgba(10,8,15,0.85)';
+        ctx.fillRect(0, 0, W, H);
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#f0d878';
+        ctx.shadowColor = 'rgba(240,216,120,0.5)';
+        ctx.shadowBlur = 20;
+        ctx.font = 'bold 42px Georgia';
+        ctx.fillText('PAUSED', W / 2, H * 0.35);
+        ctx.shadowBlur = 0;
+        if (Math.sin(animTime * 3) > -0.3) {
+          ctx.fillStyle = '#f0d878';
+          ctx.font = 'bold 20px Georgia';
+          ctx.fillText('PRESS P or SPACE TO RESUME', W / 2, H * 0.52);
+        }
+        ctx.fillStyle = 'rgba(245,230,200,0.6)';
+        ctx.font = '14px Georgia';
+        ctx.fillText(
+          'Press ESC to return to character select',
+          W / 2,
+          H * 0.62,
+        );
+      }
+
+      // === MENU SCREEN ===
+      var TITLE_IMG_SRC = 'title.webp';
+      var titleImg = new Image();
+      var titleImgLoaded = false;
+      titleImg.onload = function () {
+        titleImgLoaded = true;
+      };
+      titleImg.src = TITLE_IMG_SRC;
+
+      function renderMenu() {
+        if (titleImgLoaded) {
+          // Full-screen title artwork
+          ctx.drawImage(titleImg, 0, 0, W, H);
+          // Top gradient overlay for text readability
+          var tg = ctx.createLinearGradient(0, 0, 0, H * 0.38);
+          tg.addColorStop(0, 'rgba(26,21,37,0.92)');
+          tg.addColorStop(1, 'rgba(26,21,37,0)');
+          ctx.fillStyle = tg;
+          ctx.fillRect(0, 0, W, H * 0.38);
+          // Bottom gradient overlay for text readability
+          var bgm = ctx.createLinearGradient(0, H * 0.62, 0, H);
+          bgm.addColorStop(0, 'rgba(26,21,37,0)');
+          bgm.addColorStop(1, 'rgba(26,21,37,0.92)');
+          ctx.fillStyle = bgm;
+          ctx.fillRect(0, H * 0.62, W, H * 0.38);
+        } else {
+          // Fallback: existing gradient background while the image loads
+          var bg = ctx.createLinearGradient(0, 0, 0, H);
+          bg.addColorStop(0, '#1a1525');
+          bg.addColorStop(0.5, '#2a2540');
+          bg.addColorStop(1, '#3a3045');
+          ctx.fillStyle = bg;
+          ctx.fillRect(0, 0, W, H);
+          // Stars
+          ctx.fillStyle = 'rgba(240,216,120,0.6)';
+          for (var i = 0; i < 40; i++) {
+            var tw = Math.sin(animTime * 2 + i) * 0.5 + 0.5;
+            ctx.globalAlpha = tw * 0.5;
+            ctx.fillRect((i * 53) % W, (i * 37) % (H * 0.5), 2, 2);
+          }
+          ctx.globalAlpha = 1;
+          // Hill silhouettes
+          ctx.fillStyle = '#1a1520';
+          ctx.beginPath();
+          ctx.moveTo(0, H * 0.75);
+          for (var i2 = 0; i2 <= W; i2 += 30) {
+            ctx.lineTo(i2, H * 0.75 - Math.sin(i2 * 0.015) * 40);
+          }
+          ctx.lineTo(W, H);
+          ctx.lineTo(0, H);
+          ctx.fill();
+          // Tent
+          ctx.fillStyle = '#5a4a3a';
+          ctx.beginPath();
+          ctx.moveTo(W / 2 - 40, H * 0.88);
+          ctx.lineTo(W / 2, H * 0.72);
+          ctx.lineTo(W / 2 + 40, H * 0.88);
+          ctx.fill();
+          ctx.fillStyle = '#6a5a4a';
+          ctx.beginPath();
+          ctx.moveTo(W / 2 - 30, H * 0.86);
+          ctx.lineTo(W / 2, H * 0.76);
+          ctx.lineTo(W / 2 + 30, H * 0.86);
+          ctx.fill();
+          // Fire
+          var ff = Math.sin(animTime * 6) * 3;
+          ctx.fillStyle = '#e08020';
+          ctx.beginPath();
+          ctx.arc(W / 2 - 70, H * 0.85, 8 + ff, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#f0c030';
+          ctx.beginPath();
+          ctx.arc(W / 2 - 70, H * 0.85 - 3, 5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        // Stronger gradient overlay for text readability (full screen)
+        var fullGrad = ctx.createLinearGradient(0, 0, 0, H);
+        fullGrad.addColorStop(0, 'rgba(10,8,20,0.75)');
+        fullGrad.addColorStop(0.5, 'rgba(10,8,20,0.25)');
+        fullGrad.addColorStop(1, 'rgba(10,8,20,0.85)');
+        ctx.fillStyle = fullGrad;
+        ctx.fillRect(0, 0, W, H);
+        // Title
+        ctx.textAlign = 'center';
+        ctx.shadowColor = 'rgba(0,0,0,0.9)';
+        ctx.shadowBlur = 12;
+        ctx.fillStyle = '#f0d878';
+        ctx.font = 'bold 48px Georgia';
+        ctx.fillText("DAVID'S", W / 2, H * 0.13);
+        ctx.fillText('DEFENDERS', W / 2, H * 0.13 + 52);
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = 'rgba(245,230,200,0.95)';
+        ctx.font = 'italic 14px Georgia';
+        ctx.fillText(
+          'The exploits of David\u2019s mighty men',
+          W / 2,
+          H * 0.13 + 82,
+        );
+
+        // Controls box
+        var cy = H * 0.34;
+        ctx.fillStyle = 'rgba(0,0,0,0.6)';
+        var bw = 320,
+          bh = 82;
+        ctx.fillRect(W / 2 - bw / 2, cy, bw, bh);
+        ctx.strokeStyle = 'rgba(240,216,120,0.4)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(W / 2 - bw / 2, cy, bw, bh);
+        ctx.fillStyle = 'rgba(240,216,120,0.9)';
+        ctx.font = 'bold 12px Georgia';
+        ctx.fillText('CONTROLS', W / 2, cy + 16);
+        ctx.fillStyle = 'rgba(245,230,200,0.85)';
+        ctx.font = '12px Georgia';
+        ctx.fillText('Arrows / WASD \u2014 Move', W / 2, cy + 35);
+        ctx.fillText('J / K \u2014 Attack   P \u2014 Pause', W / 2, cy + 53);
+        ctx.fillText(
+          'K, L \u2014 Special attacks (Water Quest)',
+          W / 2,
+          cy + 71,
+        );
+
+        // Helper sentence - moved down, just above the start prompt
+        ctx.fillStyle = 'rgba(245,230,200,0.95)';
+        ctx.font = 'italic 16px Georgia';
+        ctx.fillText(
+          'Help each of David\u2019s Mighty Men defeat their enemies!',
+          W / 2,
+          H * 0.82,
+        );
+        if (goliathSwordUnlocked) {
+          ctx.fillStyle = '#f0d878';
+          ctx.font = 'bold 13px Georgia';
+          ctx.fillText(
+            '\u2694 Goliath\u2019s Sword \u2014 wielded by the mighty men!',
+            W / 2,
+            H * 0.78,
+          );
+        }
+
+        // Prompt
+        if (Math.sin(animTime * 3) > -0.3) {
+          ctx.fillStyle = '#f0d878';
+          ctx.shadowColor = 'rgba(0,0,0,0.9)';
+          ctx.shadowBlur = 12;
+          ctx.font = 'bold 20px Georgia';
+          ctx.fillText('PRESS SPACE TO BEGIN', W / 2, H * 0.9);
+          ctx.shadowBlur = 0;
+        }
+      }
+
+      // === CHARACTER SELECT ===
+      // Big pixel-art face portrait used on the character select cards
+      function drawFacePortrait(cx, cy, size, charId, locked) {
+        var u = size / 16;
+        var x0 = cx - size / 2,
+          y0 = cy - size / 2;
+        function px(gx, gy, gw, gh, color) {
+          ctx.fillStyle = color;
+          ctx.fillRect(x0 + gx * u, y0 + gy * u, gw * u, gh * u);
+        }
+        var skin = '#d4a574',
+          hairC = '#3a2818',
+          darkC = '#241a10',
+          beardC = '#332415';
+        if (locked) {
+          // Dark silhouette with "?" overlay
+          ctx.fillStyle = 'rgba(25,22,32,0.95)';
+          ctx.beginPath();
+          ctx.ellipse(cx, cy + u * 0.5, 5.5 * u, 6 * u, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillRect(cx - 6 * u, cy + 5.5 * u, 12 * u, 3.5 * u);
+          ctx.fillStyle = '#9a9a9a';
+          ctx.font = 'bold ' + Math.floor(size * 0.5) + 'px Georgia';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('?', cx, cy + u * 0.5);
+          ctx.textBaseline = 'alphabetic';
+          return;
+        }
+        var isDavid = charId === 'david';
+        // Long hair mass behind the head (David)
+        if (isDavid) px(3, 2, 10, 13, hairC);
+        // Head: pixel-art ellipse built from stacked rows
+        var rows = [
+          [5, 2, 6],
+          [4, 3, 8],
+          [4, 4, 8],
+          [4, 5, 8],
+          [4, 6, 8],
+          [4, 7, 8],
+          [4, 8, 8],
+          [4, 9, 8],
+          [5, 10, 6],
+          [6, 11, 4],
+        ];
+        for (var r = 0; r < rows.length; r++)
+          px(rows[r][0], rows[r][1], rows[r][2], 1, skin);
+        // Hair
+        var hairRows;
+        if (isDavid) {
+          // Youthful, longer hair
+          hairRows = [
+            [4, 1, 8],
+            [3, 2, 10],
+            [3, 3, 2],
+            [11, 3, 2],
+            [3, 4, 2],
+            [11, 4, 2],
+            [3, 5, 2],
+            [11, 5, 2],
+            [3, 6, 2],
+            [11, 6, 2],
+            [3, 7, 1],
+            [12, 7, 1],
+          ];
+        } else if (charId === 'eleazar') {
+          // Medium hair
+          hairRows = [
+            [4, 1, 8],
+            [3, 2, 10],
+            [3, 3, 2],
+            [11, 3, 2],
+            [3, 4, 2],
+            [11, 4, 2],
+            [3, 5, 1],
+            [12, 5, 1],
+          ];
+        } else {
+          // Short hair (Josheb, Shammah)
+          hairRows = [
+            [4, 1, 8],
+            [3, 2, 10],
+            [3, 3, 2],
+            [11, 3, 2],
+            [3, 4, 1],
+            [12, 4, 1],
+          ];
+        }
+        for (var r2 = 0; r2 < hairRows.length; r2++)
+          px(hairRows[r2][0], hairRows[r2][1], hairRows[r2][2], 1, hairC);
+        // Eyebrows, eyes, mouth and beard per character
+        if (charId === 'josheb') {
+          // Stern expression: angled brows, full beard
+          px(5, 5, 1, 1, darkC);
+          px(6, 6, 1, 1, darkC);
+          px(10, 5, 1, 1, darkC);
+          px(9, 6, 1, 1, darkC);
+          px(6, 7, 1, 1, darkC);
+          px(9, 7, 1, 1, darkC);
+          px(5, 10, 6, 1, beardC);
+          px(4, 11, 8, 2, beardC);
+          px(5, 13, 6, 1, beardC);
+        } else if (charId === 'eleazar') {
+          // Determined expression: straight brows, firm mouth, medium beard
+          px(5, 6, 2, 1, darkC);
+          px(9, 6, 2, 1, darkC);
+          px(6, 7, 1, 1, darkC);
+          px(9, 7, 1, 1, darkC);
+          px(6, 10, 4, 1, beardC);
+          px(5, 11, 6, 2, beardC);
+        } else if (charId === 'shammah') {
+          // Calm expression: soft eyes, gentle mouth, short beard
+          px(5, 6, 2, 1, darkC);
+          px(9, 6, 2, 1, darkC);
+          px(6, 7, 1, 1, darkC);
+          px(9, 7, 1, 1, darkC);
+          px(7, 10, 2, 1, beardC);
+          px(5, 11, 6, 2, beardC);
+          px(6, 13, 4, 1, beardC);
+        } else {
+          // David: youthful face, no beard
+          px(5, 6, 2, 1, darkC);
+          px(9, 6, 2, 1, darkC);
+          px(6, 7, 1, 1, '#1a1008');
+          px(9, 7, 1, 1, '#1a1008');
+          px(6, 8, 1, 1, skin);
+          px(9, 8, 1, 1, skin);
+          px(7, 10, 2, 1, beardC);
+          if (davidUnlocked) {
+            // Sling visible over the shoulder
+            ctx.strokeStyle = '#5a3a2a';
+            ctx.lineWidth = Math.max(1.5, u * 0.5);
+            ctx.beginPath();
+            ctx.moveTo(x0 + 13 * u, y0 + 9 * u);
+            ctx.quadraticCurveTo(
+              x0 + 15.5 * u,
+              y0 + 11.5 * u,
+              x0 + 13.5 * u,
+              y0 + 14.5 * u,
+            );
+            ctx.stroke();
+            ctx.fillStyle = '#6a4a2a';
+            ctx.beginPath();
+            ctx.arc(x0 + 13.5 * u, y0 + 14.5 * u, u * 1.1, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+      }
+
+      // === CHARACTER SELECT ===
+      function renderCharSelect() {
+        var bg = ctx.createLinearGradient(0, 0, 0, H);
+        bg.addColorStop(0, '#2a2540');
+        bg.addColorStop(1, '#1a1525');
+        ctx.fillStyle = bg;
+        ctx.fillRect(0, 0, W, H);
+
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#f0d878';
+        ctx.font = 'bold 28px Georgia';
+        ctx.fillText('CHOOSE YOUR WARRIOR', W / 2, 45);
+
+        // Top row: Josheb, Eleazar, Shammah
+        var cardW = 150,
+          cardH = 170,
+          gap = 18;
+        var topTotal = 3 * cardW + 2 * gap;
+        var topStartX = (W - topTotal) / 2;
+        var topY = 62;
+        var topPositions = [
+          { x: topStartX, y: topY },
+          { x: topStartX + cardW + gap, y: topY },
+          { x: topStartX + 2 * (cardW + gap), y: topY },
+        ];
+        for (var i = 0; i < 3; i++) {
+          drawCharCard(i, topPositions[i], cardW, cardH);
+        }
+
+        // Water Quest: a long horizontal bar spanning the width of the 3 top
+        // cards, with an extra gap below the top row. No portrait - just text.
+        var wqY = topY + cardH + 50;
+        var wqH = 52;
+        {
+          var selWQ = charSelIdx === 3;
+          ctx.fillStyle = selWQ ? 'rgba(240,216,120,0.15)' : 'rgba(0,0,0,0.3)';
+          ctx.fillRect(topStartX, wqY, topTotal, wqH);
+          ctx.strokeStyle = selWQ ? '#f0d878' : 'rgba(100,100,100,0.4)';
+          ctx.lineWidth = selWQ ? 3 : 1;
+          ctx.strokeRect(topStartX, wqY, topTotal, wqH);
+          if (waterQuestUnlocked) {
+            ctx.fillStyle = selWQ ? '#f0d878' : '#5cb8e8';
+            ctx.font = 'bold 16px Georgia';
+            ctx.fillText('Water Quest', W / 2, wqY + 22);
+            ctx.fillStyle = 'rgba(245,230,200,0.7)';
+            ctx.font = 'italic 11px Georgia';
+            ctx.fillText('"I thirst" \u00b7 2 Samuel 23:15', W / 2, wqY + 41);
+          } else {
+            ctx.fillStyle = 'rgba(100,100,100,0.6)';
+            ctx.font = 'bold 16px Georgia';
+            ctx.fillText('???', W / 2, wqY + 22);
+            ctx.fillStyle = 'rgba(100,100,100,0.4)';
+            ctx.font = 'italic 11px Georgia';
+            ctx.fillText('Complete all 3 warriors to unlock', W / 2, wqY + 41);
+          }
+        }
+
+        // David card centered below the Water Quest bar with a gap
+        var davidY = wqY + wqH + 40;
+        drawCharCard(3, { x: (W - cardW) / 2, y: davidY }, cardW, cardH, 4);
+
+        // Goliath's Sword toggle (nav item 5) — only visible when unlocked, more spacing
+        if (goliathSwordUnlocked) {
+          var cbW = 280,
+            cbH = 28;
+          var cbX = (W - cbW) / 2,
+            cbY = davidY + cardH + 30;
+          var selSword = charSelIdx === 5;
+          ctx.fillStyle = selSword
+            ? 'rgba(240,216,120,0.15)'
+            : 'rgba(0,0,0,0.3)';
+          ctx.fillRect(cbX, cbY, cbW, cbH);
+          ctx.strokeStyle = selSword ? '#f0d878' : 'rgba(100,100,100,0.5)';
+          ctx.lineWidth = selSword ? 3 : 1;
+          ctx.strokeRect(cbX, cbY, cbW, cbH);
+          // Checkbox
+          ctx.strokeRect(cbX + 8, cbY + 7, 14, 14);
+          if (swordEnabled) {
+            ctx.fillStyle = '#f0d878';
+            ctx.fillRect(cbX + 11, cbY + 10, 8, 8);
+          }
+          ctx.fillStyle = swordEnabled ? '#f0d878' : 'rgba(245,230,200,0.6)';
+          ctx.font = 'bold 13px Georgia';
+          ctx.textAlign = 'left';
+          ctx.fillText('Goliath\u2019s Sword', cbX + 30, cbY + 19);
+          ctx.textAlign = 'center';
+        } else {
+          // Show ??? for locked sword
+          var cbW2 = 280,
+            cbH2 = 28;
+          var cbX2 = (W - cbW2) / 2,
+            cbY2 = davidY + cardH + 30;
+          ctx.fillStyle = 'rgba(0,0,0,0.2)';
+          ctx.fillRect(cbX2, cbY2, cbW2, cbH2);
+          ctx.strokeStyle = 'rgba(100,100,100,0.3)';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(cbX2, cbY2, cbW2, cbH2);
+          ctx.fillStyle = 'rgba(100,100,100,0.4)';
+          ctx.font = 'bold 13px Georgia';
+          ctx.fillText('???', W / 2, cbY2 + 19);
+        }
+
+        // Instructions (progress info now lives in the HUD bar above)
+        ctx.fillStyle = 'rgba(245,230,200,0.7)';
+        ctx.font = '13px Georgia';
+        ctx.textAlign = 'center';
+        ctx.fillText(
+          'Arrows/WASD to select \u00b7 Space to choose',
+          W / 2,
+          H - 14,
+        );
+      }
+
+      function drawCharCard(idx, pos, cardW, cardH, selIdx) {
+        var c = charData[idx];
+        var selected = (selIdx !== undefined ? selIdx : idx) === charSelIdx;
+        var isDone = c.id && completed[c.id];
+        var locked = c.locked && !davidUnlocked;
+        var hiddenWQ = c.waterQuest && !waterQuestUnlocked;
+        var grow = selected ? 4 : 0;
+        var cx = pos.x - grow,
+          cy = pos.y - grow,
+          cw = cardW + grow * 2,
+          ch = cardH + grow * 2;
+
+        if (hiddenWQ) {
+          // Don't show water quest if not unlocked
+          return;
+        }
+
+        // Card background
+        ctx.fillStyle = selected ? 'rgba(240,216,120,0.15)' : 'rgba(0,0,0,0.3)';
+        ctx.fillRect(cx, cy, cw, ch);
+        ctx.strokeStyle = selected ? '#f0d878' : 'rgba(100,100,100,0.4)';
+        ctx.lineWidth = selected ? 3 : 1;
+        ctx.strokeRect(cx, cy, cw, ch);
+
+        // Portrait
+        var pcx = pos.x + cardW / 2,
+          pcy = pos.y + 58;
+        if (c.waterQuest) {
+          // Draw all 3 warriors together
+          drawWarrior(pcx - 16, pcy + 10, { x: 0, y: 1 }, '#d4a574', '#3a2818');
+          drawWarrior(pcx, pcy + 10, { x: 0, y: 1 }, '#d4a574', '#3a2818');
+          drawWarrior(pcx + 16, pcy + 10, { x: 0, y: 1 }, '#d4a574', '#3a2818');
+          // Water cup
+          ctx.fillStyle = '#5cb8e8';
+          ctx.beginPath();
+          ctx.arc(pcx, pcy - 20, 4, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          drawFacePortrait(pcx, pcy, 82 + grow * 4, c.id, locked);
+        }
+
+        // Name
+        ctx.fillStyle = locked ? '#666' : selected ? '#f0d878' : '#c0a878';
+        ctx.font = 'bold 13px Georgia';
+        ctx.textAlign = 'center';
+        ctx.fillText(c.name, pos.x + cardW / 2, pos.y + 120);
+
+        // Description
+        ctx.fillStyle = locked ? '#555' : 'rgba(245,230,200,0.7)';
+        ctx.font = '11px Georgia';
+        ctx.fillText(c.desc, pos.x + cardW / 2, pos.y + 137);
+
+        // Quote
+        ctx.fillStyle = locked ? '#444' : 'rgba(245,230,200,0.5)';
+        ctx.font = 'italic 9px Georgia';
+        wrapText(c.sub, pos.x + cardW / 2, pos.y + 152, cardW - 12, 11);
+
+        // Checkmark
+        if (isDone || (c.id === 'david' && davidVictory)) {
+          ctx.fillStyle = '#5cb85c';
+          ctx.font = 'bold 16px Georgia';
+          ctx.fillText('\u2713', pos.x + cardW - 14, pos.y + 16);
+        }
+      }
+
+      function wrapText(text, x, y, maxW, lineH) {
+        var words = text.split(' ');
+        var line = '';
+        var ly = y;
+        for (var i = 0; i < words.length; i++) {
+          var test = line + words[i] + ' ';
+          if (ctx.measureText(test).width > maxW && line) {
+            ctx.fillText(line, x, ly);
+            ly += lineH;
+            line = words[i] + ' ';
+          } else {
+            line = test;
+          }
+        }
+        if (line) ctx.fillText(line, x, ly);
+      }
+
+      // === LEVEL COMPLETE ===
+      function renderLevelComplete() {
+        var bg = ctx.createLinearGradient(0, 0, 0, H);
+        bg.addColorStop(0, '#2a3a2a');
+        bg.addColorStop(1, '#1a2a1a');
+        ctx.fillStyle = bg;
+        ctx.fillRect(0, 0, W, H);
+
+        // Victory rays
+        for (var i = 0; i < 12; i++) {
+          var a = animTime * 0.5 + (i * Math.PI) / 6;
+          ctx.strokeStyle = 'rgba(240,216,120,0.08)';
+          ctx.lineWidth = 30;
+          ctx.beginPath();
+          ctx.moveTo(W / 2, H / 2);
+          ctx.lineTo(W / 2 + Math.cos(a) * 400, H / 2 + Math.sin(a) * 400);
+          ctx.stroke();
+        }
+
+        ctx.textAlign = 'center';
+        var name =
+          selectedChar === 'josheb'
+            ? 'Josheb-Basshebeth'
+            : selectedChar === 'eleazar'
+              ? 'Eleazar'
+              : 'Shammah';
+        ctx.fillStyle = '#f0d878';
+        ctx.shadowColor = 'rgba(240,216,120,0.5)';
+        ctx.shadowBlur = 20;
+        ctx.font = 'bold 32px Georgia';
+        ctx.fillText('VICTORY!', W / 2, H * 0.3);
+        ctx.font = 'bold 20px Georgia';
+        ctx.fillText(name + ' stands triumphant', W / 2, H * 0.3 + 40);
+        ctx.shadowBlur = 0;
+
+        // Stats
+        ctx.fillStyle = 'rgba(245,230,200,0.8)';
+        ctx.font = '14px Georgia';
+        if (selectedChar === 'josheb')
+          ctx.fillText('800 men defeated', W / 2, H * 0.45);
+        else if (selectedChar === 'eleazar')
+          ctx.fillText(
+            el_state.enemiesKilled + ' enemies slain across 9 waves',
+            W / 2,
+            H * 0.45,
+          );
+        else if (selectedChar === 'shammah')
+          ctx.fillText(
+            'Plot defended! ' + sh.kills + ' enemies stopped',
+            W / 2,
+            H * 0.45,
+          );
+
+        // Progress
+        var done = 0;
+        if (completed.josheb) done++;
+        if (completed.eleazar) done++;
+        if (completed.shammah) done++;
+        ctx.fillStyle = '#f0d878';
+        ctx.font = 'bold 14px Georgia';
+        ctx.fillText('Warriors completed: ' + done + '/3', W / 2, H * 0.55);
+
+        if (!davidUnlocked && !waterQuestUnlocked) {
+          ctx.fillStyle = 'rgba(245,230,200,0.6)';
+          ctx.font = '12px Georgia';
+          ctx.fillText(
+            'Win with all three to unlock the Water Quest',
+            W / 2,
+            H * 0.62,
+          );
+        } else if (waterQuestUnlocked && !davidUnlocked) {
+          ctx.fillStyle = '#5cb8e8';
+          ctx.font = 'bold 14px Georgia';
+          ctx.fillText(
+            'All three complete! Press SPACE for the Water Quest!',
+            W / 2,
+            H * 0.62,
+          );
+        } else {
+          ctx.fillStyle = '#f0d878';
+          ctx.font = 'bold 14px Georgia';
+          ctx.fillText(
+            'David unlocked! Choose him to face Goliath!',
+            W / 2,
+            H * 0.62,
+          );
+        }
+
+        if (Math.sin(animTime * 3) > -0.3) {
+          ctx.fillStyle = '#f0d878';
+          ctx.shadowColor = 'rgba(240,216,120,0.5)';
+          ctx.shadowBlur = 15;
+          ctx.font = 'bold 18px Georgia';
+          ctx.fillText('PRESS SPACE TO CONTINUE', W / 2, H * 0.82);
+          ctx.shadowBlur = 0;
+        }
+      }
+
+      // === GAME OVER ===
+      function renderGameOver() {
+        var bg = ctx.createLinearGradient(0, 0, 0, H);
+        bg.addColorStop(0, '#3a1010');
+        bg.addColorStop(1, '#1a0808');
+        ctx.fillStyle = bg;
+        ctx.fillRect(0, 0, W, H);
+
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#c43030';
+        ctx.shadowColor = 'rgba(196,48,48,0.5)';
+        ctx.shadowBlur = 20;
+        ctx.font = 'bold 36px Georgia';
+        ctx.fillText('DEFEATED', W / 2, H * 0.3);
+        ctx.shadowBlur = 0;
+
+        var name =
+          selectedChar === 'josheb'
+            ? 'Josheb-Basshebeth'
+            : selectedChar === 'eleazar'
+              ? 'Eleazar'
+              : selectedChar === 'shammah'
+                ? 'Shammah'
+                : 'David';
+        ctx.fillStyle = 'rgba(245,230,200,0.7)';
+        ctx.font = '16px Georgia';
+        if (selectedChar === 'josheb')
+          ctx.fillText(
+            name + ' fell with ' + (jb.total - jb.kills) + ' men remaining',
+            W / 2,
+            H * 0.42,
+          );
+        else if (selectedChar === 'eleazar')
+          ctx.fillText(
+            'Eleazar fell in battle (' + el_state.enemiesKilled + ' slain)',
+            W / 2,
+            H * 0.42,
+          );
+        else if (selectedChar === 'shammah')
+          ctx.fillText(
+            'The plot was overrun (' + sh.breaches + ' breaches)',
+            W / 2,
+            H * 0.42,
+          );
+        else if (selectedChar === 'water')
+          ctx.fillText(
+            'You failed to bring water to your future king',
+            W / 2,
+            H * 0.42,
+          );
+        else if (selectedChar === 'david')
+          ctx.fillText('You ran out of stones!', W / 2, H * 0.42);
+
+        if (Math.sin(animTime * 3) > -0.3) {
+          ctx.fillStyle = '#f0d878';
+          ctx.font = 'bold 18px Georgia';
+          ctx.fillText('Press SPACE for Character Select', W / 2, H * 0.82);
+        }
+      }
+
+      // === DAVID VICTORY ===
+      function renderDavidVictory() {
+        var bg = ctx.createLinearGradient(0, 0, 0, H);
+        bg.addColorStop(0, '#4a5a2a');
+        bg.addColorStop(0.5, '#6a8a3a');
+        bg.addColorStop(1, '#4a5a2a');
+        ctx.fillStyle = bg;
+        ctx.fillRect(0, 0, W, H);
+        // Rays
+        for (var i = 0; i < 16; i++) {
+          var a = animTime * 1 + (i * Math.PI) / 8;
+          ctx.strokeStyle = 'rgba(240,216,120,0.1)';
+          ctx.lineWidth = 25;
+          ctx.beginPath();
+          ctx.moveTo(W / 2, H * 0.4);
+          ctx.lineTo(W / 2 + Math.cos(a) * 500, H * 0.4 + Math.sin(a) * 500);
+          ctx.stroke();
+        }
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#f0d878';
+        ctx.shadowColor = 'rgba(240,216,120,0.7)';
+        ctx.shadowBlur = 30;
+        ctx.font = 'bold 40px Georgia';
+        ctx.fillText('VICTORY!', W / 2, H * 0.25);
+        ctx.font = 'bold 22px Georgia';
+        ctx.fillText('Goliath has fallen!', W / 2, H * 0.25 + 44);
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = 'rgba(245,230,200,0.8)';
+        ctx.font = 'italic 14px Georgia';
+        ctx.fillText(
+          '"This day Yehovah has delivered you into my hand"',
+          W / 2,
+          H * 0.4,
+        );
+        ctx.fillText('- 1 Samuel 17:46', W / 2, H * 0.4 + 22);
+        ctx.fillStyle = '#f0d878';
+        ctx.font = 'bold 14px Georgia';
+        ctx.fillText(
+          'All of David\u2019s mighty men have proven themselves!',
+          W / 2,
+          H * 0.55,
+        );
+        if (Math.sin(animTime * 3) > -0.3) {
+          ctx.fillStyle = '#f0d878';
+          ctx.font = 'bold 18px Georgia';
+          ctx.fillText('PRESS SPACE TO RETURN', W / 2, H * 0.87);
+        }
+      }
+
+      // === UPDATE LOOP ===
+      function update(dt) {
+        animTime += dt;
+        for (var i = 0; i < particles.length; i++) {
+          var p = particles[i];
+          p.x += p.vx * dt;
+          p.y += p.vy * dt;
+          p.vy += 250 * dt;
+          p.life -= dt * 2;
+        }
+        particles = particles.filter(function (p) {
+          return p.life > 0;
+        });
+        for (var i = 0; i < popups.length; i++) popups[i].life -= dt * 1.5;
+        popups = popups.filter(function (p) {
+          return p.life > 0;
+        });
+        if (shake > 0) shake -= dt * 30;
+
+        if (state === 'paused') return;
+        if (state === 'playing') {
+          if (selectedChar === 'josheb') updateJosheb(dt);
+          else if (selectedChar === 'eleazar') updateEleazar(dt);
+          else if (selectedChar === 'shammah') updateShammah(dt);
+        } else if (state === 'david_fight') {
+          updateDavid(dt);
+        } else if (state === 'water_quest') {
+          updateWaterQuest(dt);
+        } else if (state === 'water_cutscene') {
+          updateWaterCutscene(dt);
+        }
+        updateHUD();
+      }
+
+      function loop(ts) {
+        if (!lastTime) lastTime = ts;
+        var dt = Math.min((ts - lastTime) / 1000, 0.05);
+        lastTime = ts;
+        update(dt);
+        render();
+        requestAnimationFrame(loop);
+      }
+
+      // === LOCALSTORAGE PERSISTENCE ===
+      var SAVE_KEY = 'davids_defenders_save';
+      // DEBUG: set to true to fake full completion for testing all modes
+      var DEBUG_UNLOCK_ALL = false;
+      function saveProgress() {
+        try {
+          localStorage.setItem(
+            SAVE_KEY,
+            JSON.stringify({
+              completed: {
+                josheb: !!completed.josheb,
+                eleazar: !!completed.eleazar,
+                shammah: !!completed.shammah,
+              },
+              waterQuestUnlocked: !!waterQuestUnlocked,
+              davidUnlocked: !!davidUnlocked,
+              davidVictory: !!davidVictory,
+              goliathSwordUnlocked: !!goliathSwordUnlocked,
+              swordEnabled: !!swordEnabled,
+            }),
+          );
+        } catch (err) {}
+      }
+      function loadProgress() {
+        if (DEBUG_UNLOCK_ALL) {
+          completed.josheb = true;
+          completed.eleazar = true;
+          completed.shammah = true;
+          waterQuestUnlocked = true;
+          unlockDavid();
+          davidVictory = true;
+          goliathSwordUnlocked = true;
+          swordEnabled = true;
+          return;
+        }
+        try {
+          var raw = localStorage.getItem(SAVE_KEY);
+          if (!raw) return;
+          var s = JSON.parse(raw);
+          if (s.completed) {
+            completed.josheb = !!s.completed.josheb;
+            completed.eleazar = !!s.completed.eleazar;
+            completed.shammah = !!s.completed.shammah;
+          }
+          if (s.waterQuestUnlocked) waterQuestUnlocked = true;
+          if (s.davidUnlocked) unlockDavid();
+          if (s.davidVictory) davidVictory = true;
+          if (s.goliathSwordUnlocked) goliathSwordUnlocked = true;
+          if (typeof s.swordEnabled === 'boolean')
+            swordEnabled = s.swordEnabled;
+          else if (goliathSwordUnlocked) swordEnabled = true;
+        } catch (err) {}
+      }
+      loadProgress();
+
+      requestAnimationFrame(loop);
+      var music = GameMusic.create({
+        basePath: '../../audio/davids-defenders',
+        fallbackBasePath: '.',
+        toggleSelector: '#music-toggle',
+      });
+      music.start();
+    </script>
+      <script src="../embed.js"></script>
+  </body>
+</html>
