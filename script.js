@@ -237,6 +237,16 @@ wireFormspreeRecaptchaForm({
     callbackName: 'onBetaRecaptchaSuccess'
 });
 
+// Hebrew Harvester Beta Tester Form (Formspree + reCAPTCHA v3)
+wireFormspreeRecaptchaForm({
+    form: document.getElementById('hh-beta-form'),
+    messageEl: document.getElementById('hh-beta-form-message'),
+    honeypotSelector: '#hh-beta-website',
+    successText: 'Thanks! We\'ll send your beta invitation to that email soon.',
+    defaultBtnText: 'Request a beta invite',
+    callbackName: 'onHHBetaRecaptchaSuccess'
+});
+
 // Beta Reader Modal
 const betaReaderModal = document.getElementById('beta-reader-modal');
 const betaReaderOpenBtn = document.getElementById('beta-reader-open');

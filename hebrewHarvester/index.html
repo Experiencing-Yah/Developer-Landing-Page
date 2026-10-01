@@ -1,0 +1,547 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Hebrew Harvester - A farming game set in ancient Israel. Work the land in its seasons, keep the Sabbath, and go up to Jerusalem for the feasts."
+    />
+    <title>Hebrew Harvester - Experiencing Yah</title>
+    <link rel="icon" type="image/svg+xml" href="../FlameMaterial.svg" />
+    <link rel="alternate icon" href="../FlameMaterial.svg" />
+    <link rel="stylesheet" href="../styles.css" />
+    <script src="../analytics.js"></script>
+    <style>
+      .nav-logo {
+        height: 80px;
+        display: flex;
+        align-items: center;
+      }
+      .nav-logo a {
+        height: 100%;
+        display: flex;
+        align-items: center;
+      }
+      .nav-logo img {
+        height: 100%;
+        width: auto;
+        max-width: 400px;
+        object-fit: contain;
+      }
+      .about-content {
+        max-width: 900px;
+        margin: 0 auto;
+      }
+      .about-section {
+        margin-bottom: 2.5rem;
+      }
+      .about-section h3 {
+        font-size: 1.5rem;
+        color: #1a1a2e;
+        margin-bottom: 1rem;
+        margin-top: 2rem;
+        font-weight: 600;
+      }
+      .about-section p {
+        margin-bottom: 1rem;
+        line-height: 1.8;
+      }
+      .app-header {
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        margin-bottom: 3rem;
+        padding: 2rem;
+        background: linear-gradient(135deg, #fbf3e2 0%, #f0e2c4 100%);
+        border-radius: 12px;
+        box-shadow: var(--shadow-2);
+      }
+      .app-header img {
+        max-width: 150px;
+        height: auto;
+        border-radius: 24px;
+        box-shadow: var(--shadow-2);
+      }
+      .app-header-text h1 {
+        font-size: 2.5rem;
+        color: #1a1a2e;
+        margin-bottom: 0.5rem;
+      }
+      .app-header-text .version {
+        color: #6b5a3c;
+        font-size: 1rem;
+        margin-bottom: 1rem;
+      }
+      .app-header-text p {
+        color: #555;
+        font-size: 1.1rem;
+        margin: 0;
+      }
+      .store-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-top: 1rem;
+      }
+      .store-btn {
+        display: inline-block;
+        padding: 0.6rem 1.25rem;
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 0.95rem;
+        text-decoration: none;
+        transition:
+          transform 0.2s ease,
+          box-shadow 0.2s ease;
+      }
+      .store-btn.beta {
+        background: linear-gradient(135deg, #7a4f24, #4a2f15);
+        color: white;
+        box-shadow: var(--shadow-2);
+      }
+      .store-btn.beta:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-3);
+      }
+      .store-btn.soon {
+        background: #e9ecef;
+        color: #6c757d;
+        border: 2px solid #dee2e6;
+        cursor: default;
+      }
+      .screens {
+        display: flex;
+        gap: 1rem;
+        overflow-x: auto;
+        padding-bottom: 1rem;
+        scroll-snap-type: x mandatory;
+      }
+      .screens figure {
+        flex: 0 0 220px;
+        margin: 0;
+        scroll-snap-align: start;
+      }
+      .screens img {
+        width: 100%;
+        height: auto;
+        border-radius: 16px;
+        box-shadow: var(--shadow-2);
+        display: block;
+      }
+      .screens figcaption {
+        font-size: 0.9rem;
+        color: #555;
+        text-align: center;
+        margin-top: 0.5rem;
+      }
+      .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-top: 2rem;
+      }
+      .feature-item {
+        padding: 1.5rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border-left: 4px solid #b8862f;
+      }
+      .feature-item h4 {
+        font-size: 1.1rem;
+        color: #1a1a2e;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+      }
+      .feature-item p {
+        color: #555;
+        font-size: 0.95rem;
+        margin: 0;
+        line-height: 1.6;
+      }
+      .beta-card {
+        padding: 2rem;
+        background: #fbf3e2;
+        border-radius: 12px;
+        border: 2px solid #e6d3a8;
+      }
+      .beta-card .contact-form {
+        max-width: none;
+      }
+      .form-group select {
+        width: 100%;
+        padding: 0.75rem;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-family: inherit;
+        background: white;
+      }
+      .form-hint {
+        display: block;
+        font-size: 0.85rem;
+        color: #666;
+        margin-top: 0.35rem;
+        line-height: 1.5;
+      }
+      .links-section {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 2px solid #e0e0e0;
+      }
+      .link-button {
+        display: inline-block;
+        padding: 0.75rem 1.5rem;
+        text-decoration: none;
+        border-radius: 8px;
+        font-weight: 500;
+        transition:
+          transform 0.2s ease,
+          box-shadow 0.3s ease;
+        box-shadow: var(--shadow-2);
+      }
+      .link-button:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-3);
+      }
+      .link-button.secondary {
+        background: #f8f9fa;
+        color: #1a1a2e;
+        border: 2px solid #e0e0e0;
+      }
+      .link-button.secondary:hover {
+        background: #e9ecef;
+      }
+      @media (max-width: 768px) {
+        .nav-logo {
+          height: 60px;
+        }
+        .nav-logo img {
+          max-width: 250px;
+        }
+        .app-header {
+          flex-direction: column;
+          text-align: center;
+        }
+        .app-header-text h1 {
+          font-size: 2rem;
+        }
+        .store-buttons {
+          justify-content: center;
+        }
+        .features-grid {
+          grid-template-columns: 1fr;
+        }
+        .screens figure {
+          flex-basis: 180px;
+        }
+        .beta-card {
+          padding: 1.25rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar" id="navbar">
+      <div class="nav-container">
+        <div class="nav-logo">
+          <a href="../index.html"
+            ><img src="../Logo.png" alt="Experiencing Yah"
+          /></a>
+        </div>
+        <ul class="nav-menu" id="nav-menu">
+          <li><a href="../index.html#hero" class="nav-link">Home</a></li>
+          <li><a href="../index.html#about" class="nav-link">About</a></li>
+          <li><a href="../index.html#apps" class="nav-link">Apps</a></li>
+          <li><a href="../index.html#books" class="nav-link">Books</a></li>
+          <li><a href="/games/" class="nav-link">Games</a></li>
+          <li><a href="../index.html#music" class="nav-link">Music</a></li>
+          <li><a href="../index.html#contact" class="nav-link">Contact</a></li>
+        </ul>
+        <button
+          class="nav-toggle"
+          id="nav-toggle"
+          aria-label="Toggle navigation"
+        >
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </nav>
+
+    <section class="section" style="padding-top: 8rem">
+      <div class="container">
+        <div class="content-card">
+          <div class="about-content">
+            <div class="app-header">
+              <img src="../HebrewHarvester.png" alt="Hebrew Harvester" />
+              <div class="app-header-text">
+                <h1>Hebrew Harvester</h1>
+                <div class="version">A farming game in ancient Israel</div>
+                <p>
+                  Work the land in its seasons, keep the Sabbath, and go up to
+                  Jerusalem for the appointed feasts.
+                </p>
+                <div class="store-buttons">
+                  <a href="#beta" class="store-btn beta">Join the beta</a>
+                  <span class="store-btn soon">iOS Coming Soon</span>
+                  <span class="store-btn soon">Android Coming Soon</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="about-section">
+              <h3>About Hebrew Harvester</h3>
+              <p>
+                You inherit a small farm in the hill country of Israel. Plow,
+                sow, and reap barley, wheat, lentils, melons, and more, and care
+                for your flock of sheep. The year follows the biblical calendar:
+                months begin with the new moon, days begin at sunset, and the
+                seventh day is a day of rest.
+              </p>
+              <p>
+                When the pilgrimage feasts come, leave your farm in good hands
+                and travel to Jerusalem. Bring your tithes and offerings to the
+                Temple, live in a booth for the Feast of Tabernacles, meet
+                pilgrims from across the land, and play games together. A
+                journal collects the Scriptures behind everything you do.
+              </p>
+            </div>
+
+            <div class="about-section">
+              <h3>Screenshots</h3>
+              <div class="screens">
+                <figure>
+                  <img src="screens/farm.jpg" alt="The farm" loading="lazy" />
+                  <figcaption>Farm the land in its seasons</figcaption>
+                </figure>
+                <figure>
+                  <img
+                    src="screens/calendar.jpg"
+                    alt="The biblical calendar"
+                    loading="lazy"
+                  />
+                  <figcaption>Live by the biblical calendar</figcaption>
+                </figure>
+                <figure>
+                  <img
+                    src="screens/jerusalem.jpg"
+                    alt="Jerusalem during the feast"
+                    loading="lazy"
+                  />
+                  <figcaption>Go up to Jerusalem for the feasts</figcaption>
+                </figure>
+                <figure>
+                  <img
+                    src="screens/temple.jpg"
+                    alt="Offerings at the Temple"
+                    loading="lazy"
+                  />
+                  <figcaption>Bring your tithes and offerings</figcaption>
+                </figure>
+                <figure>
+                  <img
+                    src="screens/feast.jpg"
+                    alt="Celebrating a feast"
+                    loading="lazy"
+                  />
+                  <figcaption>Celebrate the appointed times</figcaption>
+                </figure>
+                <figure>
+                  <img
+                    src="screens/journal.jpg"
+                    alt="The Scripture journal"
+                    loading="lazy"
+                  />
+                  <figcaption>Learn from Scripture as you play</figcaption>
+                </figure>
+              </div>
+            </div>
+
+            <div class="about-section">
+              <h3>Features</h3>
+              <div class="features-grid">
+                <div class="feature-item">
+                  <h4>Seasons of the Land</h4>
+                  <p>
+                    Sow grain with the early rains, wave the first sheaf of
+                    barley in spring, and grow vegetables and lentils in their
+                    months.
+                  </p>
+                </div>
+                <div class="feature-item">
+                  <h4>The Biblical Calendar</h4>
+                  <p>
+                    Watch for the new moon, prepare on the sixth day, and rest
+                    on the Sabbath.
+                  </p>
+                </div>
+                <div class="feature-item">
+                  <h4>Pilgrimage Feasts</h4>
+                  <p>
+                    Travel to Jerusalem for Passover, Shavuot, and Sukkot, and
+                    live in your booth for all eight days.
+                  </p>
+                </div>
+                <div class="feature-item">
+                  <h4>Temple Offerings</h4>
+                  <p>
+                    Bring firstfruits and tithes, and choose between sin
+                    offerings and freewill offerings.
+                  </p>
+                </div>
+                <div class="feature-item">
+                  <h4>Life in the Village</h4>
+                  <p>
+                    Trade at the market, hire help for your trips, leave the
+                    corners of your field for gleaners, and get to know your
+                    neighbors.
+                  </p>
+                </div>
+                <div class="feature-item">
+                  <h4>Sabbath Games</h4>
+                  <p>
+                    Relax with a collection of mini-games on the Sabbath and
+                    during the feasts.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="about-section" id="beta">
+              <h3>Become a Beta Tester</h3>
+              <div class="beta-card">
+                <p>
+                  Hebrew Harvester is in testing on iPhone, iPad, and Android.
+                  Sign up and we'll send you an invitation to try it before
+                  release and share your feedback.
+                </p>
+                <form
+                  class="contact-form"
+                  id="hh-beta-form"
+                  action="https://formspree.io/f/mqpzrrvg"
+                  method="POST"
+                >
+                  <input
+                    type="hidden"
+                    name="_subject"
+                    value="Hebrew Harvester beta tester request"
+                  />
+                  <input type="hidden" name="app" value="Hebrew Harvester" />
+                  <div
+                    class="form-group honeypot"
+                    style="position: absolute; left: -9999px; opacity: 0"
+                  >
+                    <label for="hh-beta-website">Website</label>
+                    <input
+                      type="text"
+                      id="hh-beta-website"
+                      name="website"
+                      tabindex="-1"
+                      autocomplete="off"
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label for="hh-beta-name">Name</label>
+                    <input type="text" id="hh-beta-name" name="name" required />
+                  </div>
+                  <div class="form-group">
+                    <label for="hh-beta-platform">Device</label>
+                    <select id="hh-beta-platform" name="platform" required>
+                      <option value="" disabled selected>
+                        Choose your device
+                      </option>
+                      <option value="iPhone">iPhone</option>
+                      <option value="iPad">iPad</option>
+                      <option value="Android">Android phone or tablet</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="hh-beta-email">Email</label>
+                    <input
+                      type="email"
+                      id="hh-beta-email"
+                      name="email"
+                      required
+                    />
+                    <span class="form-hint"
+                      >For iPhone or iPad, use the email on your Apple ID so the
+                      TestFlight invitation reaches you. For Android, use the
+                      Google account email you use with the Play Store.</span
+                    >
+                  </div>
+                  <div class="form-group">
+                    <label for="hh-beta-message"
+                      >Anything you'd like us to know? (optional)</label
+                    >
+                    <textarea
+                      id="hh-beta-message"
+                      name="message"
+                      rows="3"
+                      placeholder="e.g. how you heard about the game, or what you'd like to see"
+                    ></textarea>
+                  </div>
+                  <button
+                    type="button"
+                    class="submit-btn g-recaptcha"
+                    data-sitekey="6LdFP4UsAAAAABXbpxRwm4AwPR3BA6vIPWKt4wnu"
+                    data-callback="onHHBetaRecaptchaSuccess"
+                    data-action="submit"
+                  >
+                    Request a beta invite
+                  </button>
+                  <div class="form-message" id="hh-beta-form-message"></div>
+                </form>
+              </div>
+            </div>
+
+            <div class="about-section">
+              <h3>Developer</h3>
+              <p>
+                Hebrew Harvester is developed by
+                <strong>ExperiencingYah.com</strong>, dedicated to creating
+                tools and resources that help people connect with God's word
+                and follow Biblical principles in their daily lives.
+              </p>
+            </div>
+
+            <div class="about-section">
+              <h3>Privacy & Support</h3>
+              <p>
+                Hebrew Harvester collects no personal data. Your farm is saved
+                only on your device, and the game has no accounts, ads, or
+                analytics. For details, see our privacy policy.
+              </p>
+            </div>
+
+            <div class="links-section">
+              <a href="privacy.html" class="link-button secondary"
+                >Privacy Policy</a
+              >
+              <a href="support.html" class="link-button secondary"
+                >Support & FAQ</a
+              >
+              <a href="../index.html" class="link-button secondary"
+                >Experiencing Yah Home</a
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div class="container">
+        <p>&copy; 2026 Experiencing Yah. All rights reserved.</p>
+      </div>
+    </footer>
+    <script src="../script.js"></script>
+    <script
+      src="https://www.google.com/recaptcha/api.js?render=6LdFP4UsAAAAABXbpxRwm4AwPR3BA6vIPWKt4wnu"
+      async
+      defer
+    ></script>
+  </body>
+</html>
